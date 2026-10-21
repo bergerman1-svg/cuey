@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cuey — כפתור אחד. GO.</title>
+<meta name="description" content="Cuey — תוכנה חינמית להרצת סרטונים ושקופיות באירועים. בלי פאוורפוינט, בלי תוכנות מסובכות. גוררים, לוחצים רווח, ממשיכים.">
+<meta property="og:title" content="Cuey — כפתור אחד. GO.">
+<meta property="og:description" content="הרצת סרטונים ושקופיות באירועים, בלי VJ ובלי פאוורפוינט. חינמי למק ול-Windows.">
+<meta property="og:image" content="https://bergerman1-svg.github.io/cuey/screenshot.png">
+<link rel="icon" href="icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=Space+Grotesk:wght@600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0A0A0C;--panel:#131317;--line:#222229;--txt:#F2F2F5;--mut:#9A9AA8;--go:#C8FF00;--amb:#FFB13B;--glow:rgba(200,255,0,.18)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:'Heebo',-apple-system,system-ui,sans-serif;font-size:17px;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+nav{display:flex;align-items:center;gap:14px;padding:22px 0}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;direction:ltr}
+.logo .mark{width:34px;height:34px;border-radius:10px;background:var(--go);display:grid;place-items:center;box-shadow:0 6px 20px var(--glow)}
+.logo .mark svg{width:15px;height:15px;margin-left:2px}
+.logo .word{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px;letter-spacing:-.6px}
+nav .sp{flex:1}
+nav a.l{color:var(--mut);text-decoration:none;font-size:15px}
+nav a.l:hover{color:var(--txt)}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--go);color:#0A0A0C;font-weight:700;text-decoration:none;padding:14px 26px;border-radius:12px;font-size:17px;box-shadow:0 10px 40px -10px var(--glow);transition:transform .08s,filter .12s}
+.btn:hover{filter:brightness(1.05)}.btn:active{transform:translateY(1px)}
+.btn.sec{background:var(--panel);color:var(--txt);border:1px solid var(--line);box-shadow:none}
+.btn small{font-family:'JetBrains Mono',monospace;font-size:11px;opacity:.7;font-weight:500}
+header.hero{padding:70px 0 40px;text-align:center;position:relative}
+header.hero:before{content:'';position:absolute;inset:-200px 0 0;background:radial-gradient(900px 500px at 50% 0%,#1A2008 0%,transparent 60%);z-index:-1}
+.kicker{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:2px;color:var(--go);text-transform:uppercase}
+h1{font-size:clamp(38px,6vw,68px);line-height:1.1;margin:14px 0 18px;font-weight:800;letter-spacing:-1px}
+h1 .go{font-family:'Space Grotesk',sans-serif;color:var(--go);direction:ltr;display:inline-block}
+.sub{font-size:21px;color:var(--mut);max-width:680px;margin:0 auto 34px}
+.cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.free{margin-top:14px;color:var(--mut);font-size:14px}
+.shot{margin:50px auto 0;border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 40px 120px -40px #000,0 0 0 1px #000;background:#000}
+.shot img{display:block;width:100%}
+section{padding:70px 0}
+h2{font-size:34px;margin:0 0 10px;letter-spacing:-.5px;font-weight:800}
+.lead{color:var(--mut);font-size:19px;margin:0 0 36px;max-width:720px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px}
+.card .ic{width:44px;height:44px;border-radius:12px;background:#1A2008;color:var(--go);display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:20px;margin-bottom:16px;direction:ltr}
+.card h3{margin:0 0 8px;font-size:20px}
+.card p{margin:0;color:var(--mut);font-size:16px}
+.steps{counter-reset:s;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.step{position:relative;background:linear-gradient(180deg,#141418,#0F0F13);border:1px solid var(--line);border-radius:16px;padding:26px 26px 26px}
+.step:before{counter-increment:s;content:counter(s,decimal-leading-zero);font-family:'JetBrains Mono',monospace;color:var(--go);font-size:13px;letter-spacing:2px}
+.step h3{margin:8px 0 6px;font-size:20px}
+.step p{margin:0;color:var(--mut);font-size:16px}
+kbd{font-family:'JetBrains Mono',monospace;font-size:13px;background:#1C1C23;border:1px solid #33333D;border-bottom-width:2px;border-radius:6px;padding:1px 8px;color:var(--txt)}
+.who{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:22px}
+.chip{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:8px 16px;color:var(--mut);font-size:15px}
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 24px;list-style:none;padding:0;margin:0}
+.feat li{padding:10px 0;border-bottom:1px solid var(--line);color:var(--txt);font-size:16px}
+.feat li b{color:var(--go);font-family:'Space Grotesk';margin-left:8px}
+.dl{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:40px;text-align:center}
+.dl h2{margin-bottom:6px}
+.note{color:var(--mut);font-size:14px;margin-top:18px;max-width:640px;margin-inline:auto}
+footer{padding:40px 0 50px;color:var(--mut);font-size:14px;text-align:center;border-top:1px solid var(--line)}
+footer a{color:var(--mut)}
+@media(max-width:640px){header.hero{padding-top:40px}.sub{font-size:18px}section{padding:50px 0}.dl{padding:28px 18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="#"><span class="mark"><svg viewBox="0 0 14 14"><path d="M2 1.5v11L12.5 7z" fill="#0A0A0C"/></svg></span><span class="word">Cuey</span></a>
+    <span class="sp"></span>
+    <a class="l" href="#how">איך זה עובד</a>
+    <a class="l" href="#features">יכולות</a>
+    <a class="l" href="https://github.com/bergerman1-svg/cuey">GitHub</a>
+    <a class="btn" href="#download" style="padding:10px 18px;font-size:15px">הורדה חינם</a>
+  </nav>
+
+  <header class="hero">
+    <div class="kicker">Video &amp; slides for live events</div>
+    <h1>הסרטונים והשקופיות של האירוע.<br>כפתור אחד. <span class="go">GO.</span></h1>
+    <p class="sub">בלי פאוורפוינט. בלי תוכנות וידאו מסובכות. בלי VJ.<br>גוררים את הקבצים, מחברים מקרן, ולוחצים רווח כשצריך להמשיך.</p>
+    <div class="cta">
+      <a class="btn" href="#download">⬇ הורדה למק ול-Windows</a>
+      <a class="btn sec" href="#how">איך זה עובד</a>
+    </div>
+    <div class="free">חינמי · ללא התקנת תוספים · עובד בלי אינטרנט</div>
+    <div class="shot"><img src="screenshot.png" alt="Cuey — מסך האופרטור: רשימת קיוז, מוניטור PROGRAM, וכפתור GO גדול"></div>
+  </header>
+
+  <section>
+    <h2>למי זה נבנה</h2>
+    <p class="lead">לכל מי שצריך להריץ תוכן על מסך באירוע, ואין לו צוות טכני. אם אתה יודע לגרור קובץ, אתה יודע להפעיל את Cuey.</p>
+    <div class="grid">
+      <div class="card"><div class="ic">✓</div><h3>לא צריך פאוורפוינט</h3><p>סרטונים ותמונות נכנסים כמו שהם — MP4, MOV, JPG, PNG. בלי להטמיע וידאו במצגת, בלי "המדיה לא נמצאה", בלי לחכות שזה ייטען על הבמה.</p></div>
+      <div class="card"><div class="ic">✓</div><h3>לא צריך ללמוד תוכנה</h3><p>המסך הראשי מראה מה באוויר ומה הבא. כפתור GO אחד. כל השאר — לופ, מעבר חלק, עצירה — זה מתג ליד הקובץ.</p></div>
+      <div class="card"><div class="ic">✓</div><h3>לא צריך VJ</h3><p>המורה, המרצה או המפיקה שולטים בתוכן בעצמם, מהלפטופ. המסך השני מקבל את התמונה במסך מלא אוטומטית.</p></div>
+    </div>
+    <div class="who">
+      <span class="chip">מורים ומורות</span><span class="chip">מרצים</span><span class="chip">מפיקות אירועים</span><span class="chip">כנסים</span><span class="chip">ערבי הורים וטקסים</span><span class="chip">אולמות ובתי כנסת</span><span class="chip">חתונות ובר מצוות</span>
+    </div>
+  </section>
+
+  <section id="how">
+    <h2>איך זה עובד</h2>
+    <p class="lead">שלושה צעדים. בלי הגדרות.</p>
+    <div class="steps">
+      <div class="step"><h3>גוררים</h3><p>כל הסרטונים והשקופיות לרשימה, בסדר שבו הם יופיעו. אפשר לסדר מחדש בגרירה.</p></div>
+      <div class="step"><h3>מחברים מקרן</h3><p>לוחצים "Open Output" — התמונה עולה על המסך השני במסך מלא. על הלפטופ רואים מה באוויר ומה הבא.</p></div>
+      <div class="step"><h3>לוחצים <kbd>רווח</kbd></h3><p>כל לחיצה — הקיו הבא. קאט או דיזולב, לופ או פעם אחת, לפי מה שהגדרת ליד כל קובץ.</p></div>
+    </div>
+  </section>
+
+  <section id="features">
+    <h2>מה יש בפנים</h2>
+    <p class="lead">פשוט מבחוץ, מקצועי מבפנים. הכלים שאיש הפקה היה רוצה — בלי התפריטים שהוא לא צריך.</p>
+    <ul class="feat">
+      <li><b>GO</b> רווח, Enter או כפתור גדול — הקיו הבא</li>
+      <li><b>PROGRAM</b> מוניטור שמראה בדיוק מה המקרן מראה, כולל הדיזולבים — גם בחזרות בבית</li>
+      <li><b>NEXT</b> תמיד רואים מה מגיע אחר כך</li>
+      <li><b>Cut / Dissolve</b> מעבר לכל קיו, עם משך בשניות</li>
+      <li><b>Loop</b> סרטון או שקופית שרצים עד שלוחצים</li>
+      <li><b>Standby</b> הסרטון עולה למסך על הפריים הראשון — GO נוסף מריץ אותו כשהמנחה אומר</li>
+      <li><b>IN / OUT</b> גזירת סרטון בלי עורך וידאו — גוררים משולש</li>
+      <li><b>Fit / Fill / Stretch</b> איך כל תמונה ממלאת את המסך</li>
+      <li><b>Audio</b> עוצמה לכל סרטון, וסאונד לשקופית סטטית</li>
+      <li><b>AUTO</b> לופ רקע: שקופיות מתחלפות לבד, סרטונים ממשיכים, חוזר להתחלה</li>
+      <li><b>Export MP4</b> הופכים את הלופ לקובץ וידאו אחד לנגן בכל מקום</li>
+      <li><b>BLACK / FREEZE</b> כפתורי חירום שתמיד ביד</li>
+      <li><b>Countdown</b> ספירה לאחור ב-5 השניות האחרונות של סרטון — רק אצלך, לא על המסך</li>
+      <li><b>Save</b> שומרים את כל ההופעה לקובץ ופותחים באירוע</li>
+    </ul>
+  </section>
+
+  <section id="download">
+    <div class="dl">
+      <div class="kicker">Free download</div>
+      <h2>להוריד ולהתחיל</h2>
+      <p class="lead" style="margin-inline:auto;text-align:center">מק (Apple Silicon ואינטל) ו-Windows. בלי הרשמה.</p>
+      <div class="cta">
+        <a class="btn" href="https://github.com/bergerman1-svg/cuey/releases/latest">⬇ Mac <small>.dmg</small></a>
+        <a class="btn" href="https://github.com/bergerman1-svg/cuey/releases/latest">⬇ Windows <small>.exe</small></a>
+      </div>
+      <p class="note">הגרסאות הראשונות עדיין לא חתומות דיגיטלית: במק — קליק ימני על האפליקציה → Open בפעם הראשונה. ב-Windows — "More info → Run anyway".</p>
+    </div>
+  </section>
+
+  <footer>
+    Cuey · <a href="https://github.com/bergerman1-svg/cuey">קוד פתוח ב-GitHub</a> · נבנה על ידי אנשי הפקה, בשביל אנשים שלא צריכים להיות כאלה.
+  </footer>
+</div>
+</body>
+</html>
