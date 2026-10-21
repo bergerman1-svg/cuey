@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <title>Cuey</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Heebo:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0A0A0C;--bg2:#101014;--panel:#131317;--panel2:#18181D;--line:#222229;--line2:#2C2C35;--txt:#F2F2F5;--mut:#8B8B99;--dim:#5C5C6A;--go:#C8FF00;--go-d:#A6D400;--go-glow:rgba(200,255,0,.18);--red:#FF4545;--amb:#FFB13B;--r:10px;--font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;--disp:'Space Grotesk','Inter',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace}
+:root{--bg:#0A0A0C;--bg2:#101014;--panel:#131317;--panel2:#18181D;--line:#222229;--line2:#2C2C35;--txt:#F2F2F5;--mut:#8B8B99;--dim:#5C5C6A;--go:#C8FF00;--go-d:#A6D400;--go-glow:rgba(200,255,0,.18);--red:#FF4545;--amb:#FFB13B;--r:10px;--font:'Inter','Heebo',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;--disp:'Space Grotesk','Inter',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--txt);font-family:var(--font);font-size:13px;overflow:hidden;-webkit-font-smoothing:antialiased}
@@ -21,10 +21,11 @@ button.pri:hover{background:var(--go-d);border-color:var(--go-d)}
 button.tog.on{background:var(--amb);color:#0A0A0C;border-color:var(--amb);font-weight:600}
 
 /* header */
-body.native-darwin header{padding-left:84px;-webkit-app-region:drag}
+body.native-darwin header{padding-inline-start:84px;-webkit-app-region:drag}
+[dir=rtl] body.native-darwin header,body.native-darwin[dir=rtl] header{padding-inline-start:18px;padding-inline-end:84px}
 body.native-darwin header button,body.native-darwin header .status{-webkit-app-region:no-drag}
 header{height:60px;display:flex;align-items:center;gap:8px;padding:0 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#141418,#0F0F13)}
-.logo{display:flex;align-items:center;gap:10px;margin-right:14px;user-select:none}
+.logo{direction:ltr;display:flex;align-items:center;gap:10px;margin-inline-end:14px;user-select:none}
 .logo .mark{width:30px;height:30px;border-radius:9px;background:var(--go);display:grid;place-items:center;box-shadow:0 0 0 1px #0008 inset,0 4px 16px var(--go-glow)}
 .logo .mark svg{width:14px;height:14px;display:block;margin-left:2px}
 .logo .word{font-family:var(--disp);font-weight:700;font-size:21px;letter-spacing:-.6px;line-height:1}
@@ -33,11 +34,11 @@ header{height:60px;display:flex;align-items:center;gap:8px;padding:0 18px;border
 header .sep{width:1px;height:24px;background:var(--line2);margin:0 6px}
 .spacer{flex:1}
 .menu{position:relative}
-.menu .dd{display:none;position:absolute;top:calc(100% + 6px);left:0;min-width:200px;background:var(--panel2);border:1px solid var(--line2);border-radius:10px;padding:6px;z-index:50;box-shadow:0 16px 40px -10px #000}
+.menu .dd{display:none;position:absolute;top:calc(100% + 6px);inset-inline-start:0;min-width:200px;background:var(--panel2);border:1px solid var(--line2);border-radius:10px;padding:6px;z-index:50;box-shadow:0 16px 40px -10px #000}
 .menu.open .dd{display:block}
-.menu .dd button{display:flex;justify-content:space-between;width:100%;background:transparent;border:none;text-align:left;padding:8px 10px;border-radius:6px}
+.menu .dd button{display:flex;justify-content:space-between;width:100%;background:transparent;border:none;text-align:start;padding:8px 10px;border-radius:6px}
 .menu .dd button:hover{background:#26262E}
-.menu .dd button span{color:var(--dim);font-family:var(--mono);font-size:11px;margin-left:16px}
+.menu .dd button span{color:var(--dim);font-family:var(--mono);font-size:11px;margin-inline-start:16px}
 .menu .dd .sep{height:1px;background:var(--line);margin:6px 4px}
 body.native-darwin #fileMenu,body.native-win32 #fileMenu,body.native-linux #fileMenu{display:none}
 .status{font-family:var(--mono);font-size:11px;letter-spacing:.6px;color:var(--mut);padding:0 8px}
@@ -46,7 +47,7 @@ body.native-darwin #fileMenu,body.native-win32 #fileMenu,body.native-linux #file
 
 /* layout */
 main{display:grid;grid-template-columns:460px 1fr;height:calc(100% - 60px)}
-aside{border-right:1px solid var(--line);display:flex;flex-direction:column;background:var(--panel);min-height:0}
+aside{border-inline-end:1px solid var(--line);display:flex;flex-direction:column;background:var(--panel);min-height:0}
 .ah{padding:12px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line)}
 .ah h2{font-size:10.5px;margin:0;color:var(--mut);font-weight:600;letter-spacing:1.6px;text-transform:uppercase}
 #list{flex:1;overflow:auto;padding:10px}
@@ -59,14 +60,14 @@ aside{border-right:1px solid var(--line);display:flex;flex-direction:column;back
 .item.over-bot{box-shadow:0 3px 0 0 var(--go)}
 .item.cur{border-color:var(--go);background:linear-gradient(180deg,#1A2008,#15180C);box-shadow:0 0 0 1px var(--go) inset,0 6px 20px -8px var(--go-glow)}
 .item.nxt{border-color:#5a4316}
-.item.nxt:before{content:'NEXT';position:absolute;top:-1px;right:12px;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:#0A0A0C;background:var(--amb);padding:2px 6px;border-radius:0 0 5px 5px}
-.item.cur:before{content:'LIVE';position:absolute;top:-1px;right:12px;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:#0A0A0C;background:var(--go);padding:2px 6px;border-radius:0 0 5px 5px}
+.item.nxt:before{content:'NEXT';position:absolute;top:-1px;inset-inline-end:12px;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:#0A0A0C;background:var(--amb);padding:2px 6px;border-radius:0 0 5px 5px}
+.item.cur:before{content:'LIVE';position:absolute;top:-1px;inset-inline-end:12px;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:#0A0A0C;background:var(--go);padding:2px 6px;border-radius:0 0 5px 5px}
 .item .n,.item .th,.item .name{cursor:grab}
 .item .n{font-family:var(--mono);color:var(--dim);font-size:11px;padding-top:4px;grid-row:1/3}
 .item.cur .n{color:var(--go)}
 .item .th{grid-row:1/3;width:96px;height:54px;border-radius:6px;background:#000;object-fit:cover;border:1px solid var(--line2)}
 .item .name{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.1px;padding-top:2px}
-.item .name small{color:var(--dim);font-weight:400;margin-right:6px;font-size:12px}
+.item .name small{color:var(--dim);font-weight:400;margin-inline-end:6px;font-size:12px}
 .item .ctl{grid-column:3;display:flex;flex-wrap:wrap;gap:5px;align-items:center}
 .item .ctl button,.item .ctl select,.item .ctl input{padding:3px 8px;font-size:11.5px;border-radius:6px;background-color:#111116;border-color:var(--line)}
 .item .ctl select{padding-right:20px;background-position:right 6px center}
@@ -92,7 +93,7 @@ section{display:flex;flex-direction:column;padding:18px 20px 14px;gap:14px;min-w
 .prev{display:grid;grid-template-columns:3fr 2fr;gap:16px;flex:1;min-height:0;align-content:center;align-items:end}
 .pv{background:#000;border:1px solid var(--line2);border-radius:12px;position:relative;overflow:hidden;aspect-ratio:16/9;width:100%;margin:0 auto}
 .pv.now{border-color:#3A4A00;box-shadow:0 0 0 1px #1C2400,0 20px 60px -30px var(--go-glow)}
-.pv .lbl{position:absolute;top:10px;left:12px;font-family:var(--mono);font-size:10px;letter-spacing:1.6px;padding:3px 9px;border-radius:999px;background:#000c;z-index:4;backdrop-filter:blur(6px)}
+.pv .lbl{position:absolute;top:10px;inset-inline-start:12px;font-family:var(--mono);font-size:10px;letter-spacing:1.6px;padding:3px 9px;border-radius:999px;background:#000c;z-index:4;backdrop-filter:blur(6px)}
 .pv.now .lbl{color:var(--go);border:1px solid var(--go)}
 .pv.next .lbl{color:var(--amb);border:1px solid var(--amb)}
 .pv .nm{position:absolute;bottom:10px;left:12px;right:12px;font-size:11.5px;color:#D8D8E0;background:#000b;padding:4px 10px;border-radius:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:4;font-family:var(--mono);backdrop-filter:blur(6px)}
@@ -100,7 +101,7 @@ section{display:flex;flex-direction:column;padding:18px 20px 14px;gap:14px;min-w
 .pv .empty.err{color:var(--red);font-size:13px;font-family:var(--font);font-weight:400}
 .pv .empty.hint{color:#4A4A58;font-size:13px;font-family:var(--font);font-weight:400;line-height:1.7}
 .pv.next video,.pv.next img{position:absolute;inset:0;width:100%;height:100%;display:block}
-.cd{position:absolute;top:12px;right:12px;z-index:5;min-width:92px;height:92px;border-radius:14px;background:#000d;border:1.5px solid var(--red);color:var(--red);font-family:var(--disp);font-weight:700;font-size:58px;line-height:86px;text-align:center;display:none;box-shadow:0 0 28px #ff454566;backdrop-filter:blur(6px)}
+.cd{position:absolute;top:12px;inset-inline-end:12px;z-index:5;min-width:92px;height:92px;border-radius:14px;background:#000d;border:1.5px solid var(--red);color:var(--red);font-family:var(--disp);font-weight:700;font-size:58px;line-height:86px;text-align:center;display:none;box-shadow:0 0 28px #ff454566;backdrop-filter:blur(6px)}
 .cd.on{display:block;animation:cdp .5s ease-out}
 .cd small{display:block;font-size:9.5px;line-height:1;letter-spacing:2px;margin-top:-14px;color:#ffb0b0;font-family:var(--mono)}
 @keyframes cdp{from{transform:scale(1.22)}to{transform:scale(1)}}
@@ -111,7 +112,7 @@ section{display:flex;flex-direction:column;padding:18px 20px 14px;gap:14px;min-w
 .stage .blk{position:absolute;inset:0;background:#000;opacity:0;transition:opacity .3s;pointer-events:none;z-index:2}
 
 /* transport */
-.tl{display:flex;align-items:center;gap:8px;flex:none;height:44px;padding:0 10px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.tl{direction:ltr;display:flex;align-items:center;gap:8px;flex:none;height:44px;padding:0 10px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
 .tl .tm{font-family:var(--mono);font-size:12.5px;color:var(--mut);min-width:108px;text-align:center}
 .tl .tm b{color:var(--txt);font-weight:500}
 .tl .rem{font-family:var(--mono);font-size:12.5px;color:var(--amb);min-width:62px;text-align:center}
@@ -145,25 +146,27 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 .side .blk.on{background:#000;border-color:var(--red);color:var(--red);box-shadow:0 0 24px -6px #ff454588}
 .side .frz.on{background:#2A2000;border-color:var(--amb);color:var(--amb);box-shadow:0 0 24px -6px #ffb13b88}
 .keys{display:flex;gap:12px 16px;flex-wrap:wrap;color:var(--dim);font-size:11.5px;justify-content:center;flex:none}
-.keys kbd{font-family:var(--mono);font-size:10.5px;background:var(--panel2);border:1px solid var(--line2);border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:var(--mut);margin-right:4px}
+.keys i{font-style:normal}
+.keys kbd{font-family:var(--mono);font-size:10.5px;background:var(--panel2);border:1px solid var(--line2);border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:var(--mut);margin-inline-end:4px}
 </style>
 </head>
 <body>
 <header>
-  <div class="logo"><span class="mark"><svg viewBox="0 0 14 14"><path d="M2 1.5v11L12.5 7z" fill="#0A0A0C"/></svg></span><span class="word">Cuey</span><span class="ver">v0.16.2</span></div>
+  <div class="logo"><span class="mark"><svg viewBox="0 0 14 14"><path d="M2 1.5v11L12.5 7z" fill="#0A0A0C"/></svg></span><span class="word">Cuey</span><span class="ver">v0.16.3</span></div>
   <span class="sep"></span>
-  <div class="menu" id="fileMenu"><button id="fileBtn">File ▾</button><div class="dd">
-    <button id="loadBtn">Open Show…<span>⌘O</span></button>
-    <button id="saveBtn">Save<span>⌘S</span></button>
-    <button id="saveAsBtn">Save As…<span>⇧⌘S</span></button>
+  <div class="menu" id="fileMenu"><button id="fileBtn" data-t="file">File ▾</button><div class="dd">
+    <button id="loadBtn"><span data-t="open">Open Show…</span><span>⌘O</span></button>
+    <button id="saveBtn"><span data-t="save">Save</span><span>⌘S</span></button>
+    <button id="saveAsBtn"><span data-t="saveas">Save As…</span><span>⇧⌘S</span></button>
     <div class="sep"></div>
-    <button id="expBtn2">Export MP4…</button>
+    <button id="expBtn2" data-t="exportm">Export MP4…</button>
   </div></div>
   <input type="file" id="showIn" accept=".cuey,application/json" hidden>
   <div class="spacer"></div>
-  <button id="autoBtn" class="tog" title="Run the whole list by itself: slides advance after their hold time, videos continue when they end, and the show loops">▶ AUTO</button>
-  <button id="expBtn" title="Record the whole list once (AUTO, real time) and save it as a video file">⬇ Export MP4</button>
-  <button id="loopBtn" class="tog" title="After the last cue, go back to the first">↻ Loop show</button>
+  <button id="autoBtn" class="tog" data-t="auto" title="Run the whole list by itself: slides advance after their hold time, videos continue when they end, and the show loops">▶ AUTO</button>
+  <button id="expBtn" data-t="export" title="Record the whole list once (AUTO, real time) and save it as a video file">⬇ Export MP4</button>
+  <button id="loopBtn" class="tog" data-t="loopshow" title="After the last cue, go back to the first">↻ Loop show</button>
+  <button id="langBtn" title="Language / שפה">עברית</button>
   <span class="sep"></span>
   <div class="status off" id="st">OUTPUT <b>CLOSED</b></div>
   <button id="openOut">Open Output Window</button>
@@ -172,41 +175,64 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 </header>
 <main>
   <aside>
-    <div class="ah"><button class="pri" id="addBtn" style="flex:1">+ Add Files</button><button id="clearAll" title="Clear all">Clear</button></div>
-    <div class="ah"><h2>CUE LIST</h2><div class="spacer"></div><span class="status" id="cnt">0 cues</span></div>
+    <div class="ah"><button class="pri" id="addBtn" style="flex:1" data-t="add">+ Add Files</button><button id="clearAll" data-t="clear" title="Clear all">Clear</button></div>
+    <div class="ah"><h2 data-t="cuelist">CUE LIST</h2><div class="spacer"></div><span class="status" id="cnt">0 cues</span></div>
     <div id="list"></div>
-    <div class="drop" id="drop" title="Add files"><span class="plus">+</span><small>Drop videos &amp; images here</small></div>
+    <div class="drop" id="drop" title="Add files"><span class="plus">+</span><small data-t="drop">Drop videos &amp; images here</small></div>
   </aside>
   <section>
     <div class="prev">
-      <div class="pv now" id="pvNow"><div class="stage" id="nowStage"></div><span class="lbl">PROGRAM</span><div class="nm" id="nowNm" hidden></div><div class="cd" id="cd"><span id="cdN">5</span><small>TO END</small></div><div class="empty hint" id="nowEmpty"></div></div>
+      <div class="pv now" id="pvNow"><div class="stage" id="nowStage"></div><span class="lbl">PROGRAM</span><div class="nm" id="nowNm" hidden></div><div class="cd" id="cd"><span id="cdN">5</span><small data-t="toend">TO END</small></div><div class="empty hint" id="nowEmpty"></div></div>
       <div class="pv next" id="pvNext"><span class="lbl">NEXT</span><div class="empty">—</div></div>
     </div>
     <div class="tl"><button id="inBtn" title="Set IN point here (I) — then drag the marker; click again to clear" disabled>IN ⇥</button><button id="rw" title="Back 10 s" disabled>−10s</button><button id="pp" title="Play / Pause (F)" disabled>▶</button><span class="tm" id="tm"><b>--:--</b> / --:--</span><div class="seekwrap"><input type="range" id="seek" min="0" max="1000" value="0" disabled><i class="mk in" id="mkIn" title="Drag to move IN" hidden></i><i class="mk out" id="mkOut" title="Drag to move OUT" hidden></i></div><span class="rem" id="rem">−--:--</span><button id="ff" title="Forward 10 s" disabled>+10s</button><button id="outBtn" title="Set OUT point here (O) — then drag the marker; click again to clear" disabled>⇤ OUT</button><button id="clrIO" hidden>✕</button></div>
     <div class="bar">
-      <div class="side"><button id="back" title="Go back one cue">◀ BACK</button></div>
+      <div class="side"><button id="back" data-t="back" title="Go back one cue">◀ BACK</button></div>
       <button class="gobtn" id="go">GO ▶</button>
-      <div class="side"><button class="frz" id="frz">FREEZE</button><button class="blk" id="blk">BLACK</button></div>
+      <div class="side"><button class="frz" id="frz" data-t="freeze">FREEZE</button><button class="blk" id="blk" data-t="black">BLACK</button></div>
     </div>
     <div class="keys">
-      <span><kbd>Space</kbd><kbd>Enter</kbd><kbd>→</kbd> GO</span>
-      <span><kbd>←</kbd> Back</span>
-      <span><kbd>B</kbd> Black</span>
-      <span><kbd>F</kbd> Freeze</span>
-      <span><kbd>Home</kbd> First cue</span>
-      <span><kbd>,</kbd><kbd>.</kbd> ∓10s</span>
-      <span><kbd>A</kbd> Auto</span>
-      <span><kbd>I</kbd><kbd>O</kbd> In / Out</span>
-      <span><kbd>⌘S</kbd> Save</span>
-      <span><kbd>⇧⌘S</kbd> Save As</span>
-      <span><kbd>⌘O</kbd> Open</span>
-      <span><kbd>Double-click</kbd> Output = fullscreen</span>
+      <span><kbd>Space</kbd><kbd>Enter</kbd><kbd>→</kbd> <i data-t="k_go">GO</i></span>
+      <span><kbd>←</kbd> <i data-t="k_back">Back</i></span>
+      <span><kbd>B</kbd> <i data-t="k_black">Black</i></span>
+      <span><kbd>F</kbd> <i data-t="k_freeze">Freeze</i></span>
+      <span><kbd>Home</kbd> <i data-t="k_first">First cue</i></span>
+      <span><kbd>,</kbd><kbd>.</kbd> <i data-t="k_nudge">∓10s</i></span>
+      <span><kbd>A</kbd> <i data-t="k_auto">Auto</i></span>
+      <span><kbd>I</kbd><kbd>O</kbd> <i data-t="k_io">In / Out</i></span>
+      <span><kbd>⌘S</kbd> <i data-t="k_save">Save</i></span>
+      <span><kbd>⇧⌘S</kbd> <i data-t="k_saveas">Save As</i></span>
+      <span><kbd>⌘O</kbd> <i data-t="k_open">Open</i></span>
+      <span><kbd>Double-click</kbd> <i data-t="k_dbl">Output = fullscreen</i></span>
     </div>
   </section>
 </main>
 
 <script>
 const $=s=>document.querySelector(s);
+/* ---------- i18n ---------- */
+const L={
+ en:{dir:'ltr',file:'File ▾',open:'Open Show…',save:'Save',saveas:'Save As…',exportm:'Export MP4…',auto:'▶ AUTO',export:'⬇ Export MP4',stopexport:'■ Stop export',loopshow:'↻ Loop show',output:'OUTPUT',closed:'CLOSED',live:'LIVE',openout:'Open Output Window',outopen:'Output open ✓',add:'+ Add Files',clear:'Clear',cuelist:'CUE LIST',cue:'cue',cues:'cues',drop:'Drop videos & images here',
+  loop:'↻ Loop',standby:'⏸ Standby',cut:'Cut',dissolve:'Dissolve',fit:'Fit',fill:'Fill',stretch:'Stretch',endhold:'End: Hold',endnext:'End: Next',endblack:'End: Black',waitgo:'Wait for GO',autonext:'Auto next',addaudio:'♪ Add audio',audio:'♪ Audio',rmaudio:'✕ remove audio',
+  ready:'READY — press GO',hint:'Add files on the left, open the Output window,<br>drag it to the second screen and press GO.',sb:'STANDBY — press GO to play',autoin:'auto next in',sec:'s',badfile:'This browser can\'t decode "{n}".<br>Export it as H.264 MP4 and try again.',missing:'Missing file: {n}<br>Remove this cue and add the file again.',
+  back:'◀ BACK',go:'GO ▶',play:'PLAY ▶',freeze:'FREEZE',black:'BLACK',toend:'TO END',
+  k_go:'GO',k_back:'Back',k_black:'Black',k_freeze:'Freeze',k_first:'First cue',k_nudge:'∓10s',k_auto:'Auto',k_io:'In / Out',k_save:'Save',k_saveas:'Save As',k_open:'Open',k_dbl:'Output = fullscreen',
+  c_clear:'Clear the whole cue list?',a_nothing:'Nothing to save yet.',a_notshow:'Not a Cuey show file.',a_pick:'Please select these media files:',a_popup:'The browser blocked the Output window. Allow pop-ups for this page and try again.',a_closeout:'Close the Output window first — export uses the PROGRAM monitor.',a_norec:'This browser can\'t record video. Use Chrome.',c_export:'Export plays the whole list once from cue 1 in real time (slides {s} s + all videos) and records what the PROGRAM monitor shows, with sound.\n\nKeep this window open and visible until it finishes.\n\nStart?',f_saved:'Saved',f_opened:'Show opened',f_openedmiss:'Show opened — some files are missing (red)',f_exported:'Exported',a_nothingexp:'Nothing to export yet.'},
+ he:{dir:'rtl',file:'קובץ ▾',open:'פתח הופעה…',save:'שמור',saveas:'שמור בשם…',exportm:'ייצוא MP4…',auto:'▶ אוטו',export:'⬇ ייצוא MP4',stopexport:'■ עצור ייצוא',loopshow:'↻ לופ הופעה',output:'מקרן',closed:'סגור',live:'פעיל',openout:'פתח חלון מקרן',outopen:'מקרן פתוח ✓',add:'+ הוסף קבצים',clear:'נקה',cuelist:'רשימת קיוז',cue:'קיו',cues:'קיוז',drop:'גרור לכאן סרטונים ותמונות',
+  loop:'↻ לופ',standby:'⏸ סטנדביי',cut:'קאט',dissolve:'דיזולב',fit:'התאם',fill:'מלא',stretch:'מתח',endhold:'בסיום: עצור',endnext:'בסיום: הבא',endblack:'בסיום: שחור',waitgo:'מחכה ל-GO',autonext:'המשך אוטומטי',addaudio:'♪ הוסף סאונד',audio:'♪ סאונד',rmaudio:'✕ הסר סאונד',
+  ready:'מוכן — לחץ GO',hint:'הוסף קבצים ברשימה, פתח את חלון המקרן,<br>גרור אותו למסך השני ולחץ GO.',sb:'סטנדביי — לחץ GO להפעלה',autoin:'המשך אוטומטי בעוד',sec:'ש׳',badfile:'הדפדפן לא מצליח לנגן את "{n}".<br>ייצא אותו כ-H.264 MP4 ונסה שוב.',missing:'קובץ חסר: {n}<br>הסר את הקיו והוסף את הקובץ מחדש.',
+  back:'◀ אחורה',go:'GO ▶',play:'הפעל ▶',freeze:'הקפא',black:'שחור',toend:'לסיום',
+  k_go:'GO',k_back:'אחורה',k_black:'שחור',k_freeze:'הקפא',k_first:'קיו ראשון',k_nudge:'∓10 ש׳',k_auto:'אוטו',k_io:'כניסה / יציאה',k_save:'שמור',k_saveas:'שמור בשם',k_open:'פתח',k_dbl:'מקרן = מסך מלא',
+  c_clear:'לנקות את כל הרשימה?',a_nothing:'אין עדיין מה לשמור.',a_notshow:'זה לא קובץ הופעה של Cuey.',a_pick:'בחר בבקשה את קבצי המדיה האלה:',a_popup:'הדפדפן חסם את חלון המקרן. אפשר חלונות קופצים לדף הזה ונסה שוב.',a_closeout:'סגור קודם את חלון המקרן — הייצוא משתמש במוניטור PROGRAM.',a_norec:'הדפדפן הזה לא יודע להקליט וידאו. השתמש בכרום.',c_export:'הייצוא מריץ את כל הרשימה פעם אחת מקיו 1 בזמן אמת (שקופיות {s} ש׳ + כל הסרטונים) ומקליט את מה שמוניטור ה-PROGRAM מראה, כולל סאונד.\n\nהשאר את החלון פתוח וגלוי עד הסיום.\n\nלהתחיל?',f_saved:'נשמר',f_opened:'ההופעה נפתחה',f_openedmiss:'ההופעה נפתחה — חלק מהקבצים חסרים (באדום)',f_exported:'יוצא',a_nothingexp:'אין עדיין מה לייצא.'}
+};
+let lang='en';try{lang=localStorage.getItem('cuey.lang')||((navigator.language||'').startsWith('he')?'he':'en')}catch(e){}
+const t=(k,v)=>{let x=(L[lang]&&L[lang][k])??L.en[k]??k;if(v)for(const q in v)x=x.replace('{'+q+'}',v[q]);return x};
+function applyLang(){
+  document.documentElement.lang=lang;document.documentElement.dir=L[lang].dir;
+  document.querySelectorAll('[data-t]').forEach(el=>{el.innerHTML=t(el.dataset.t)});
+  $('#langBtn').textContent=lang==='en'?'עברית':'English';
+  setStatus();setGoLabel();render();tlUpdate();
+}
 let exporting=false,exportFinishing=false;
 let items=[],cur=-1,outWin=null,blackOn=false,frozen=false,armed=false,uid=0,dragFrom=null,autoMode=false,loopShow=false,holdTimer=null,holdInfo=null;
 const FIT={fit:'contain',fill:'cover',stretch:'fill'};
@@ -294,7 +320,7 @@ for(const z of[$('#drop'),$('#list')]){
   z.ondragleave=()=>z.classList.remove('over');
   z.ondrop=e=>{if(dragFrom!==null)return;e.preventDefault();z.classList.remove('over');addFiles(e.dataTransfer.files)};
 }
-$('#clearAll').onclick=()=>{if(items.length&&confirm('Clear the whole cue list?')){items=[];cur=-1;armed=false;setGoLabel();clearStages();render()}};
+$('#clearAll').onclick=()=>{if(items.length&&confirm(t('c_clear'))){items=[];cur=-1;armed=false;setGoLabel();clearStages();render()}};
 
 function moveItem(from,to){
   if(to>from)to--; if(from===to)return;
@@ -314,14 +340,14 @@ function render(){
     d.innerHTML=`<div class="n">${String(i+1).padStart(2,'0')}</div>
       <img class="th" src="${it.thumb||''}" alt=""><div class="name"><small>${it.type==='video'?'🎬':'🖼'}</small>${it.name}</div>
       <div class="ctl">
-        ${it.type==='video'?`<button data-k="loop" class="${it.loop?'on':''}" title="Loop">↻ Loop</button><button data-k="standby" class="${it.standby?'on':''}" title="GO brings the first frame up and waits; the next GO starts playback">⏸ Standby</button>`:''}
-        <select data-k="trans" title="Transition into this cue"><option value="cut"${it.trans==='cut'?' selected':''}>Cut</option><option value="dissolve"${it.trans==='dissolve'?' selected':''}>Dissolve</option></select>
+        ${it.type==='video'?`<button data-k="loop" class="${it.loop?'on':''}" title="Loop">${t('loop')}</button><button data-k="standby" class="${it.standby?'on':''}" title="GO brings the first frame up and waits; the next GO starts playback">${t('standby')}</button>`:''}
+        <select data-k="trans" title="Transition into this cue"><option value="cut"${it.trans==='cut'?' selected':''}>${t('cut')}</option><option value="dissolve"${it.trans==='dissolve'?' selected':''}>${t('dissolve')}</option></select>
         <input data-k="dur" type="number" min="0.1" max="10" step="0.1" value="${it.dur}" title="Dissolve seconds" ${it.trans==='cut'?'disabled':''}>
-        <select data-k="scale" title="How the picture fills the screen"><option value="fit"${it.scale==='fit'?' selected':''}>Fit</option><option value="fill"${it.scale==='fill'?' selected':''}>Fill</option><option value="stretch"${it.scale==='stretch'?' selected':''}>Stretch</option></select>
+        <select data-k="scale" title="How the picture fills the screen"><option value="fit"${it.scale==='fit'?' selected':''}>${t('fit')}</option><option value="fill"${it.scale==='fill'?' selected':''}>${t('fill')}</option><option value="stretch"${it.scale==='stretch'?' selected':''}>${t('stretch')}</option></select>
         ${it.type==='video'?`<span class="vl" title="Video volume">🎬</span><input data-k="vol" type="range" min="0" max="100" value="${Math.round(it.vol*100)}" title="Video volume ${Math.round(it.vol*100)}%">`:''}
-        ${it.audio?`<span class="aud" title="${it.audio.name}">♪ ${it.audio.name}</span><input data-k="avol" type="range" min="0" max="100" value="${Math.round(it.avol*100)}" title="Audio volume ${Math.round(it.avol*100)}%"><button class="ico rm" data-k="noaud" title="Remove this audio">✕ remove audio</button>`:`<button data-k="aud" title="${it.type==='video'?'Add a soundtrack on top of the video (own volume)':'Attach a sound file to this slide'}">♪ ${it.type==='video'?'Add audio':'Audio'}</button>`}
-        ${it.type==='video'&&!it.loop?`<select data-k="onEnd" title="When the video ends"><option value="hold"${it.onEnd==='hold'?' selected':''}>End: Hold</option><option value="next"${it.onEnd==='next'?' selected':''}>End: Next</option><option value="black"${it.onEnd==='black'?' selected':''}>End: Black</option></select>`:''}
-        ${it.type==='image'?`<select data-k="onEnd" title="Wait for GO, or continue by itself after the hold time"><option value="hold"${it.onEnd==='hold'?' selected':''}>Wait for GO</option><option value="next"${it.onEnd==='next'?' selected':''}>Auto next</option></select><input class="hold" data-k="hold" type="number" min="0.5" max="3600" step="0.5" value="${it.hold}" title="Seconds on screen before auto next" ${it.onEnd!=='next'&&!autoMode?'disabled':''}>`:''}
+        ${it.audio?`<span class="aud" title="${it.audio.name}">♪ ${it.audio.name}</span><input data-k="avol" type="range" min="0" max="100" value="${Math.round(it.avol*100)}" title="Audio volume ${Math.round(it.avol*100)}%"><button class="ico rm" data-k="noaud" title="Remove this audio">${t('rmaudio')}</button>`:`<button data-k="aud" title="${it.type==='video'?'Add a soundtrack on top of the video (own volume)':'Attach a sound file to this slide'}">${it.type==='video'?t('addaudio'):t('audio')}</button>`}
+        ${it.type==='video'&&!it.loop?`<select data-k="onEnd" title="When the video ends"><option value="hold"${it.onEnd==='hold'?' selected':''}>${t('endhold')}</option><option value="next"${it.onEnd==='next'?' selected':''}>${t('endnext')}</option><option value="black"${it.onEnd==='black'?' selected':''}>${t('endblack')}</option></select>`:''}
+        ${it.type==='image'?`<select data-k="onEnd" title="Wait for GO, or continue by itself after the hold time"><option value="hold"${it.onEnd==='hold'?' selected':''}>${t('waitgo')}</option><option value="next"${it.onEnd==='next'?' selected':''}>${t('autonext')}</option></select><input class="hold" data-k="hold" type="number" min="0.5" max="3600" step="0.5" value="${it.hold}" title="Seconds on screen before auto next" ${it.onEnd!=='next'&&!autoMode?'disabled':''}>`:''}
         <span class="spacer"></span>
         <button class="ico" data-k="copy" title="Duplicate cue">⧉</button>
         <button class="ico" data-k="up" title="Move up">▲</button>
@@ -357,7 +383,7 @@ function render(){
     });
     L.appendChild(d);
   });
-  $('#cnt').textContent=items.length+(items.length===1?' cue':' cues');
+  $('#cnt').textContent=items.length+' '+(items.length===1?t('cue'):t('cues'));
   renderPreview();
   const c=L.querySelector('.cur');if(c)c.scrollIntoView({block:'nearest'});
 }
@@ -371,14 +397,14 @@ function makeThumb(it){
     v.addEventListener('seeked',()=>{draw(v,v.videoWidth||16,v.videoHeight||9)},{once:true});
     v.addEventListener('error',()=>{it.bad=true;render()});}
 }
-function errText(it){return it.url?'This browser can\'t decode "'+it.name+'".<br>Export it as H.264 MP4 and try again.':'Missing file: '+it.file.name+'<br>Remove this cue and add the file again.'}
+function errText(it){return it.url?t('badfile',{n:it.name}):t('missing',{n:it.file.name})}
 function renderPreview(){
   // PROGRAM panel: the stage is persistent; only overlays change
   const live=items[cur],ne=$('#nowEmpty'),nm=$('#nowNm');
-  if(!items.length){ne.className='empty hint';ne.innerHTML='Add files on the left, open the Output window,<br>drag it to the second screen and press GO.';ne.hidden=false;nm.hidden=true}
-  else if(!live){ne.className='empty';ne.textContent='READY — press GO';ne.hidden=false;nm.hidden=true}
+  if(!items.length){ne.className='empty hint';ne.innerHTML=t('hint');ne.hidden=false;nm.hidden=true}
+  else if(!live){ne.className='empty';ne.textContent=t('ready');ne.hidden=false;nm.hidden=true}
   else if(live.bad){ne.className='empty err';ne.innerHTML=errText(live);ne.hidden=false;nm.hidden=true}
-  else{ne.hidden=true;nm.hidden=false;nm.textContent=live.name+(live.type==='video'&&live.loop?' · loop':'')+(armed?' · STANDBY — press GO to play':'')+(holdInfo?' · auto next in '+live.hold+'s':'')+' · '+live.scale}
+  else{ne.hidden=true;nm.hidden=false;nm.textContent=live.name+(live.type==='video'&&live.loop?' · '+t('loop').replace('↻ ',''):'')+(armed?' · '+t('sb'):'')+(holdInfo?' · '+t('autoin')+' '+live.hold+t('sec'):'')+' · '+t(live.scale)}
   // NEXT panel: still frame
   const px=$('#pvNext'),it=items[cur+1];
   px.innerHTML='<span class="lbl">NEXT</span>';
@@ -390,7 +416,7 @@ function renderPreview(){
   el.style.objectFit=FIT[it.scale]||'contain';
   el.addEventListener('error',()=>{it.bad=true;render()});
   el.src=it.url;px.appendChild(el);
-  px.insertAdjacentHTML('beforeend',`<div class="nm">${it.name} · ${it.trans==='cut'?'cut':'dissolve '+it.dur+'s'} · ${it.scale}${it.type==='video'&&it.standby?' · standby':''}${it.type==='image'&&(autoMode||it.onEnd==='next')?' · '+it.hold+'s':''}${it.type==='video'&&(it.in>0||it.out>0)?' · '+fmt(it.in)+'→'+(it.out?fmt(it.out):'end'):''}</div>`);
+  px.insertAdjacentHTML('beforeend',`<div class="nm">${it.name} · ${it.trans==='cut'?t('cut'):t('dissolve')+' '+it.dur+t('sec')} · ${t(it.scale)}${it.type==='video'&&it.standby?' · '+t('standby').replace('⏸ ',''):''}${it.type==='image'&&(autoMode||it.onEnd==='next')?' · '+it.hold+t('sec'):''}${it.type==='video'&&(it.in>0||it.out>0)?' · '+fmt(it.in)+'→'+(it.out?fmt(it.out):'end'):''}</div>`);
 }
 
 /* ---------- slide audio ---------- */
@@ -480,11 +506,11 @@ function drawFrame(ctx,W,H){
 }
 async function startExport(){
   if(exporting)return;
-  if(!items.length){alert('Nothing to export yet.');return}
-  if(outStage){alert('Close the Output window first — export uses the PROGRAM monitor.');return}
-  const mime=pickMime();if(!mime||!('captureStream' in HTMLCanvasElement.prototype)){alert('This browser can\'t record video. Use Chrome.');return}
+  if(!items.length){alert(t('a_nothingexp'));return}
+  if(outStage){alert(t('a_closeout'));return}
+  const mime=pickMime();if(!mime||!('captureStream' in HTMLCanvasElement.prototype)){alert(t('a_norec'));return}
   const est=items.reduce((t,i)=>t+(i.type==='image'?(i.hold||5):0),0);
-  if(!confirm('Export plays the whole list once from cue 1 in real time (slides '+Math.round(est)+' s + all videos) and records what the PROGRAM monitor shows, with sound.\n\nKeep this window open and visible until it finishes.\n\nStart?'))return;
+  if(!confirm(t('c_export',{s:Math.round(est)})))return;
   if(!ac){ac=new (window.AudioContext||window.webkitAudioContext)();}
   await ac.resume();
   if(!acDest)acDest=ac.createMediaStreamDestination();
@@ -500,7 +526,7 @@ async function startExport(){
   cur=-1;clearStages();
   const loop=()=>{drawFrame(ctx,W,H);drawRAF=requestAnimationFrame(loop)};loop();
   rec.start(500);recT0=performance.now();
-  $('#expBtn').textContent='■ Stop export';$('#expBtn').style.borderColor='var(--red)';
+  $('#expBtn').textContent=t('stopexport');$('#expBtn').style.borderColor='var(--red)';
   recTimer=setInterval(()=>{$('#st').innerHTML='<b style="color:var(--red)">● REC</b> '+fmt((performance.now()-recT0)/1000)},250);
   show(0,true);
 }
@@ -518,16 +544,16 @@ function stopExport(){
   exporting=false;exportFinishing=false;autoMode=savedAuto;$('#autoBtn').classList.toggle('on',autoMode);
   if(slideSrc){try{slideSrc.disconnect(acDest)}catch(e){}}
   cur=-1;clearStages();render();setStatus();
-  $('#expBtn').textContent='⬇ Export MP4';$('#expBtn').style.borderColor='';
+  $('#expBtn').textContent=t('export');$('#expBtn').style.borderColor='';
 }
 async function saveExport(mime){
   const ext=mime.startsWith('video/mp4')?'mp4':'webm';
   const blob=new Blob(recChunks,{type:mime.split(';')[0]});recChunks=[];
   if(window.showSaveFilePicker){
-    try{const h=await showSaveFilePicker({suggestedName:'cuey-export.'+ext,types:[{description:'Video',accept:{[mime.split(';')[0]]:['.'+ext]}}]});const w=await h.createWritable();await w.write(blob);await w.close();flash('Exported '+ext.toUpperCase());return}
+    try{const h=await showSaveFilePicker({suggestedName:'cuey-export.'+ext,types:[{description:'Video',accept:{[mime.split(';')[0]]:['.'+ext]}}]});const w=await h.createWritable();await w.write(blob);await w.close();flash(t('f_exported')+' '+ext.toUpperCase());return}
     catch(e){if(e.name==='AbortError')return}
   }
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cuey-export.'+ext;a.click();flash('Exported '+ext.toUpperCase());
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cuey-export.'+ext;a.click();flash(t('f_exported')+' '+ext.toUpperCase());
 }
 $('#expBtn').onclick=()=>{exporting?stopExport():startExport()};
 
@@ -538,7 +564,7 @@ async function idbPut(k,v){const d=await idb();return new Promise((res,rej)=>{co
 async function idbGet(k){const d=await idb();return new Promise((res,rej)=>{const t=d.transaction(ST,'readonly');const q=t.objectStore(ST).get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
 function showData(){return {app:'cuey',v:1,saved:new Date().toISOString(),loopShow,autoMode,cues:items.map(i=>({file:i.file.name,type:i.type,name:i.name,loop:i.loop,trans:i.trans,dur:i.dur,onEnd:i.onEnd,scale:i.scale,standby:!!i.standby,hold:i.hold,in:i.in||0,out:i.out||0,vol:i.vol,avol:i.avol==null?1:i.avol,audio:i.audio?i.audio.file.name:null}))}}
 async function saveShow(){
-  if(!items.length){alert('Nothing to save yet.');return}
+  if(!items.length){alert(t('a_nothing'));return}
   const data=showData();const key='show:'+Date.now();
   try{await idbPut(key,items.map(i=>[i.handle,i.audio&&i.audio.handle||null]));data.handleKey=key}catch(e){}
   const json=JSON.stringify(data,null,2);
@@ -546,14 +572,14 @@ async function saveShow(){
     try{
       if(showHandle){try{if((await showHandle.queryPermission({mode:'readwrite'}))!=='granted'&&(await showHandle.requestPermission({mode:'readwrite'}))!=='granted')showHandle=null}catch(e){showHandle=null}}
       const h=showHandle||await showSaveFilePicker({suggestedName:'show.cuey',types:[{description:'Cuey show',accept:{'application/json':['.cuey']}}]});
-      const w=await h.createWritable();await w.write(json);await w.close();showHandle=h;flash('Saved '+(h.name||''));return}
+      const w=await h.createWritable();await w.write(json);await w.close();showHandle=h;flash(t('f_saved')+' '+(h.name||''));return}
     catch(e){if(e.name==='AbortError')return}
   }
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([json],{type:'application/json'}));a.download='show.cuey';a.click();flash('Show saved');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([json],{type:'application/json'}));a.download='show.cuey';a.click();flash(t('f_saved'));
 }
 async function loadShowFromText(txt){
-  let data;try{data=JSON.parse(txt)}catch(e){alert('Not a Cuey show file.');return}
-  if(!data||data.app!=='cuey'||!Array.isArray(data.cues)){alert('Not a Cuey show file.');return}
+  let data;try{data=JSON.parse(txt)}catch(e){alert(t('a_notshow'));return}
+  if(!data||data.app!=='cuey'||!Array.isArray(data.cues)){alert(t('a_notshow'));return}
   let handles=[];if(data.handleKey){try{handles=(await idbGet(data.handleKey))||[]}catch(e){}}
   const files=new Map();
   const grab=async(h,name)=>{if(!h||files.has(name))return;try{let p=await h.queryPermission({mode:'read'});if(p!=='granted')p=await h.requestPermission({mode:'read'});if(p==='granted'){const f=await h.getFile();f._handle=h;files.set(name,f)}}catch(e){}};
@@ -564,7 +590,7 @@ async function loadShowFromText(txt){
   const wanted=data.cues.flatMap(c=>[c.file,c.audio]).filter(Boolean);
   const missing=[...new Set(wanted.filter(n=>!files.has(n)))];
   if(missing.length){
-    alert('Please select these media files:\n\n'+missing.join('\n'));
+    alert(t('a_pick')+'\n\n'+missing.join('\n'));
     const picked=await new Promise(res=>{const inp=document.createElement('input');inp.type='file';inp.multiple=true;inp.onchange=()=>res([...inp.files]);inp.oncancel=()=>res([]);inp.click()});
     for(const f of picked)files.set(f.name,f);
   }
@@ -576,7 +602,7 @@ async function loadShowFromText(txt){
     if(c.audio){const af=files.get(c.audio);if(af)it.audio={file:af,name:af.name.replace(/\.[^.]+$/,''),url:URL.createObjectURL(af),handle:af._handle||null}}
     items.push(it);if(f)makeThumb(it);
   }
-  render();flash(items.some(i=>i.bad)?'Show opened — some files are missing (red)':'Show opened');
+  render();flash(items.some(i=>i.bad)?t('f_openedmiss'):t('f_opened'));
 }
 async function openShow(){
   if(window.showOpenFilePicker){
@@ -606,7 +632,7 @@ $('#openOut').onclick=openOut;
 function openOut(){
   if(outWin&&!outWin.closed){outWin.focus();return}
   outWin=window.open('','cuey_output','width=960,height=540');
-  if(!outWin){alert('The browser blocked the Output window. Allow pop-ups for this page and try again.');return}
+  if(!outWin){alert(t('a_popup'));return}
   outWin.document.open();outWin.document.write(OUT_HTML);outWin.document.close();
   outWin.document.addEventListener('dblclick',()=>{const d=outWin.document.documentElement;if(outWin.document.fullscreenElement)outWin.document.exitFullscreen();else if(d.requestFullscreen)d.requestFullscreen()});
   outWin.document.addEventListener('keydown',keyHandler);
@@ -617,7 +643,7 @@ function openOut(){
   setStatus();
   if(cur>=0)show(cur,true);
 }
-function setStatus(){const on=outWin&&!outWin.closed;$('#st').className='status'+(on?'':' off');$('#st').innerHTML='OUTPUT <b>'+(on?'LIVE':'CLOSED')+'</b>';$('#openOut').textContent=on?'Output open ✓':'Open Output Window'}
+function setStatus(){const on=outWin&&!outWin.closed;$('#st').className='status'+(on?'':' off');$('#st').innerHTML=t('output')+' <b>'+(on?t('live'):t('closed'))+'</b>';$('#openOut').textContent=on?t('outopen'):t('openout')}
 function clearStages(){clearTimeout(holdTimer);holdTimer=null;holdInfo=null;pvStage.clear();if(outStage){outStage.clear();outWin.document.getElementById('msg').style.display=''}stopSlideAudio();tlUpdate()}
 
 /* ---------- show / go ---------- */
@@ -647,7 +673,7 @@ function advance(){if(exportFinishing)return;if(cur+1<items.length)show(cur+1);e
 function go(){if(armed){armed=false;pvStage.play();outStage&&outStage.play();if(slideAudio.src)slideAudio.play().catch(()=>{});setGoLabel();render();return}advance()}
 $('#autoBtn').onclick=()=>{autoMode=!autoMode;$('#autoBtn').classList.toggle('on',autoMode);if(autoMode){if(cur<0&&items.length)show(0);else if(cur>=0)armHold(items[cur])}else{clearTimeout(holdTimer);holdTimer=null;holdInfo=null}render();tlUpdate()};
 $('#loopBtn').onclick=()=>{loopShow=!loopShow;$('#loopBtn').classList.toggle('on',loopShow)};
-function setGoLabel(){$('#go').textContent=armed?'PLAY ▶':'GO ▶';$('#go').style.background=armed?'var(--amb)':''}
+function setGoLabel(){$('#go').textContent=armed?t('play'):t('go');$('#go').style.background=armed?'var(--amb)':''}
 function back(){if(cur>0)show(cur-1)}
 function setBlack(on){blackOn=on;$('#blk').classList.toggle('on',on);pvStage.black(on);outStage&&outStage.black(on)}
 function playPause(forcePlay,forcePause){const it=items[cur];if(armed||!it||(it.type!=='video'&&!it.audio))return;const m=tlSource();if(!m)return;const pause=forcePause?true:forcePlay?false:!m.paused;frozen=pause;pvStage.freeze(pause);outStage&&outStage.freeze(pause);if(slideAudio.src){pause?slideAudio.pause():slideAudio.play().catch(()=>{})}$('#frz').classList.toggle('on',pause);tlUpdate()}
@@ -675,7 +701,8 @@ function keyHandler(e){
 document.addEventListener('keydown',keyHandler);
 if(window.cueyNative){cueyNative.onMenu(cmd=>{({open:openShow,save:()=>saveShow(),saveas:saveShowAs,export:startExport,output:openOut,black:()=>setBlack(!blackOn)})[cmd]?.()});document.body.classList.add('native-'+cueyNative.platform)}
 window.addEventListener('beforeunload',()=>{if(outWin&&!outWin.closed)outWin.close()});
-render();
+$('#langBtn').onclick=()=>{lang=lang==='en'?'he':'en';try{localStorage.setItem('cuey.lang',lang)}catch(e){}applyLang()};
+applyLang();
 </script>
 </body>
 </html>
