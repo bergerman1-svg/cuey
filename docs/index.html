@@ -74,7 +74,6 @@ footer a{color:var(--mut)}
     <span class="sp"></span>
     <a class="l" href="#how">How it works</a>
     <a class="l" href="#features">Features</a>
-    <a class="l" href="https://github.com/bergerman1-svg/cuey">GitHub</a>
     <a class="btn" href="#download" style="padding:10px 18px;font-size:15px">Download free</a>
   </nav>
 
@@ -83,7 +82,7 @@ footer a{color:var(--mut)}
     <h1>Your event's videos and slides.<br>One button. <span class="go">GO.</span></h1>
     <p class="sub">No PowerPoint. No complicated video software. No VJ.<br>Drop your files in, plug in the projector, and press Space when it's time for the next one.</p>
     <div class="cta">
-      <a class="btn" href="#download">⬇ Download for Mac &amp; Windows</a>
+      <a class="btn" id="heroDl" href="#download">⬇ Download free</a>
       <a class="btn sec" href="#how">See how it works</a>
     </div>
     <div class="free">Free · Nothing else to install · Works offline</div>
@@ -140,16 +139,25 @@ footer a{color:var(--mut)}
       <h2>Download and go</h2>
       <p class="lead" style="margin-inline:auto;text-align:center">Mac (Apple Silicon &amp; Intel) and Windows. No sign-up.</p>
       <div class="cta">
-        <a class="btn" href="https://github.com/bergerman1-svg/cuey/releases/latest">⬇ Mac <small>.dmg</small></a>
-        <a class="btn" href="https://github.com/bergerman1-svg/cuey/releases/latest">⬇ Windows <small>.exe</small></a>
+        <a class="btn" id="dlArm" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-arm64.dmg" download>⬇ Mac <small>APPLE SILICON · M1–M4</small></a>
+        <a class="btn" id="dlIntel" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-x64.dmg" download>⬇ Mac <small>INTEL</small></a>
+        <a class="btn" id="dlWin" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-windows.exe" download>⬇ Windows <small>.EXE</small></a>
       </div>
+      <p class="note" style="margin-top:12px">Not sure which Mac? Apple menu → About This Mac: "Apple M…" = Apple Silicon, "Intel" = Intel.</p>
       <p class="note">Early builds are not code-signed yet. On Mac, right-click the app → Open the first time. On Windows, choose "More info → Run anyway".</p>
     </div>
   </section>
 
   <footer>
-    Cuey · <a href="https://github.com/bergerman1-svg/cuey">Open source on GitHub</a> · Built by show people, for people who shouldn't have to be.
+    Cuey · Built by show people, for people who shouldn't have to be. · © Avi Berger Productions
   </footer>
 </div>
+<script>
+// point the hero button at the right installer for this computer
+(function(){const ua=navigator.userAgent,h=document.getElementById('heroDl');if(!h)return;
+ if(/Windows/i.test(ua)){h.href=document.getElementById('dlWin').href;h.setAttribute('download','');h.textContent='⬇ Download for Windows'}
+ else if(/Macintosh/i.test(ua)){h.href='#download';h.textContent='⬇ Download for Mac'}
+})();
+</script>
 </body>
 </html>
