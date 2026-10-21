@@ -144,7 +144,7 @@ footer a{color:var(--mut)}
         <a class="btn" id="dlWin" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-windows.exe" download>⬇ Windows <small>.EXE</small></a>
       </div>
       <p class="note" style="margin-top:12px">Not sure which Mac? Apple menu → About This Mac: "Apple M…" = Apple Silicon, "Intel" = Intel.</p>
-      <p class="note">Early builds are not code-signed yet. On Mac, right-click the app → Open the first time. On Windows, choose "More info → Run anyway".</p>
+      <p class="note"><b>First launch on Mac:</b> early builds aren't notarized by Apple yet, so macOS may say the app "is damaged". It isn't. Drag Cuey to Applications, open Terminal and paste <code style="font-family:'JetBrains Mono',monospace;background:#1C1C23;padding:2px 6px;border-radius:5px">xattr -cr /Applications/Cuey.app</code>, then open it normally. Once only.<br><b>Windows:</b> if SmartScreen appears, choose "More info → Run anyway".</p>
     </div>
   </section>
 
