@@ -51,7 +51,8 @@ const template = [
   ...(process.platform === 'darwin' ? [{ role: 'appMenu' }] : []),
   { label: 'File', submenu: [
       { label: 'Open Show…', accelerator: 'CmdOrCtrl+O', click: () => win && win.webContents.send('menu', 'open') },
-      { label: 'Save Show…', accelerator: 'CmdOrCtrl+S', click: () => win && win.webContents.send('menu', 'save') },
+      { label: 'Save', accelerator: 'CmdOrCtrl+S', click: () => win && win.webContents.send('menu', 'save') },
+      { label: 'Save As…', accelerator: 'CmdOrCtrl+Shift+S', click: () => win && win.webContents.send('menu', 'saveas') },
       { type: 'separator' },
       { label: 'Export Video…', click: () => win && win.webContents.send('menu', 'export') },
       { type: 'separator' },

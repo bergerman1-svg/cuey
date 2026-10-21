@@ -32,6 +32,14 @@ header{height:60px;display:flex;align-items:center;gap:8px;padding:0 18px;border
 .logo .dot{display:none}
 header .sep{width:1px;height:24px;background:var(--line2);margin:0 6px}
 .spacer{flex:1}
+.menu{position:relative}
+.menu .dd{display:none;position:absolute;top:calc(100% + 6px);left:0;min-width:200px;background:var(--panel2);border:1px solid var(--line2);border-radius:10px;padding:6px;z-index:50;box-shadow:0 16px 40px -10px #000}
+.menu.open .dd{display:block}
+.menu .dd button{display:flex;justify-content:space-between;width:100%;background:transparent;border:none;text-align:left;padding:8px 10px;border-radius:6px}
+.menu .dd button:hover{background:#26262E}
+.menu .dd button span{color:var(--dim);font-family:var(--mono);font-size:11px;margin-left:16px}
+.menu .dd .sep{height:1px;background:var(--line);margin:6px 4px}
+body.native-darwin #fileMenu,body.native-win32 #fileMenu,body.native-linux #fileMenu{display:none}
 .status{font-family:var(--mono);font-size:11px;letter-spacing:.6px;color:var(--mut);padding:0 8px}
 .status b{color:var(--go);font-weight:600}
 .status.off b{color:var(--red)}
@@ -70,6 +78,9 @@ aside{border-right:1px solid var(--line);display:flex;flex-direction:column;back
 .item .ctl input[type=range]{width:72px;padding:0;height:4px;border:none;background:transparent;cursor:pointer}
 .item .ctl .ico{background:transparent;border-color:transparent;color:var(--dim);padding:3px 5px;font-size:12px}
 .item .ctl .ico:hover{color:var(--txt);background:#1C1C23}
+.item .ctl .vl{font-size:11px;color:var(--dim)}
+.item .ctl .rm{color:var(--red);font-size:11px}
+.item .ctl .rm:hover{background:#2A0A0A}
 .item .ctl .aud{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--amb);font-size:11.5px;font-family:var(--mono)}
 .drop{margin:10px;border:1px dashed var(--line2);border-radius:var(--r);padding:12px;text-align:center;color:var(--dim);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:border-color .12s,color .12s}
 .drop .plus{font-family:var(--disp);font-size:24px;font-weight:700;color:var(--go);line-height:1}
@@ -139,10 +150,15 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 </head>
 <body>
 <header>
-  <div class="logo"><span class="mark"><svg viewBox="0 0 14 14"><path d="M2 1.5v11L12.5 7z" fill="#0A0A0C"/></svg></span><span class="word">Cuey</span><span class="ver">v0.16</span></div>
+  <div class="logo"><span class="mark"><svg viewBox="0 0 14 14"><path d="M2 1.5v11L12.5 7z" fill="#0A0A0C"/></svg></span><span class="word">Cuey</span><span class="ver">v0.16.2</span></div>
   <span class="sep"></span>
-  <button id="loadBtn" title="Open a saved show (.cuey)">Open Show</button>
-  <button id="saveBtn" title="Save show to a .cuey file">Save Show</button>
+  <div class="menu" id="fileMenu"><button id="fileBtn">File ▾</button><div class="dd">
+    <button id="loadBtn">Open Show…<span>⌘O</span></button>
+    <button id="saveBtn">Save<span>⌘S</span></button>
+    <button id="saveAsBtn">Save As…<span>⇧⌘S</span></button>
+    <div class="sep"></div>
+    <button id="expBtn2">Export MP4…</button>
+  </div></div>
   <input type="file" id="showIn" accept=".cuey,application/json" hidden>
   <div class="spacer"></div>
   <button id="autoBtn" class="tog" title="Run the whole list by itself: slides advance after their hold time, videos continue when they end, and the show loops">▶ AUTO</button>
@@ -182,6 +198,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
       <span><kbd>A</kbd> Auto</span>
       <span><kbd>I</kbd><kbd>O</kbd> In / Out</span>
       <span><kbd>⌘S</kbd> Save</span>
+      <span><kbd>⇧⌘S</kbd> Save As</span>
       <span><kbd>⌘O</kbd> Open</span>
       <span><kbd>Double-click</kbd> Output = fullscreen</span>
     </div>
@@ -257,7 +274,7 @@ function addFiles(files){
     const isV=f.type.startsWith('video/')||/\.(mp4|mov|webm|m4v)$/i.test(f.name);
     const isI=f.type.startsWith('image/')||/\.(jpe?g|png|gif|webp)$/i.test(f.name);
     if(!isV&&!isI)continue;
-    items.push({id:++uid,file:f,type:isV?'video':'image',name:f.name.replace(/\.[^.]+$/,''),url:URL.createObjectURL(f),loop:false,trans:'dissolve',dur:0.8,onEnd:'hold',scale:'fit',vol:1,audio:null,standby:false,hold:5,in:0,out:0,outUrl:null,thumb:null,bad:false,handle:f._handle||null});
+    items.push({id:++uid,file:f,type:isV?'video':'image',name:f.name.replace(/\.[^.]+$/,''),url:URL.createObjectURL(f),loop:false,trans:'dissolve',dur:0.8,onEnd:'hold',scale:'fit',vol:1,avol:1,audio:null,standby:false,hold:5,in:0,out:0,outUrl:null,thumb:null,bad:false,handle:f._handle||null});
     makeThumb(items[items.length-1]);
   }
   render();
@@ -301,8 +318,8 @@ function render(){
         <select data-k="trans" title="Transition into this cue"><option value="cut"${it.trans==='cut'?' selected':''}>Cut</option><option value="dissolve"${it.trans==='dissolve'?' selected':''}>Dissolve</option></select>
         <input data-k="dur" type="number" min="0.1" max="10" step="0.1" value="${it.dur}" title="Dissolve seconds" ${it.trans==='cut'?'disabled':''}>
         <select data-k="scale" title="How the picture fills the screen"><option value="fit"${it.scale==='fit'?' selected':''}>Fit</option><option value="fill"${it.scale==='fill'?' selected':''}>Fill</option><option value="stretch"${it.scale==='stretch'?' selected':''}>Stretch</option></select>
-        ${it.type==='video'||it.audio?`<input data-k="vol" type="range" min="0" max="100" value="${Math.round(it.vol*100)}" title="Volume ${Math.round(it.vol*100)}%">`:''}
-        ${it.type==='image'?(it.audio?`<span class="aud" title="${it.audio.name}">♪ ${it.audio.name}</span><button class="ico" data-k="noaud" title="Remove audio">✕♪</button>`:`<button data-k="aud" title="Attach a sound file to this slide">♪ Audio</button>`):''}
+        ${it.type==='video'?`<span class="vl" title="Video volume">🎬</span><input data-k="vol" type="range" min="0" max="100" value="${Math.round(it.vol*100)}" title="Video volume ${Math.round(it.vol*100)}%">`:''}
+        ${it.audio?`<span class="aud" title="${it.audio.name}">♪ ${it.audio.name}</span><input data-k="avol" type="range" min="0" max="100" value="${Math.round(it.avol*100)}" title="Audio volume ${Math.round(it.avol*100)}%"><button class="ico rm" data-k="noaud" title="Remove this audio">✕ remove audio</button>`:`<button data-k="aud" title="${it.type==='video'?'Add a soundtrack on top of the video (own volume)':'Attach a sound file to this slide'}">♪ ${it.type==='video'?'Add audio':'Audio'}</button>`}
         ${it.type==='video'&&!it.loop?`<select data-k="onEnd" title="When the video ends"><option value="hold"${it.onEnd==='hold'?' selected':''}>End: Hold</option><option value="next"${it.onEnd==='next'?' selected':''}>End: Next</option><option value="black"${it.onEnd==='black'?' selected':''}>End: Black</option></select>`:''}
         ${it.type==='image'?`<select data-k="onEnd" title="Wait for GO, or continue by itself after the hold time"><option value="hold"${it.onEnd==='hold'?' selected':''}>Wait for GO</option><option value="next"${it.onEnd==='next'?' selected':''}>Auto next</option></select><input class="hold" data-k="hold" type="number" min="0.5" max="3600" step="0.5" value="${it.hold}" title="Seconds on screen before auto next" ${it.onEnd!=='next'&&!autoMode?'disabled':''}>`:''}
         <span class="spacer"></span>
@@ -326,8 +343,9 @@ function render(){
         else if(k==='trans'){it.trans=el.value}
         else if(k==='dur'){it.dur=parseFloat(el.value)||0.8}
         else if(k==='scale'){it.scale=el.value;if(i===cur){pvStage.fit(it.scale);outStage&&outStage.fit(it.scale)}}
-        else if(k==='onEnd'){it.onEnd=el.value}
-        else if(k==='vol'){it.vol=el.value/100;el.title='Volume '+el.value+'%';if(i===cur){pvStage.vol(it.vol);outStage&&outStage.vol(it.vol);slideAudio.volume=it.vol}return}
+        else if(k==='onEnd'){it.onEnd=el.value;if(i===cur)armHold(it)}
+        else if(k==='vol'){it.vol=el.value/100;el.title='Video volume '+el.value+'%';if(i===cur){pvStage.vol(it.vol);outStage&&outStage.vol(it.vol)}return}
+        else if(k==='avol'){it.avol=el.value/100;el.title='Audio volume '+el.value+'%';if(i===cur)slideAudio.volume=it.avol;return}
         else if(k==='aud'){pickAudio(it);return}
         else if(k==='noaud'){it.audio=null;if(i===cur)stopSlideAudio()}
         else if(k==='up'&&i>0){moveItem(i,i-1);return}
@@ -335,7 +353,7 @@ function render(){
         else if(k==='copy'){items.splice(i+1,0,{...it,id:++uid,outUrl:null});if(cur>i)cur++}
         else if(k==='del'){items.splice(i,1);if(cur===i){cur=-1;clearStages()}else if(cur>i)cur--}
         render()};
-      if(el.tagName==='BUTTON')el.onclick=h;else if(k==='vol'){el.oninput=h;el.onclick=e=>e.stopPropagation()}else{el.onchange=h;el.onclick=e=>e.stopPropagation()}
+      if(el.tagName==='BUTTON')el.onclick=h;else if(k==='vol'||k==='avol'){el.oninput=h;el.onclick=e=>e.stopPropagation()}else{el.onchange=h;el.onclick=e=>e.stopPropagation()}
     });
     L.appendChild(d);
   });
@@ -386,7 +404,7 @@ async function pickAudio(it){
 }
 $('#audIn').onchange=e=>{const f=e.target.files[0];if(f&&audTarget)setAudio(audTarget,f);e.target.value='';audTarget=null};
 function setAudio(it,f){it.audio={file:f,name:f.name.replace(/\.[^.]+$/,''),url:URL.createObjectURL(f),handle:f._handle||null};if(items[cur]===it)startSlideAudio(it);render()}
-function startSlideAudio(it){slideAudio.src=it.audio.url;slideAudio.loop=true;slideAudio.volume=it.vol;slideAudio.currentTime=0;slideAudio.play().catch(()=>{})}
+function startSlideAudio(it,paused){slideAudio.src=it.audio.url;slideAudio.loop=true;slideAudio.volume=it.avol==null?1:it.avol;slideAudio.currentTime=0;if(!paused)slideAudio.play().catch(()=>{})}
 function stopSlideAudio(){slideAudio.pause();slideAudio.removeAttribute('src');slideAudio.load()}
 
 /* ---------- timeline ---------- */
@@ -414,6 +432,7 @@ function tlUpdate(){
   if(!seeking&&m.duration)$('#seek').value=Math.round(m.currentTime/m.duration*1000);
 }
 function seekTo(t,scrub){const it=items[cur];if(!it)return;const m0=tlSource();const wasEnded=!!(m0&&m0.ended);
+  if(it.type==='video'&&it.audio&&slideAudio.src&&isFinite(slideAudio.duration)&&slideAudio.duration>0)slideAudio.currentTime=t%slideAudio.duration;
   if(it.type==='video'){pvStage.seek(t);outStage&&outStage.seek(t)}else if(slideAudio.src){slideAudio.currentTime=Math.max(0,Math.min(t,slideAudio.duration||t))}
   if(!scrub){const m=tlSource();if(m&&m.paused&&wasEnded&&!armed)playPause(true)}tlUpdate()}
 function nudge(d){const m=tlSource();if(m)seekTo(m.currentTime+d)}
@@ -517,14 +536,17 @@ const DB='cuey',ST='handles';
 function idb(){return new Promise((res,rej)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(ST);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbPut(k,v){const d=await idb();return new Promise((res,rej)=>{const t=d.transaction(ST,'readwrite');t.objectStore(ST).put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
 async function idbGet(k){const d=await idb();return new Promise((res,rej)=>{const t=d.transaction(ST,'readonly');const q=t.objectStore(ST).get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
-function showData(){return {app:'cuey',v:1,saved:new Date().toISOString(),loopShow,autoMode,cues:items.map(i=>({file:i.file.name,type:i.type,name:i.name,loop:i.loop,trans:i.trans,dur:i.dur,onEnd:i.onEnd,scale:i.scale,standby:!!i.standby,hold:i.hold,in:i.in||0,out:i.out||0,vol:i.vol,audio:i.audio?i.audio.file.name:null}))}}
+function showData(){return {app:'cuey',v:1,saved:new Date().toISOString(),loopShow,autoMode,cues:items.map(i=>({file:i.file.name,type:i.type,name:i.name,loop:i.loop,trans:i.trans,dur:i.dur,onEnd:i.onEnd,scale:i.scale,standby:!!i.standby,hold:i.hold,in:i.in||0,out:i.out||0,vol:i.vol,avol:i.avol==null?1:i.avol,audio:i.audio?i.audio.file.name:null}))}}
 async function saveShow(){
   if(!items.length){alert('Nothing to save yet.');return}
   const data=showData();const key='show:'+Date.now();
   try{await idbPut(key,items.map(i=>[i.handle,i.audio&&i.audio.handle||null]));data.handleKey=key}catch(e){}
   const json=JSON.stringify(data,null,2);
   if(window.showSaveFilePicker){
-    try{const h=await showSaveFilePicker({suggestedName:'show.cuey',types:[{description:'Cuey show',accept:{'application/json':['.cuey']}}]});const w=await h.createWritable();await w.write(json);await w.close();flash('Show saved');return}
+    try{
+      if(showHandle){try{if((await showHandle.queryPermission({mode:'readwrite'}))!=='granted'&&(await showHandle.requestPermission({mode:'readwrite'}))!=='granted')showHandle=null}catch(e){showHandle=null}}
+      const h=showHandle||await showSaveFilePicker({suggestedName:'show.cuey',types:[{description:'Cuey show',accept:{'application/json':['.cuey']}}]});
+      const w=await h.createWritable();await w.write(json);await w.close();showHandle=h;flash('Saved '+(h.name||''));return}
     catch(e){if(e.name==='AbortError')return}
   }
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([json],{type:'application/json'}));a.download='show.cuey';a.click();flash('Show saved');
@@ -550,7 +572,7 @@ async function loadShowFromText(txt){
   loopShow=!!data.loopShow;$('#loopBtn').classList.toggle('on',loopShow);autoMode=!!data.autoMode;$('#autoBtn').classList.toggle('on',autoMode);
   for(const c of data.cues){
     const f=files.get(c.file);
-    const it={id:++uid,file:f||new File([],c.file),type:c.type,name:c.name,url:f?URL.createObjectURL(f):'',loop:!!c.loop,trans:c.trans||'dissolve',dur:c.dur||0.8,onEnd:c.onEnd||'hold',scale:c.scale||'fit',standby:!!c.standby,hold:c.hold||5,in:c.in||0,out:c.out||0,vol:c.vol==null?1:c.vol,audio:null,outUrl:null,thumb:null,bad:!f,handle:f&&f._handle||null};
+    const it={id:++uid,file:f||new File([],c.file),type:c.type,name:c.name,url:f?URL.createObjectURL(f):'',loop:!!c.loop,trans:c.trans||'dissolve',dur:c.dur||0.8,onEnd:c.onEnd||'hold',scale:c.scale||'fit',standby:!!c.standby,hold:c.hold||5,in:c.in||0,out:c.out||0,vol:c.vol==null?1:c.vol,avol:c.avol==null?1:c.avol,audio:null,outUrl:null,thumb:null,bad:!f,handle:f&&f._handle||null};
     if(c.audio){const af=files.get(c.audio);if(af)it.audio={file:af,name:af.name.replace(/\.[^.]+$/,''),url:URL.createObjectURL(af),handle:af._handle||null}}
     items.push(it);if(f)makeThumb(it);
   }
@@ -558,13 +580,16 @@ async function loadShowFromText(txt){
 }
 async function openShow(){
   if(window.showOpenFilePicker){
-    try{const [h]=await showOpenFilePicker({types:[{description:'Cuey show',accept:{'application/json':['.cuey']}}]});loadShowFromText(await (await h.getFile()).text());return}
+    try{const [h]=await showOpenFilePicker({types:[{description:'Cuey show',accept:{'application/json':['.cuey']}}]});showHandle=h;loadShowFromText(await (await h.getFile()).text());return}
     catch(e){if(e.name==='AbortError')return}
   }
   $('#showIn').click();
 }
 $('#showIn').onchange=async e=>{const f=e.target.files[0];if(f)loadShowFromText(await f.text());e.target.value=''};
-$('#saveBtn').onclick=saveShow;$('#loadBtn').onclick=openShow;
+let showHandle=null;
+async function saveShowAs(){showHandle=null;return saveShow()}
+$('#saveBtn').onclick=()=>saveShow();$('#saveAsBtn').onclick=saveShowAs;$('#loadBtn').onclick=openShow;$('#expBtn2').onclick=()=>$('#expBtn').click();
+const fm=$('#fileMenu');$('#fileBtn').onclick=e=>{e.stopPropagation();fm.classList.toggle('open')};document.addEventListener('click',()=>fm.classList.remove('open'));fm.querySelector('.dd').addEventListener('click',()=>fm.classList.remove('open'));
 function flash(msg){const el=$('#cnt');el.textContent=msg;el.style.color='var(--go)';setTimeout(()=>{el.style.color='';render()},2000)}
 
 /* ---------- output window ---------- */
@@ -612,14 +637,14 @@ function show(i,force){
   }else{
     pvStage.show(it,it.url,force,onEnded,onTime,armed,exportHookMedia);
   }
-  if(it.type==='image'&&it.audio)startSlideAudio(it);else stopSlideAudio();
+  if(it.audio)startSlideAudio(it,armed);else stopSlideAudio();
   armHold(it);
   if(blackOn)setBlack(false);
   render();tlUpdate();
 }
 function armHold(it){clearTimeout(holdTimer);holdTimer=null;holdInfo=null;if(it.type!=='image'||it.bad)return;if(!(autoMode||it.onEnd==='next'))return;const ms=Math.max(500,(it.hold||5)*1000);holdInfo={start:performance.now(),dur:ms/1000};holdTimer=setTimeout(()=>{if(items[cur]===it)advance()},ms)}
 function advance(){if(exportFinishing)return;if(cur+1<items.length)show(cur+1);else if(exporting){finishExport()}else if((autoMode||loopShow)&&items.length)show(0)}
-function go(){if(armed){armed=false;pvStage.play();outStage&&outStage.play();setGoLabel();render();return}advance()}
+function go(){if(armed){armed=false;pvStage.play();outStage&&outStage.play();if(slideAudio.src)slideAudio.play().catch(()=>{});setGoLabel();render();return}advance()}
 $('#autoBtn').onclick=()=>{autoMode=!autoMode;$('#autoBtn').classList.toggle('on',autoMode);if(autoMode){if(cur<0&&items.length)show(0);else if(cur>=0)armHold(items[cur])}else{clearTimeout(holdTimer);holdTimer=null;holdInfo=null}render();tlUpdate()};
 $('#loopBtn').onclick=()=>{loopShow=!loopShow;$('#loopBtn').classList.toggle('on',loopShow)};
 function setGoLabel(){$('#go').textContent=armed?'PLAY ▶':'GO ▶';$('#go').style.background=armed?'var(--amb)':''}
@@ -633,7 +658,7 @@ $('#go').onclick=go;$('#back').onclick=back;$('#blk').onclick=()=>setBlack(!blac
 
 function keyHandler(e){
   const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='SELECT'))return;
-  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='s'){e.preventDefault();saveShow();return}
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='s'){e.preventDefault();e.shiftKey?saveShowAs():saveShow();return}
   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='o'){e.preventDefault();openShow();return}
   if(e.code==='Space'||e.key==='Enter'||e.key==='ArrowRight'){e.preventDefault();go()}
   else if(e.key==='ArrowLeft'){e.preventDefault();back()}
@@ -648,7 +673,7 @@ function keyHandler(e){
   else if(e.key==='.'){nudge(10)}
 }
 document.addEventListener('keydown',keyHandler);
-if(window.cueyNative){cueyNative.onMenu(cmd=>{({open:openShow,save:saveShow,export:startExport,output:openOut,black:()=>setBlack(!blackOn)})[cmd]?.()});document.body.classList.add('native-'+cueyNative.platform)}
+if(window.cueyNative){cueyNative.onMenu(cmd=>{({open:openShow,save:()=>saveShow(),saveas:saveShowAs,export:startExport,output:openOut,black:()=>setBlack(!blackOn)})[cmd]?.()});document.body.classList.add('native-'+cueyNative.platform)}
 window.addEventListener('beforeunload',()=>{if(outWin&&!outWin.closed)outWin.close()});
 render();
 </script>
