@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <title>Cuey</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0A0A0C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Cuey">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Heebo:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0A0A0C;--bg2:#101014;--panel:#131317;--panel2:#18181D;--line:#222229;--line2:#2C2C35;--txt:#F2F2F5;--mut:#8B8B99;--dim:#5C5C6A;--go:#C8FF00;--go-d:#A6D400;--go-glow:rgba(200,255,0,.18);--red:#FF4545;--amb:#FFB13B;--r:10px;--font:'Inter','Heebo',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;--disp:'Space Grotesk','Inter',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace}
@@ -703,6 +709,7 @@ if(window.cueyNative){cueyNative.onMenu(cmd=>{({open:openShow,save:()=>saveShow(
 window.addEventListener('beforeunload',()=>{if(outWin&&!outWin.closed)outWin.close()});
 $('#langBtn').onclick=()=>{lang=lang==='en'?'he':'en';try{localStorage.setItem('cuey.lang',lang)}catch(e){}applyLang()};
 applyLang();
+if(location.protocol.startsWith('http')&&'serviceWorker' in navigator&&!window.cueyNative){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>
 </body>
 </html>
