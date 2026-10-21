@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/icon.svg" width="96" alt="Cuey">
+  <img src="docs/logo-full.png" width="360" alt="Cuey">
 </p>
 <h1 align="center">Cuey</h1>
 <p align="center"><b>Video &amp; slides for live events. One button. GO.</b><br>
