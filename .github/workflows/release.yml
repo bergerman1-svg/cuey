@@ -1,14 +1,31 @@
 name: Build & Release
 on:
   push:
-    tags: ['v*']
+    branches: [main]
+    paths-ignore: ['docs/**', 'README.md']
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.v.outputs.tag }}
+      new: ${{ steps.v.outputs.new }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        env: { GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }
+        run: |
+          TAG="v$(node -p "require('./package.json').version")"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then echo "new=false" >> $GITHUB_OUTPUT; else echo "new=true" >> $GITHUB_OUTPUT; fi
+
   build:
+    needs: version
+    if: needs.version.outputs.new == 'true'
     strategy:
       matrix:
         include:
@@ -22,9 +39,8 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm }
       - run: npm ci
-      - run: ${{ matrix.cmd }}
+      - run: ${{ matrix.cmd }} -- --publish never
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: "false"   # unsigned builds until certificates are added
       - uses: actions/upload-artifact@v4
         with:
@@ -32,17 +48,18 @@ jobs:
           path: |
             release/*.dmg
             release/*.exe
-            release/*.yml
 
   release:
-    needs: build
+    needs: [version, build]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - uses: actions/download-artifact@v4
         with: { path: dist }
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ needs.version.outputs.tag }}
+          name: Cuey ${{ needs.version.outputs.tag }}
+          target_commitish: ${{ github.sha }}
           files: |
             dist/**/*.dmg
             dist/**/*.exe

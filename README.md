@@ -47,7 +47,7 @@ npm run dist:mac   # release/Cuey-x.y.z-arm64.dmg, -x64.dmg
 npm run dist:win   # release/Cuey-Setup-x.y.z.exe
 ```
 
-Pushing a tag `vX.Y.Z` builds both on GitHub Actions and publishes a Release automatically.
+Bump `version` in `package.json` and push to `main` — GitHub Actions builds both installers and publishes a Release automatically.
 
 ## Project layout
 
