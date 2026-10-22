@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0A0A0C">
 <title>Cuey — מציגים בכפתור אחד. GO.</title>
-<meta name="description" content="מתכננים אירוע או מופע? עיצבתם בקאנבה? ערכתם בקאפ קאט? מציגים ב-Cuey — נגן וידאו ושקפים חינמי לאירועים חיים. בלי פאוורפוינט, בלי VJ, כפתור אחד.">
+<meta name="description" content="מתכננים אירוע או מופע? עיצבתם ב-Canva? ערכתם ב-CapCut? מציגים ב-Cuey — נגן וידאו ושקפים חינמי לאירועים חיים. בלי PowerPoint, בלי VJ, כפתור אחד.">
 <meta property="og:title" content="Cuey — מציגים בכפתור אחד. GO.">
-<meta property="og:description" content="עיצבתם בקאנבה? ערכתם בקאפ קאט? מציגים ב-Cuey. נגן וידאו ושקפים חינמי לאירועים חיים.">
+<meta property="og:description" content="עיצבתם ב-Canva? ערכתם ב-CapCut? מציגים ב-Cuey. נגן וידאו ושקפים חינמי לאירועים חיים.">
 <meta property="og:image" content="https://bergerman1-svg.github.io/cuey/demo-poster.jpg">
 <link rel="icon" href="../favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -118,6 +118,34 @@ header.hero:before{animation:drift 14s ease-in-out infinite;left:50%;width:1400p
 nav{direction:ltr}
 nav img{height:36px}
 nav .links{display:flex;align-items:center;gap:14px}
+
+/* plans table + testimonials */
+.ptable{width:100%;border-collapse:separate;border-spacing:0;background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;font-size:15px}
+.ptable th,.ptable td{padding:13px 14px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle}
+.ptable tr:last-child td{border-bottom:none}
+.ptable td:first-child,.ptable th:first-child{text-align:start;color:var(--txt);font-weight:500}
+.ptable thead th{background:var(--panel2);font-size:17px;font-weight:700;vertical-align:bottom}
+.ptable thead th small{display:block;font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:500;color:var(--mut);margin-top:3px;letter-spacing:.3px}
+.ptable .hl{background:rgba(200,255,0,.05);border-inline:1px solid rgba(200,255,0,.35)}
+.ptable thead .hl{color:var(--go);border-top:2px solid var(--go)}
+.ptable thead .hl small{color:var(--go)}
+.ptable .y{color:var(--go);font-weight:800;font-size:18px}
+.ptable .n{color:#4a4a55}
+.ptable .soon{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amb)}
+.ptable tr.grp td{background:#0f0f13;color:var(--mut);font-size:12px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;padding:9px 14px}
+.nw{white-space:nowrap}
+html[dir=rtl] .ptable thead th small,html[dir=rtl] .ptable tr.grp td,html[dir=rtl] .ptable .soon{letter-spacing:0;font-family:inherit}
+.pnote{color:var(--mut);font-size:14px;margin:14px 0 0}
+.pcta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.quotes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.quote{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:40px 24px 24px;display:flex;flex-direction:column;gap:16px;position:relative}
+.quote:before{content:"\201C";position:absolute;top:6px;inset-inline-end:18px;font-size:64px;line-height:1;color:var(--go);opacity:.25;font-family:Georgia,serif}
+.quote blockquote{margin:0;font-size:16.5px;line-height:1.6;color:var(--txt)}
+.quote .who{display:flex;align-items:center;gap:12px;margin-top:auto}
+.quote .av{width:40px;height:40px;border-radius:50%;background:#1A2008;color:var(--go);display:grid;place-items:center;font-weight:700;font-size:16px;flex:none}
+.quote .who b{display:block;font-size:15px}
+.quote .who span{color:var(--mut);font-size:13.5px}
+@media (max-width:720px){.ptable{font-size:13px}.ptable th,.ptable td{padding:10px 7px}.ptable thead th{font-size:14.5px}.ptable thead th small{font-size:10px}.ptable .y{font-size:16px}}
 </style>
 </head>
 <body>
@@ -135,12 +163,12 @@ nav .links{display:flex;align-items:center;gap:14px}
   <header class="hero">
     <div class="kicker">חינם · Mac · Windows · דפדפן</div>
     <h1>מתכננים אירוע<br>או מופע?</h1>
-    <p class="qs">עיצבתם ב<span>קאנבה</span>? ערכתם ב<span>קאפ קאט</span>?</p>
+    <p class="qs"><span class="nw">עיצבתם ב-<span>Canva</span>?</span> <span class="nw">ערכתם ב-<span>CapCut</span>?</span></p>
     <p class="pitch">מציגים ב-<b>Cuey.</b></p>
     <div class="cta">
       <button class="btn big" id="start">בוא נתחיל ←</button>
     </div>
-    <p class="free">גוררים את הסרטונים והשקפים. לוחצים <kbd>רווח</kbd>. זה כל התפקיד.<br>בלי פאוורפוינט. בלי VJ. חינם, לתמיד.</p>
+    <p class="free">גוררים את הסרטונים והשקפים. לוחצים <kbd>רווח</kbd>. זה כל התפקיד.<br>בלי PowerPoint. בלי VJ. חינם, לתמיד.</p>
 
     <div class="video" id="vid">
       <video id="demo" src="../demo.mp4" poster="../demo-poster.jpg" playsinline muted loop preload="metadata"></video>
@@ -174,11 +202,16 @@ nav .links{display:flex;align-items:center;gap:14px}
     </div>
     <p class="free">הרצתם אירוע עם Cuey? שלחו תמונה ונוסיף אותה כאן.</p>
   </section>
+  <section id="love">
+    <h2>מה אומרים מי שכבר הריצו</h2>
+    <p class="lead">מורים, מפיקים ובעלי סטודיו — בלי ניסיון טכני.</p>
+    <div class="quotes"><figure class="quote"><blockquote>"שנים שאני מנהלת מופעים של הסטודיו, כל שנה מסתבכת עם VLC והסרטונים. בעזרת Cuey הכנתי ב-10 דקות את המופע, הייתי רגועה והכול תקתק."</blockquote><figcaption class="who"><span class="av">ס</span><div><b>סיוון</b><span>בעלת סטודיו למחול</span></div></figcaption></figure><figure class="quote"><blockquote>"בעבר הייתי מזמינה VJ לכל אירוע ומשלמת אלפי שקלים. היום אני מכינה את רצף האירוע ב-Cuey, מחברת את המחשב ו-GO. גם חיסכון וגם ביטחון."</blockquote><figcaption class="who"><span class="av">א</span><div><b>איימי</b><span>מנהלת משאבי אנוש</span></div></figcaption></figure><figure class="quote"><blockquote>"אני אחראית על מסיבות סוף השנה. לפני כל מסיבה הייתי בלחץ שאפתח את הסרטונים בזמן ושלא ייסגר לי ה-PowerPoint. עם Cuey אני מרגישה כמו מקצוענית!"</blockquote><figcaption class="who"><span class="av">י</span><div><b>יעל</b><span>מורה בבית ספר</span></div></figcaption></figure></div>
+  </section>
   <section id="how">
     <h2>איך זה עובד</h2>
     <p class="lead">שלושה שלבים. חמש דקות לפני האירוע מספיקות.</p>
     <div class="steps">
-      <div class="step"><h3>גוררים את הקבצים</h3><p>סרטונים (MP4, MOV, WEBM) ושקפים (JPG, PNG). מייצאים מקאנבה או מקאפ קאט, גוררים ל-Cuey, מסדרים בגרירה.</p></div>
+      <div class="step"><h3>גוררים את הקבצים</h3><p>סרטונים (MP4, MOV, WEBM) ושקפים (JPG, PNG). מייצאים מ-Canva או מ-CapCut, גוררים ל-Cuey, מסדרים בגרירה.</p></div>
       <div class="step"><h3>מחברים את המסך</h3><p>מחברים מקרן או טלוויזיה. Cuey פותח עליהם את חלון הפלט, מסך מלא, לבד.</p></div>
       <div class="step"><h3>לוחצים GO</h3><p><kbd>רווח</kbd> מתקדם. <kbd>B</kbd> שחור. <kbd>→</kbd> אחורה. זה כל מה שצריך לדעת.</p></div>
     </div>
@@ -186,13 +219,11 @@ nav .links{display:flex;align-items:center;gap:14px}
 
 
   <section id="pricing">
-    <h2>חינם, Studio, Pro</h2>
-    <p class="lead">להריץ אירוע — חינם. בלי הגבלת קיוז, בלי הגבלת זמן, בלי לקחת משהו אחורה. משלמים פעם אחת על תוספות האולפן, ומנוי רק על מה שצריך ענן.</p>
-    <div class="grid">
-      <div class="card"><div class="ic">0</div><h3>חינם <small style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--mut)">לתמיד</small></h3><p>רשימת קיוז, GO, קאט ודיזולב, לופ, סאונד מתחת לשקפים, שקפי טקסט, חיתוך IN/OUT, חלון פלט, שיתוף למסך אחד. "Powered by Cuey" קטן בפינת המסך.</p></div>
-      <div class="card" style="border-color:var(--go)"><div class="ic">★</div><h3>Studio <small style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--go)">8$ · פעם אחת</small></h3><p>כל מה שבחינם, בלי הסימון. בנוסף <b>ייצוא MP4</b> (הרשימה כקובץ וידאו אחד) ו-<b>AUTO</b> (הרשימה רצה בלופ לבד). שלך לתמיד, בכל מחשב שתתחבר אליו.</p><p style="margin-top:12px"><a class="btn sec" href="mailto:?subject=Cuey%20Studio&amp;body=%D7%AA%D7%A2%D7%93%D7%9B%D7%A0%D7%95%20%D7%90%D7%95%D7%AA%D7%99%20%D7%9B%D7%A9-Cuey%20Studio%20%D7%96%D7%9E%D7%99%D7%9F." style="padding:10px 16px;font-size:15px">חינם בזמן הבטא · תעדכנו אותי כשמוכן</a></p></div>
-      <div class="card"><div class="ic">⇡</div><h3>Pro <small style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--mut)">מנוי · בקרוב</small></h3><p>שלט בטלפון, כמה מסכים מלינק אחד, הופעות שמורות בענן, שיתוף לעמית, הלוגו של המקום על המסך. לבתי ספר, אולמות ומפיקים שמריצים אירועים כל שבוע.</p></div>
-    </div>
+    <h2>מה מקבלים בכל תוכנית</h2>
+    <p class="lead">להריץ אירוע — חינם, בלי הגבלה ובלי תאריך תפוגה. משלמים פעם אחת על תוספות הסטודיו, ומנוי רק על מה שצריך ענן.</p>
+    <table class="ptable"><thead><tr><th></th><th>חינם<small>0 · לתמיד</small></th><th class="hl">Studio<small>8$ · פעם אחת</small></th><th>Pro<small>מנוי · בקרוב</small></th></tr></thead><tbody><tr class="grp"><td colspan="4">להריץ אירוע</td></tr><tr><td>רשימת קיוז בלי הגבלה</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>GO, קאט ודיזולב, לופ</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>סאונד מתחת לשקפים, שקפי טקסט</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>חיתוך IN/OUT לסרטונים</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>עובד בלי אינטרנט</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>שיתוף למסך אחד</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr class="grp"><td colspan="4">סטודיו</td></tr><tr><td>בלי <bdi>"Powered by Cuey"</bdi> על המסך</td><td><span class="n">—</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>ייצוא MP4 — כל הרשימה כסרטון אחד</td><td><span class="n">—</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>AUTO — הרשימה רצה לבד בלופ</td><td><span class="n">—</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>נשמר בחשבון, בכל מחשב</td><td><span class="n">—</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr class="grp"><td colspan="4">ענן וצוות</td></tr><tr><td>שלט מהטלפון</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="soon">בקרוב</span></td></tr><tr><td>כמה מסכים מלינק אחד</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="soon">בקרוב</span></td></tr><tr><td>הופעות שמורות בענן + שיתוף לעמית</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="soon">בקרוב</span></td></tr><tr><td>הלוגו של המקום על המסך</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="soon">בקרוב</span></td></tr></tbody></table>
+    <p class="pnote">Studio בחינם בזמן הבטא. מחיר בדולרים, כולל מע"מ כשנדרש.</p>
+    <div class="pcta"><a class="btn" href="../app/">▶ להתחיל בחינם</a><a class="btn sec" href="mailto:?subject=Cuey%20Studio&amp;body=%D7%AA%D7%A2%D7%93%D7%9B%D7%A0%D7%95%20%D7%90%D7%95%D7%AA%D7%99%20%D7%9B%D7%A9-Cuey%20Studio%20%D7%96%D7%9E%D7%99%D7%9F.">Studio — תעדכנו אותי כשמוכן</a></div>
   </section>
   <section id="download">
     <h2>להשיג את Cuey</h2>
@@ -229,7 +260,7 @@ nav .links{display:flex;align-items:center;gap:14px}
 
   // reveal on scroll
   const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
-  document.querySelectorAll('section h2,section .lead,.card,.step,.gal figure,.dl .btn,.note').forEach((el,i)=>{el.classList.add('rv','d'+((i%5)+1));io.observe(el)});
+  document.querySelectorAll('section h2,section .lead,.card,.step,.gal figure,.dl .btn,.note,.quote,.ptable').forEach((el,i)=>{el.classList.add('rv','d'+((i%5)+1));io.observe(el)});
   const ua=navigator.userAgent;
   const mobile=/Android|iPhone|iPad|iPod/i.test(ua)||(navigator.maxTouchPoints>1&&innerWidth<900);
   const isIOS=/iPhone|iPad|iPod/i.test(ua);

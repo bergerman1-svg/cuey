@@ -118,6 +118,33 @@ header.hero:before{animation:drift 14s ease-in-out infinite;left:50%;width:1400p
 nav{direction:ltr}
 nav img{height:36px}
 nav .links{display:flex;align-items:center;gap:14px}
+
+/* plans table + testimonials */
+.ptable{width:100%;border-collapse:separate;border-spacing:0;background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;font-size:15px}
+.ptable th,.ptable td{padding:13px 14px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle}
+.ptable tr:last-child td{border-bottom:none}
+.ptable td:first-child,.ptable th:first-child{text-align:start;color:var(--txt);font-weight:500}
+.ptable thead th{background:var(--panel2);font-size:17px;font-weight:700;vertical-align:bottom}
+.ptable thead th small{display:block;font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:500;color:var(--mut);margin-top:3px;letter-spacing:.3px}
+.ptable .hl{background:rgba(200,255,0,.05);border-inline:1px solid rgba(200,255,0,.35)}
+.ptable thead .hl{color:var(--go);border-top:2px solid var(--go)}
+.ptable thead .hl small{color:var(--go)}
+.ptable .y{color:var(--go);font-weight:800;font-size:18px}
+.ptable .n{color:#4a4a55}
+.ptable .soon{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amb)}
+.ptable tr.grp td{background:#0f0f13;color:var(--mut);font-size:12px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;padding:9px 14px}
+.nw{white-space:nowrap}
+.pnote{color:var(--mut);font-size:14px;margin:14px 0 0}
+.pcta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.quotes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.quote{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:40px 24px 24px;display:flex;flex-direction:column;gap:16px;position:relative}
+.quote:before{content:"\201C";position:absolute;top:6px;inset-inline-end:18px;font-size:64px;line-height:1;color:var(--go);opacity:.25;font-family:Georgia,serif}
+.quote blockquote{margin:0;font-size:16.5px;line-height:1.6;color:var(--txt)}
+.quote .who{display:flex;align-items:center;gap:12px;margin-top:auto}
+.quote .av{width:40px;height:40px;border-radius:50%;background:#1A2008;color:var(--go);display:grid;place-items:center;font-weight:700;font-size:16px;flex:none}
+.quote .who b{display:block;font-size:15px}
+.quote .who span{color:var(--mut);font-size:13.5px}
+@media (max-width:720px){.ptable{font-size:13px}.ptable th,.ptable td{padding:10px 7px}.ptable thead th{font-size:14.5px}.ptable thead th small{font-size:10px}.ptable .y{font-size:16px}}
 </style>
 </head>
 <body>
@@ -174,6 +201,11 @@ nav .links{display:flex;align-items:center;gap:14px}
     </div>
     <p class="free">Ran an event with Cuey? Send a photo and we'll add it here.</p>
   </section>
+  <section id="love">
+    <h2>From people who already ran a show</h2>
+    <p class="lead">Teachers, producers and studio owners — no technical background needed.</p>
+    <div class="quotes"><figure class="quote"><blockquote>"For years I've run my studio's shows, and every year I struggled with VLC and the videos. With Cuey I built the whole show in 10 minutes — I was calm and everything just clicked."</blockquote><figcaption class="who"><span class="av">S</span><div><b>Sivan</b><span>Dance studio owner</span></div></figcaption></figure><figure class="quote"><blockquote>"I used to book a VJ for every event and pay thousands. Now I build the event's running order in Cuey, plug in the laptop and hit GO. It saves money and gives me peace of mind."</blockquote><figcaption class="who"><span class="av">A</span><div><b>Amy</b><span>HR manager</span></div></figcaption></figure><figure class="quote"><blockquote>"I'm in charge of the end-of-year parties. Before each one I used to stress about opening the videos on time and PowerPoint crashing on me. With Cuey I feel like a pro!"</blockquote><figcaption class="who"><span class="av">Y</span><div><b>Yael</b><span>School teacher</span></div></figcaption></figure></div>
+  </section>
   <section id="how">
     <h2>How it works</h2>
     <p class="lead">Three steps. Five minutes before the event is enough.</p>
@@ -186,13 +218,11 @@ nav .links{display:flex;align-items:center;gap:14px}
 
 
   <section id="pricing">
-    <h2>Free, Studio, Pro</h2>
-    <p class="lead">Running a show is free — no limits on cues, no time limit, nothing taken away. Pay once for the studio extras, subscribe only for what needs the cloud.</p>
-    <div class="grid">
-      <div class="card"><div class="ic">0</div><h3>Free <small style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--mut)">forever</small></h3><p>Cue list, GO, cut &amp; dissolve, loop, audio under slides, text slides, IN/OUT trims, Output window, share to one screen. A small "Powered by Cuey" in the corner of the screen.</p></div>
-      <div class="card" style="border-color:var(--go)"><div class="ic">★</div><h3>Studio <small style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--go)">$8 · once</small></h3><p>Everything in Free, without the badge. Plus <b>Export MP4</b> (your list as one video file) and <b>AUTO</b> (the list runs and loops by itself). Yours forever, on every computer you sign in to.</p><p style="margin-top:12px"><a class="btn sec" href="mailto:?subject=Cuey%20Studio&amp;body=Tell%20me%20when%20Cuey%20Studio%20is%20available." style="padding:10px 16px;font-size:15px">Free during beta · tell me when it's ready</a></p></div>
-      <div class="card"><div class="ic">⇡</div><h3>Pro <small style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--mut)">subscription · coming</small></h3><p>Phone remote, several screens from one link, shows saved in the cloud, share with a colleague, your venue's logo on screen. For schools, venues and producers who run events every week.</p></div>
-    </div>
+    <h2>What you get in each plan</h2>
+    <p class="lead">Running a show is free — no limits, no expiry date. Pay once for the studio extras; subscribe only for what needs the cloud.</p>
+    <table class="ptable"><thead><tr><th></th><th>Free<small>$0 · forever</small></th><th class="hl">Studio<small>$8 · once</small></th><th>Pro<small>subscription · soon</small></th></tr></thead><tbody><tr class="grp"><td colspan="4">Run a show</td></tr><tr><td>Unlimited cue list</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>GO, cut & dissolve, loop</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>Audio under slides, text slides</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>IN/OUT trims for videos</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>Works offline</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>Share to one screen</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr class="grp"><td colspan="4">Studio</td></tr><tr><td>No "Powered by Cuey" on screen</td><td><span class="n">—</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>Export MP4 — the whole list as one video</td><td><span class="n">—</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>AUTO — the list runs and loops by itself</td><td><span class="n">—</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>Saved to your account, on every computer</td><td><span class="n">—</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr class="grp"><td colspan="4">Cloud & team</td></tr><tr><td>Phone remote</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="soon">soon</span></td></tr><tr><td>Several screens from one link</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="soon">soon</span></td></tr><tr><td>Shows in the cloud + share with a colleague</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="soon">soon</span></td></tr><tr><td>Your venue's logo on screen</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="soon">soon</span></td></tr></tbody></table>
+    <p class="pnote">Studio is free while in beta. Prices in USD; VAT added where required.</p>
+    <div class="pcta"><a class="btn" href="app/">▶ Start free</a><a class="btn sec" href="mailto:?subject=Cuey%20Studio&amp;body=Tell%20me%20when%20Cuey%20Studio%20is%20available.">Studio — tell me when it's ready</a></div>
   </section>
   <section id="download">
     <h2>Get Cuey</h2>
@@ -231,7 +261,7 @@ nav .links{display:flex;align-items:center;gap:14px}
 
   // reveal on scroll
   const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
-  document.querySelectorAll('section h2,section .lead,.card,.step,.gal figure,.dl .btn,.note').forEach((el,i)=>{el.classList.add('rv','d'+((i%5)+1));io.observe(el)});
+  document.querySelectorAll('section h2,section .lead,.card,.step,.gal figure,.dl .btn,.note,.quote,.ptable').forEach((el,i)=>{el.classList.add('rv','d'+((i%5)+1));io.observe(el)});
   const ua=navigator.userAgent;
   const mobile=/Android|iPhone|iPad|iPod/i.test(ua)||(navigator.maxTouchPoints>1&&innerWidth<900);
   const isIOS=/iPhone|iPad|iPod/i.test(ua);
