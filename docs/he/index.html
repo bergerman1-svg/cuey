@@ -92,6 +92,32 @@ footer a{color:var(--mut);text-decoration:none;margin:0 10px}
   .btn.big{width:100%}
   section{padding:40px 0}
 }
+
+/* ---- motion ---- */
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes glowpulse{0%,100%{box-shadow:0 12px 40px -10px var(--glow)}50%{box-shadow:0 16px 56px -6px rgba(200,255,0,.38)}}
+@keyframes drift{0%{transform:translate(-50%,0) scale(1)}50%{transform:translate(-46%,10px) scale(1.06)}100%{transform:translate(-50%,0) scale(1)}}
+@keyframes shimmer{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+html,body{overflow-x:hidden}
+header.hero{overflow:visible}
+header.hero:before{animation:drift 14s ease-in-out infinite;left:50%;width:1400px;inset:auto;top:-220px;height:760px;transform:translate(-50%,0)}
+.hero .kicker,.hero h1,.hero .qs,.hero .pitch,.hero .cta,.hero .free,.hero .video,.hero .who{animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+.hero .kicker{animation-delay:.05s}.hero h1{animation-delay:.15s}.hero .qs{animation-delay:.28s}.hero .pitch{animation-delay:.38s}.hero .cta{animation-delay:.5s}.hero .free{animation-delay:.6s}.hero .video{animation-delay:.75s}.hero .who{animation-delay:.9s}
+.pitch b{background:linear-gradient(90deg,var(--go),#EFFF9A,var(--go));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shimmer 3.5s linear infinite}
+.btn.big{animation:rise .7s cubic-bezier(.2,.8,.2,1) both,glowpulse 2.6s ease-in-out 1.2s infinite}
+.btn.big:hover{transform:translateY(-2px) scale(1.02)}
+.card,.step,.gal figure{transition:transform .25s cubic-bezier(.2,.8,.2,1),border-color .25s,box-shadow .25s}
+.card:hover,.step:hover,.gal figure:hover{transform:translateY(-4px);border-color:#3a3a44;box-shadow:0 24px 50px -30px #000}
+.card .ic{transition:transform .25s}.card:hover .ic{transform:scale(1.12) rotate(-4deg)}
+.rv{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .7s cubic-bezier(.2,.8,.2,1)}
+.rv.in{opacity:1;transform:none}
+.rv.d1{transition-delay:.08s}.rv.d2{transition-delay:.16s}.rv.d3{transition-delay:.24s}.rv.d4{transition-delay:.32s}.rv.d5{transition-delay:.4s}
+.video .play b{transition:transform .2s}.video .play:hover b{transform:scale(1.08)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}}
+/* ---- nav: fixed positions in both languages, logo left ---- */
+nav{direction:ltr}
+nav img{height:36px}
+nav .links{display:flex;align-items:center;gap:14px}
 </style>
 </head>
 <body>
@@ -99,11 +125,11 @@ footer a{color:var(--mut);text-decoration:none;margin:0 10px}
   <nav>
     <a href="./"><img src="../logo-header.png" alt="Cuey" style="direction:ltr"></a>
     <span class="sp"></span>
-    <a class="l" href="#how">איך זה עובד</a>
+    <div class="links"><a class="l" href="#how">איך זה עובד</a>
     <a class="l" href="#pricing">מחירים</a>
     <a class="l" href="#download">הורדה</a>
     <a class="l desk" href="../app/">פתח בדפדפן</a>
-    <a class="l" href="../?lang=en" id="toEn" style="display:inline;color:var(--txt)">English</a>
+    <a class="l" href="../?lang=en" id="toEn" style="display:inline;color:var(--txt)">English</a></div>
   </nav>
 
   <header class="hero">
@@ -200,6 +226,10 @@ footer a{color:var(--mut);text-decoration:none;margin:0 10px}
 <script>
 (function(){
   try{localStorage.setItem('cuey.site.lang','he')}catch(e){}
+
+  // reveal on scroll
+  const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
+  document.querySelectorAll('section h2,section .lead,.card,.step,.gal figure,.dl .btn,.note').forEach((el,i)=>{el.classList.add('rv','d'+((i%5)+1));io.observe(el)});
   const ua=navigator.userAgent;
   const mobile=/Android|iPhone|iPad|iPod/i.test(ua)||(navigator.maxTouchPoints>1&&innerWidth<900);
   const isIOS=/iPhone|iPad|iPod/i.test(ua);
