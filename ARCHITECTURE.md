@@ -172,7 +172,7 @@ Licensing mechanics (to build): Supabase accounts → after purchase the webhook
 | 1 ✅ | Single-file app, Electron installers, CI releases, landing page (EN + HE, demo video), PWA, Hebrew UI, logo, share screen (WebRTC), badge | **Done** (v0.17.1) |
 | 1a ✅ | Cuey Studio dialog (Export MP4, AUTO), pricing section EN+HE, "Cuey at real events" gallery, Hebrew home page, slider/LTR fixes, site motion | **Done** (v0.17.5) |
 | 1b | Apple Developer signing + notarization (removes "damaged" dialog) | Awaiting decision (~$99/yr) |
-| 1c | Accounts (Supabase) + sign-in button; Lemon Squeezy checkout for the $8 Cuey Studio purchase | Next |
+| 1c | Accounts (Supabase) + sign-in button ✅ v0.18.0; Lemon Squeezy checkout + webhook for the $8 Cuey Studio purchase | In progress |
 | 2 | **Phone remote + screen link**: a screen opens `cuey.app/s/<code>` in any browser; the phone sends GO/back/black over WebSocket/WebRTC; media cached on the screen before "Go live" | Prototype only (§5) |
 | 3 | Cloud accounts & show sync; "Go live" = offline bundle on the screen device | Not started |
 | 4 | Pricing: free tier forever; paid = multi-screen, cloud storage, team | Later |
@@ -208,3 +208,14 @@ Fire-and-forget image pixel — offline or blocked requests are simply dropped; 
 | App (every time) | `app/studio-dialog-export` / `-auto` · `app/studio-buy-click` |
 
 Funnel to watch: visit → open → files-added → go-first. When the sign-in banner ships, add `signin-shown` / `signin-click` / `signin-done` with the same `track()` helper.
+
+## 10. Accounts (v0.18.0)
+
+Supabase project **Cuey** (`lgemvnntlgasxhrpsdww`, eu-central-1, free plan). The app talks to it with plain `fetch` (no SDK, so the single file stays dependency-free).
+
+- **Sign-in = 6-digit code by email** (not a magic link) — works the same in Electron, the PWA and a local file; no redirect URLs. Requires the *Magic Link* email template to contain `{{ .Token }}` (set in the dashboard).
+- Session (access + refresh token) in `localStorage cuey.sess`; refreshed on demand.
+- `public.entitlements(user_id, product 'studio'|'pro', source, order_ref, expires_at)` — RLS: a user can **read only their own rows**; clients cannot write. Rows are written by the payment webhook (stage 1c, service role) or by hand.
+- On start and when the network returns, the app reads entitlements → sets `licensed` (cached in `cuey.licensed`, so it holds offline). Offline / any error = keep last known state; never blocks a show.
+- Soft nudge: a small banner bottom-left, 4 s after the first GO of a session, only if signed out; ✕ = quiet for 3 days; never shown again after a sign-in. Events: `signin-shown`, `signin-click`, `signin-dismiss`, `signin-open-*`, `signin-code-sent`, `signin-done(-ever)`.
+- Grant Studio by hand (e.g. to a pilot): `insert into public.entitlements(user_id,product,source) select id,'studio','gift' from auth.users where email='…';`
