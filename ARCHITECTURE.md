@@ -219,3 +219,10 @@ Supabase project **Cuey** (`lgemvnntlgasxhrpsdww`, eu-central-1, free plan). The
 - On start and when the network returns, the app reads entitlements → sets `licensed` (cached in `cuey.licensed`, so it holds offline). Offline / any error = keep last known state; never blocks a show.
 - Soft nudge: a small banner bottom-left, 4 s after the first GO of a session, only if signed out; ✕ = quiet for 3 days; never shown again after a sign-in. Events: `signin-shown`, `signin-click`, `signin-dismiss`, `signin-open-*`, `signin-code-sent`, `signin-done(-ever)`.
 - Grant Studio by hand (e.g. to a pilot): `insert into public.entitlements(user_id,product,source) select id,'studio','gift' from auth.users where email='…';`
+
+## 11. Domain & email (2026-10-22)
+
+- Domain **cuey.live** — registered at Namecheap (renews ~$41/yr; Porkbun ~$31 if transferred later). DNS at Namecheap: `rsend` + `send` CNAME, `resend._domainkey` TXT (DKIM), `_dmarc` TXT. Site still on github.io; pointing cuey.live at it is a later step.
+- Auth email via **Resend** (free tier) → Supabase SMTP, set up with Resend's Supabase integration. Sender: `Cuey <noreply@cuey.live>`.
+- Supabase templates *Magic link or OTP* and *Confirm sign up* both send a branded code (`{{ .Token }}`, currently 8 digits, valid 1 hour). App verifies with type `email`, falls back to `signup`.
+- Status: email delivery confirmed (inbox, not spam). End-to-end sign-in still to be confirmed by Avi (first try failed only because the code had expired).
