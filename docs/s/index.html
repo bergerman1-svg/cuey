@@ -16,7 +16,11 @@ html,body{margin:0;height:100%;background:#000;color:#fff;font-family:Poppins,sy
 #wait{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#0A0A0C;text-align:center;padding:24px;transition:opacity .5s}
 #wait.off{opacity:0;pointer-events:none}
 #wait img{width:200px}
-#wait .code{font:600 44px/1 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.12em;color:#C8FF00;margin-top:6px}
+#wait .lbl{font:11px ui-monospace,monospace;letter-spacing:2px;color:#555;margin-top:18px}
+#wait .code{font:600 22px/1 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.14em;color:#8a8a93;margin-top:4px}
+#wait .tip{font-size:13px;color:#666;margin-top:6px}
+#st{width:10px;height:10px;border-radius:50%;background:#333;top:14px;right:14px;opacity:.9!important;font-size:0}
+#st.ok{background:#C8FF00}#st.warn{background:#FF751F}
 #wait p{margin:0;color:#8a8a93;font-size:15px;max-width:420px}
 #wait .dot{width:10px;height:10px;border-radius:50%;background:#FF751F;animation:p 1.2s infinite}
 @keyframes p{50%{opacity:.3}}
@@ -33,16 +37,19 @@ body:hover #st{opacity:1}
 <div id="wait">
   <img src="../logo-full.png" alt="Cuey">
   <div class="dot"></div>
-  <p id="msg">Waiting for the phone…</p>
+  <p id="msg">Looking for the show…</p>
+  <p>Keep this window on the projector. The phone or computer does the rest.</p>
+  <div class="lbl">SHOW CODE</div>
   <div class="code" id="code"></div>
-  <p>Keep this window on the projector. The phone does the rest.</p>
+  <p class="tip" id="tip"></p>
   <button id="fs">⛶ Fullscreen</button>
 </div>
 <div id="st"></div>
 <script>
 const code=(new URLSearchParams(location.search).get('c')||'').toUpperCase();
 document.getElementById('code').textContent=code?'CUEY-'+code:'';
-if(!code){document.getElementById('msg').textContent='No show code in the link.'}
+if(!code){document.getElementById('msg').textContent='This link has no show code — ask for it again.'}
+function setSt(k,txt){st.className=k;st.title=txt||''}
 const cues={};let live=-1,cur='a',shown=null,n=0,lastTs=0;
 const L={a:document.getElementById('a'),b:document.getElementById('b')};
 function show(i,trans){const c=cues[i];if(!c)return;const nxt=cur==='a'?'b':'a';const el=L[nxt];el.innerHTML='';
@@ -64,7 +71,7 @@ async function onOffer(m){
   if(pc){try{pc.close()}catch(e){}}
   pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
   pc.ontrack=e=>{rtc.srcObject=e.streams[0];rtc.style.display='block';snd.style.display='block';rtcOn=true;document.getElementById('wait').classList.add('off');rtc.play().catch(()=>{})};
-  pc.onconnectionstatechange=()=>{st.textContent=pc.connectionState;if(['failed','disconnected','closed'].includes(pc.connectionState)){rtcOn=false;rtc.style.display='none';snd.style.display='none';document.getElementById('wait').classList.remove('off');msg.textContent='Connection lost — reconnecting…';setTimeout(hello,1500)}};
+  pc.onconnectionstatechange=()=>{const c=pc.connectionState;setSt(c==='connected'?'ok':'warn',c);if(['failed','disconnected','closed'].includes(c)){rtcOn=false;rtc.style.display='none';snd.style.display='none';document.getElementById('wait').classList.remove('off');msg.textContent='Lost the link for a moment — reconnecting…';document.getElementById('tip').textContent='Tip: both devices on the same Wi‑Fi works best.';setTimeout(hello,1500)}};
   await pc.setRemoteDescription({type:'offer',sdp:m.sdp});const ans=await pc.createAnswer();await pc.setLocalDescription(ans);await waitIce(pc);
   post({t:'answer',id:myId,sdp:pc.localDescription.sdp});
 }
@@ -76,16 +83,16 @@ function handle(d){
   if(d.attachment&&m.startsWith('cue:')){const i=+m.split(':')[1];cues[i]={t:d.attachment.url};if(live===i&&shown!==i)show(i,'cut');return}
   let s;try{s=JSON.parse(m)}catch(e){return}
   if(s.t!=='state'||s.ts<lastTs)return;lastTs=s.ts;n=s.n;
-  if(s.live>=0)document.getElementById('wait').classList.add('off');else{document.getElementById('wait').classList.remove('off');msg.textContent='Ready — press GO on the phone.'}
+  if(s.live>=0)document.getElementById('wait').classList.add('off');else{document.getElementById('wait').classList.remove('off');msg.textContent='Ready — press GO.'}
   if(s.live!==live||shown!==s.live){live=s.live;if(live>=0&&cues[live])show(live,s.trans||'dissolve')}
   setBlack(s.black)}
 function connect(){const ws=new WebSocket('wss://ntfy.sh/cuey-v1-'+code+'/ws?since=6h');
-  ws.onopen=()=>{st.textContent='connected';if(live<0)msg.textContent='Connected. Waiting for the show…';hello()};
+  ws.onopen=()=>{setSt('ok','connected');if(live<0)msg.textContent='Ready — waiting for the show to start…';hello()};
   ws.onmessage=async e=>{let d;try{d=JSON.parse(e.data)}catch(x){return}if(d.event!=='message')return;let m=null;try{m=JSON.parse(await body(d))}catch(x){}
     if(m&&m.t==='offer'&&m.to===myId){onOffer(m);return}
     if(m&&m.t==='bye'&&m.host){if(pc){try{pc.close()}catch(x){}}return}
     handle(d)};
-  ws.onclose=()=>{st.textContent='reconnecting…';setTimeout(connect,2000)};ws.onerror=()=>st.textContent='error'}
+  ws.onclose=()=>{setSt('warn','reconnecting');setTimeout(connect,2000)};ws.onerror=()=>setSt('warn','error')}
 if(code)connect();
 </script>
 </body>
