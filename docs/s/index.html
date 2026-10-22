@@ -37,12 +37,11 @@ body:hover #st{opacity:1}
   <button id="fs">⛶ Fullscreen</button>
 </div>
 <div id="st"></div>
-<script src="../lib/mqtt.min.js"></script>
 <script>
 const code=(new URLSearchParams(location.search).get('c')||'').toUpperCase();
 document.getElementById('code').textContent=code?'CUEY-'+code:'';
 if(!code){document.getElementById('msg').textContent='No show code in the link.'}
-const cues={};let live=-1,cur='a',shown=null;
+const cues={};let live=-1,cur='a',shown=null,n=0,lastTs=0;
 const L={a:document.getElementById('a'),b:document.getElementById('b')};
 function show(i,trans){const c=cues[i];if(!c)return;const nxt=cur==='a'?'b':'a';const el=L[nxt];el.innerHTML='';
   const im=new Image();im.src=c.t;el.appendChild(im);
@@ -51,20 +50,21 @@ function show(i,trans){const c=cues[i];if(!c)return;const nxt=cur==='a'?'b':'a';
 function setBlack(b){document.getElementById('black').classList.toggle('on',!!b)}
 document.getElementById('fs').onclick=()=>document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();
 document.addEventListener('dblclick',()=>document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen());
-const st=document.getElementById('st');
-if(code){
-  const cl=mqtt.connect('wss://broker.emqx.io:8084/mqtt',{clientId:'cuey_s_'+Math.random().toString(36).slice(2,10),keepalive:30,reconnectPeriod:2000});
-  const base='cuey/v1/'+code+'/';
-  cl.on('connect',()=>{st.textContent='connected';cl.subscribe(base+'#');document.getElementById('msg').textContent='Connected. Waiting for GO…'});
-  cl.on('reconnect',()=>st.textContent='reconnecting…');cl.on('error',e=>st.textContent='error');
-  cl.on('message',(t,m)=>{const k=t.slice(base.length);let d;try{d=JSON.parse(m.toString())}catch(e){return}
-    if(k.startsWith('cue/')){cues[+k.slice(4)]=d;if(shown===null&&live>=0&&live===+k.slice(4)){show(live,'cut')}}
-    else if(k==='state'){if(d.live>=0)document.getElementById('wait').classList.add('off');else document.getElementById('msg').textContent='Ready — press GO on the phone.';
-      if(d.live!==live){live=d.live;if(live>=0&&cues[live])show(live,d.trans||'dissolve')}
-      setBlack(d.black)}
-    else if(k==='bye'){document.getElementById('wait').classList.remove('off');document.getElementById('msg').textContent='Show ended.'}
-  });
-}
+const st=document.getElementById('st'),msg=document.getElementById('msg');
+function handle(d){
+  if(d.event!=='message')return;
+  const m=d.message||'';
+  if(d.attachment&&m.startsWith('cue:')){const i=+m.split(':')[1];cues[i]={t:d.attachment.url};if(live===i&&shown!==i)show(i,'cut');return}
+  let s;try{s=JSON.parse(m)}catch(e){return}
+  if(s.t!=='state'||s.ts<lastTs)return;lastTs=s.ts;n=s.n;
+  if(s.live>=0)document.getElementById('wait').classList.add('off');else{document.getElementById('wait').classList.remove('off');msg.textContent='Ready — press GO on the phone.'}
+  if(s.live!==live||shown!==s.live){live=s.live;if(live>=0&&cues[live])show(live,s.trans||'dissolve')}
+  setBlack(s.black)}
+function connect(){const ws=new WebSocket('wss://ntfy.sh/cuey-v1-'+code+'/ws?since=6h');
+  ws.onopen=()=>{st.textContent='connected';if(live<0)msg.textContent='Connected. Waiting for GO…'};
+  ws.onmessage=e=>{try{handle(JSON.parse(e.data))}catch(x){}};
+  ws.onclose=()=>{st.textContent='reconnecting…';setTimeout(connect,2000)};ws.onerror=()=>st.textContent='error'}
+if(code)connect();
 </script>
 </body>
 </html>

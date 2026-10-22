@@ -174,7 +174,6 @@ body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:16p
   <input type="file" id="pick" accept="video/*,image/*" multiple hidden>
 </div>
 
-<script src="../lib/mqtt.min.js"></script>
 <script src="../lib/qrcode.js"></script>
 <script>
 const $=s=>document.querySelector(s);
@@ -236,12 +235,11 @@ $('#blkBtn').onclick=()=>{black=!black;$('#pvBlk').classList.toggle('on',black);
 const CODE=(()=>{let c=null;try{c=sessionStorage.getItem('cuey.code')}catch(e){}if(!c){const A='ABCDEFGHJKMNPQRSTUVWXYZ23456789';c='';for(let i=0;i<4;i++)c+=A[Math.floor(Math.random()*A.length)];try{sessionStorage.setItem('cuey.code',c)}catch(e){}}return c})();
 const LINK='https://bergerman1-svg.github.io/cuey/s/?c='+CODE,MSG='הלינק להצגה על המסך: '+LINK+'\n(פותחים בדפדפן במחשב שמחובר למקרן — ואני שולט מהטלפון)';
 $('#codeTxt').textContent='CUEY-'+CODE;$('#linkTxt').textContent=LINK.replace('https://','');
-/* ---- live link to the screen (MQTT over WebSocket, public broker — mockup only) ---- */
-let mq=null;const TOPIC='cuey/v1/'+CODE+'/';
-function mqConnect(){if(mq||typeof mqtt==='undefined')return;mq=mqtt.connect('wss://broker.emqx.io:8084/mqtt',{clientId:'cuey_p_'+Math.random().toString(36).slice(2,10),keepalive:30,reconnectPeriod:2000});mq.on('connect',()=>{pubCues();pubState()})}
-function thumbData(c){const cv=document.createElement('canvas');cv.width=960;cv.height=540;paint(cv,c);return cv.toDataURL('image/jpeg',.72)}
-function pubCues(){if(!mq||!mq.connected)return;cues.forEach((c,i)=>mq.publish(TOPIC+'cue/'+i,JSON.stringify({n:c.n,k:c.k,t:thumbData(c)}),{retain:true,qos:0}));for(let i=cues.length;i<60;i++)mq.publish(TOPIC+'cue/'+i,'',{retain:true})}
-function pubState(){if(!mq||!mq.connected)return;const c=cues[live];mq.publish(TOPIC+'state',JSON.stringify({live,black,trans:c?c.trans:'dissolve',n:cues.length}),{retain:true,qos:0})}
+/* ---- live link to the screen (ntfy.sh relay over HTTPS/WSS — mockup only) ---- */
+const NT='https://ntfy.sh/cuey-v1-'+CODE;let ntReady=false;
+function mqConnect(){ntReady=true}
+function pubCues(){if(!ntReady)return;cues.forEach((c,i)=>{const cv=document.createElement('canvas');cv.width=960;cv.height=540;paint(cv,c);cv.toBlob(b=>{fetch(NT,{method:'PUT',body:b,headers:{'Filename':'cue'+i+'.jpg','Message':'cue:'+i+':'+Date.now()}}).catch(()=>{})},'image/jpeg',.7)})}
+function pubState(){if(!ntReady)return;const c=cues[live];fetch(NT,{method:'POST',body:JSON.stringify({t:'state',live,black,trans:c?c.trans:'dissolve',n:cues.length,ts:Date.now()})}).catch(()=>{})}
 $('#showLink').onclick=()=>{$('#linkSheet').classList.add('open');$('#scrim').classList.add('on');$('#showLink').classList.add('done')};
 $('#shareNative').onclick=()=>{if(navigator.share){navigator.share({title:'Cuey',text:MSG,url:LINK}).catch(()=>{})}else (navigator.clipboard?navigator.clipboard.writeText(LINK):Promise.reject()).then(()=>toast('הלינק הועתק — הדבק בוואטסאפ או במייל')).catch(()=>toast(LINK))};
 $('#copyLink').onclick=()=>{(navigator.clipboard?navigator.clipboard.writeText(LINK):Promise.reject()).then(()=>toast('הלינק הועתק')).catch(()=>toast(LINK))};
