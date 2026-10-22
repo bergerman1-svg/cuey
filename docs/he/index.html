@@ -146,7 +146,16 @@ html[dir=rtl] .ptable thead th small,html[dir=rtl] .ptable tr.grp td,html[dir=rt
 .quote .who b{display:block;font-size:15px}
 .quote .who span{color:var(--mut);font-size:13.5px}
 @media (max-width:720px){.ptable{font-size:13px}.ptable th,.ptable td{padding:10px 7px}.ptable thead th{font-size:14.5px}.ptable thead th small{font-size:10px}.ptable .y{font-size:16px}}
+
+/* phones: Cuey runs on a computer — no download buttons, send the link instead */
+.monly{display:none}
+html.m .dl,html.m #download .note,html.m #download .lead{display:none}
+html.m .monly{display:block}
+.mbox{background:var(--panel);border:1px solid var(--line);border-inline-start:3px solid var(--go);border-radius:16px;padding:20px}
+.mbox p{margin:0 0 4px;color:var(--mut);font-size:16px;line-height:1.55}.mbox p b{color:var(--txt)}
+.sheet .soon{display:block;text-align:center;color:var(--mut);font-size:14px;margin-top:14px}
 </style>
+<script>(function(){var u=navigator.userAgent;if(/Android|iPhone|iPad|iPod/i.test(u)||(navigator.maxTouchPoints>1&&innerWidth<900))document.documentElement.classList.add("m")})()</script>
 </head>
 <body>
 <div class="wrap">
@@ -228,6 +237,7 @@ html[dir=rtl] .ptable thead th small,html[dir=rtl] .ptable tr.grp td,html[dir=rt
   <section id="download">
     <h2>להשיג את Cuey</h2>
     <p class="lead">נסו עכשיו בדפדפן — בלי להתקין. לאירוע עצמו, מתקינים על המחשב שמתחבר למסך.</p>
+    <div class="monly mbox"><p><b>Cuey רץ על המחשב שמחובר למסך.</b> עובד ב-Mac, ב-Windows ובכל דפדפן במחשב. שלחו לעצמכם את הלינק ופתחו אותו שם.</p><div class="pcta"><a class="btn" data-wa href="#">💬 שלח לי בוואטסאפ</a><a class="btn sec" data-mail href="#">✉ שלח לי במייל</a></div></div>
     <div class="dl">
       <a class="btn" href="../app/">▶ פתח בדפדפן <small>בלי התקנה</small></a>
       <a class="btn sec" id="dlArm" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-arm64.dmg" download>⬇ Mac <small>APPLE SILICON</small></a>
@@ -246,12 +256,11 @@ html[dir=rtl] .ptable thead th small,html[dir=rtl] .ptable tr.grp td,html[dir=rt
 <div class="scrim" id="scrim"></div>
 <div class="sheet" id="mobSheet">
   <div class="grab"></div>
-  <h3>Cuey בטלפון</h3>
-  <p>בונים את רשימת הקיוז מהגלריה ומריצים את האירוע מהיד. המסך נפתח מלינק בכל מחשב או טלוויזיה.</p>
-  <button class="btn" id="installBtn">⬇ להוריד את אפליקציית Cuey</button>
-  <div class="ios" id="iosHow">באייפון: לוחצים <b>שיתוף</b> <b>⎋</b> בספארי, ואז <b>הוסף למסך הבית</b>.</div>
-  <a class="btn sec" href="../mobile/">לפתוח בדפדפן במקום</a>
-  <a class="btn sec" id="mailMe" href="#">✉ שלח לי במייל את הלינק למחשב</a>
+  <h3>Cuey עובד על המחשב</h3>
+  <p>Cuey בנוי למחשב שמחובר למקרן או לטלוויזיה. עובד ב-Mac, ב-Windows ובכל דפדפן במחשב. שלחו לעצמכם את הלינק ופתחו אותו שם.</p>
+  <a class="btn" data-wa href="#">💬 שלח לי בוואטסאפ</a>
+  <a class="btn sec" id="mailMe" href="#">✉ שלח לי במייל</a>
+  <span class="soon">📱 שלט מהטלפון — בקרוב</span>
 </div>
 
 <script>
@@ -268,18 +277,14 @@ html[dir=rtl] .ptable thead th small,html[dir=rtl] .ptable tr.grp td,html[dir=rt
   document.getElementById('start').onclick=()=>{
     if(!mobile){location.href='../app/';return}
     document.getElementById('mobSheet').classList.add('open');document.getElementById('scrim').classList.add('on');
-    if(isIOS)document.getElementById('iosHow').style.display='block';
   };
   document.getElementById('scrim').onclick=()=>{document.getElementById('mobSheet').classList.remove('open');document.getElementById('scrim').classList.remove('on')};
-  // install (Android PWA prompt); fallback → mobile page
-  let deferred=null;
-  addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e});
-  document.getElementById('installBtn').onclick=async()=>{
-    if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;location.href='../mobile/';return}
-    if(isIOS){document.getElementById('iosHow').style.display='block';location.href='../mobile/';return}
-    location.href='../mobile/';
-  };
   document.getElementById('mailMe').href='mailto:?subject='+encodeURIComponent('Cuey — לפתוח במחשב')+'&body='+encodeURIComponent('פותחים את Cuey במחשב שמחובר למסך:\nhttps://bergerman1-svg.github.io/cuey/he/\n\nפתיחה בדפדפן: https://bergerman1-svg.github.io/cuey/app/\nהורדה למק/ווינדוס: https://bergerman1-svg.github.io/cuey/he/#download');
+  // phones: send the link to a computer (WhatsApp / email); any "open the app" link opens the sheet instead
+  const wa='https://wa.me/?text='+encodeURIComponent('Cuey — לפתוח במחשב שמחובר למסך: https://bergerman1-svg.github.io/cuey/he/');
+  document.querySelectorAll('[data-wa]').forEach(a=>{a.href=wa;a.target='_blank';a.rel='noopener'});
+  document.querySelectorAll('[data-mail]').forEach(a=>{a.href=document.getElementById('mailMe').href});
+  if(mobile)document.querySelectorAll('a[href$="app/"]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();document.getElementById('mobSheet').classList.add('open');document.getElementById('scrim').classList.add('on')}));
   // demo video
   const v=document.getElementById('demo'),box=document.getElementById('vid');
   document.getElementById('play').onclick=()=>{box.classList.add('on');v.play()};
