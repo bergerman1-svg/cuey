@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0C">
+<title>Cuey — מציגים בכפתור אחד. GO.</title>
+<meta name="description" content="מתכננים אירוע או מופע? עיצבתם בקאנבה? ערכתם בקאפ קאט? מציגים ב-Cuey — נגן וידאו ושקפים חינמי לאירועים חיים. בלי פאוורפוינט, בלי VJ, כפתור אחד.">
+<meta property="og:title" content="Cuey — מציגים בכפתור אחד. GO.">
+<meta property="og:description" content="עיצבתם בקאנבה? ערכתם בקאפ קאט? מציגים ב-Cuey. נגן וידאו ושקפים חינמי לאירועים חיים.">
+<meta property="og:image" content="https://bergerman1-svg.github.io/cuey/demo-poster.jpg">
+<link rel="icon" href="../favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Heebo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0A0A0C;--panel:#131317;--panel2:#1A1A20;--line:#222229;--txt:#F2F2F5;--mut:#9A9AA8;--go:#C8FF00;--amb:#FF751F;--glow:rgba(200,255,0,.18)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:'Heebo','Poppins',-apple-system,system-ui,sans-serif;font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+nav{display:flex;align-items:center;gap:14px;padding:18px 0}
+nav img{height:30px}
+nav .sp{flex:1}
+nav a.l{color:var(--mut);text-decoration:none;font-size:15px;padding:8px 2px}
+nav a.l:hover{color:var(--txt)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;background:var(--go);color:#0A0A0C;font-weight:700;text-decoration:none;padding:16px 28px;border-radius:14px;font-size:18px;border:0;cursor:pointer;font-family:inherit;box-shadow:0 12px 40px -10px var(--glow);transition:transform .08s,filter .12s}
+.btn:hover{filter:brightness(1.05)}.btn:active{transform:translateY(1px)}
+.btn.sec{background:var(--panel);color:var(--txt);border:1px solid var(--line);box-shadow:none}
+.btn small{font-family:'JetBrains Mono',monospace;font-size:11px;opacity:.7;font-weight:500}
+.btn.big{padding:20px 40px;font-size:21px;border-radius:16px}
+/* hero */
+header.hero{padding:40px 0 20px;text-align:center;position:relative}
+header.hero:before{content:'';position:absolute;inset:-200px 0 0;background:radial-gradient(900px 520px at 50% 0%,#1A2008 0%,transparent 60%);z-index:-1}
+.kicker{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:2px;color:var(--go);text-transform:uppercase}
+h1{font-size:clamp(34px,6.2vw,66px);line-height:1.06;margin:12px 0 10px;font-weight:800;letter-spacing:-1.2px}
+.qs{font-size:clamp(20px,3.4vw,30px);font-weight:600;color:var(--txt);margin:0 auto 6px;max-width:760px;line-height:1.3}
+.qs span{color:var(--mut);font-weight:500}
+.pitch{font-size:clamp(26px,4.6vw,44px);font-weight:800;margin:6px 0 26px;letter-spacing:-.8px}
+.pitch b{color:var(--go)}
+.cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;align-items:center}
+.free{margin-top:14px;color:var(--mut);font-size:14px}
+/* video */
+.video{margin:34px auto 0;max-width:900px;border-radius:18px;overflow:hidden;border:1px solid var(--line);box-shadow:0 40px 120px -40px #000;background:#000;position:relative;aspect-ratio:16/10}
+.video video{display:block;width:100%;height:100%;object-fit:cover}
+.video .play{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(180deg,transparent 40%,#000a);cursor:pointer}
+.video .play b{width:84px;height:84px;border-radius:50%;background:var(--go);display:grid;place-items:center;color:#000;font-size:34px;box-shadow:0 20px 60px -10px var(--glow)}
+.video .play span{position:absolute;bottom:18px;color:#fff;font-size:15px;font-weight:600;text-shadow:0 2px 8px #000}
+.video.on .play{display:none}
+section{padding:56px 0}
+h2{font-size:clamp(26px,4vw,34px);margin:0 0 8px;letter-spacing:-.5px;font-weight:800}
+.lead{color:var(--mut);font-size:18px;margin:0 0 28px;max-width:720px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px}
+.card .ic{width:44px;height:44px;border-radius:12px;background:#1A2008;color:var(--go);display:grid;place-items:center;font-weight:700;font-size:20px;margin-bottom:14px}
+.card h3{margin:0 0 6px;font-size:19px}
+.card p{margin:0;color:var(--mut);font-size:15.5px}
+.steps{counter-reset:s;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.step{background:linear-gradient(180deg,#141418,#0F0F13);border:1px solid var(--line);border-radius:16px;padding:24px}
+.step:before{counter-increment:s;content:counter(s,decimal-leading-zero);font-family:'JetBrains Mono',monospace;color:var(--go);font-size:13px;letter-spacing:2px}
+.step h3{margin:6px 0 6px;font-size:19px}
+.step p{margin:0;color:var(--mut);font-size:15.5px}
+kbd{font-family:'JetBrains Mono',monospace;font-size:13px;background:#1C1C23;border:1px solid #33333D;border-bottom-width:2px;border-radius:6px;padding:1px 8px;color:var(--txt)}
+.who{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:18px}
+.chip{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 14px;color:var(--mut);font-size:14.5px}
+.dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:22px}
+.dl .btn{width:100%}
+.note{margin-top:18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14.5px;color:var(--mut)}
+.note code{font-family:'JetBrains Mono',monospace;background:#1C1C23;padding:2px 7px;border-radius:6px;color:var(--txt);font-size:13px}
+footer{padding:40px 0 60px;color:var(--mut);font-size:14px;text-align:center;border-top:1px solid var(--line)}
+footer a{color:var(--mut);text-decoration:none;margin:0 10px}
+/* mobile sheet */
+.scrim{position:fixed;inset:0;background:#0009;opacity:0;pointer-events:none;transition:.2s;z-index:40}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{visibility:hidden;position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-radius:22px 22px 0 0;padding:14px 20px calc(24px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .25s,visibility .25s;z-index:50;max-width:560px;margin:0 auto}
+.sheet.open{transform:none;visibility:visible}
+.sheet .grab{width:40px;height:4px;border-radius:2px;background:#333;margin:0 auto 14px}
+.sheet h3{margin:0 0 4px;font-size:22px}
+.sheet p{margin:0 0 16px;color:var(--mut);font-size:15px}
+.sheet .btn{width:100%;margin-top:10px}
+.sheet .ios{display:none;margin-top:12px;background:var(--panel2);border-radius:12px;padding:12px 14px;font-size:14.5px;color:var(--mut)}
+.sheet .ios b{color:var(--txt)}
+.mob{display:none}
+@media (max-width:720px){
+  .desk{display:none}.mob{display:inline-flex}
+  nav .l{display:none}
+  header.hero{padding-top:22px}
+  .btn.big{width:100%}
+  section{padding:40px 0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a href="./"><img src="../logo-header.png" alt="Cuey" style="direction:ltr"></a>
+    <span class="sp"></span>
+    <a class="l" href="#how">איך זה עובד</a>
+    <a class="l" href="#download">הורדה</a>
+    <a class="l desk" href="../app/">פתח בדפדפן</a>
+    <a class="l" href="../?lang=en" id="toEn" style="display:inline;color:var(--txt)">English</a>
+  </nav>
+
+  <header class="hero">
+    <div class="kicker">חינם · Mac · Windows · דפדפן</div>
+    <h1>מתכננים אירוע<br>או מופע?</h1>
+    <p class="qs">עיצבתם ב<span>קאנבה</span>? ערכתם ב<span>קאפ קאט</span>?</p>
+    <p class="pitch">מציגים ב-<b>Cuey.</b></p>
+    <div class="cta">
+      <button class="btn big" id="start">בוא נתחיל ←</button>
+    </div>
+    <p class="free">גוררים את הסרטונים והשקפים. לוחצים <kbd>רווח</kbd>. זה כל התפקיד.<br>בלי פאוורפוינט. בלי VJ. חינם, לתמיד.</p>
+
+    <div class="video" id="vid">
+      <video id="demo" src="../demo.mp4" poster="../demo-poster.jpg" playsinline muted loop preload="metadata"></video>
+      <div class="play" id="play"><b>▶</b><span>צפו בדמו של 20 שניות</span></div>
+    </div>
+    <div class="who">
+      <span class="chip">טקסים בבית הספר</span><span class="chip">הרצאות</span><span class="chip">חתונות ואירועים משפחתיים</span><span class="chip">כנסים</span><span class="chip">אזכרות</span><span class="chip">אולמות קטנים</span>
+    </div>
+  </header>
+
+  <section id="why">
+    <h2>המסך זה החלק הקל. להפעיל אותו — פחות.</h2>
+    <p class="lead">בכל אירוע יש מסך — ומישהו שצריך לדאוג שהסרטון הנכון יעלה ברגע הנכון. Cuey נבנה בשביל האדם הזה, לא בשביל טכנאי וידאו.</p>
+    <div class="grid">
+      <div class="card"><div class="ic">▶</div><h3>כפתור אחד. GO.</h3><p>רווח, Enter או הכפתור הירוק הגדול. הקיו הבא עולה. אין על מה לחשוב.</p></div>
+      <div class="card"><div class="ic">◐</div><h3>נראה מקצועי</h3><p>קאט נקי או דיזולב רך בין כל קיו. לופ לסרטון. שקף שמחכה. פייד לשחור.</p></div>
+      <div class="card"><div class="ic">⧉</div><h3>רואים לפני שהקהל רואה</h3><p>PROGRAM מראה בדיוק מה שעל המקרן. NEXT מראה מה הבא. בלי הפתעות.</p></div>
+      <div class="card"><div class="ic">✈</div><h3>עובד בלי אינטרנט</h3><p>הקבצים נשארים במחשב שלכם. בלי העלאות, בלי חשבון, בלי Wi-Fi באולם.</p></div>
+      <div class="card"><div class="ic">♫</div><h3>סאונד, טקסט, חיתוך</h3><p>מוזיקה מתחת לשקף. שקף טקסט עם שם הדובר. חיתוך סרטון עם IN/OUT — בלי תוכנת עריכה.</p></div>
+      <div class="card"><div class="ic">0</div><h3>חינם. באמת.</h3><p>כל מה שצריך כדי להריץ אירוע — חינם ונשאר חינם. בלי סימן מים, בלי הגבלת זמן.</p></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <h2>איך זה עובד</h2>
+    <p class="lead">שלושה שלבים. חמש דקות לפני האירוע מספיקות.</p>
+    <div class="steps">
+      <div class="step"><h3>גוררים את הקבצים</h3><p>סרטונים (MP4, MOV, WEBM) ושקפים (JPG, PNG). מייצאים מקאנבה או מקאפ קאט, גוררים ל-Cuey, מסדרים בגרירה.</p></div>
+      <div class="step"><h3>מחברים את המסך</h3><p>מחברים מקרן או טלוויזיה. Cuey פותח עליהם את חלון הפלט, מסך מלא, לבד.</p></div>
+      <div class="step"><h3>לוחצים GO</h3><p><kbd>רווח</kbd> מתקדם. <kbd>B</kbd> שחור. <kbd>→</kbd> אחורה. זה כל מה שצריך לדעת.</p></div>
+    </div>
+  </section>
+
+  <section id="download">
+    <h2>להשיג את Cuey</h2>
+    <p class="lead">נסו עכשיו בדפדפן — בלי להתקין. לאירוע עצמו, מתקינים על המחשב שמתחבר למסך.</p>
+    <div class="dl">
+      <a class="btn" href="../app/">▶ פתח בדפדפן <small>בלי התקנה</small></a>
+      <a class="btn sec" id="dlArm" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-arm64.dmg" download>⬇ Mac <small>APPLE SILICON</small></a>
+      <a class="btn sec" id="dlIntel" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-x64.dmg" download>⬇ Mac <small>INTEL</small></a>
+      <a class="btn sec" id="dlWin" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-windows.exe" download>⬇ Windows <small>.EXE</small></a>
+    </div>
+    <p class="note"><b>פתיחה ראשונה במק:</b> הגרסאות הראשונות עדיין לא חתומות אצל Apple, אז macOS עלול להגיד שהאפליקציה "פגומה". היא לא. גוררים את Cuey ל-Applications, פותחים Terminal ומדביקים <code dir="ltr">xattr -cr /Applications/Cuey.app</code>, ואז פותחים רגיל.</p>
+  </section>
+
+  <footer>
+    Cuey · נבנה בשביל מי שקיבל את השלט ביד. <a href="../mobile/">שלט בטלפון (תצוגה מקדימה)</a>
+  </footer>
+</div>
+
+<!-- mobile: Let's start -->
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="mobSheet">
+  <div class="grab"></div>
+  <h3>Cuey בטלפון</h3>
+  <p>בונים את רשימת הקיוז מהגלריה ומריצים את האירוע מהיד. המסך נפתח מלינק בכל מחשב או טלוויזיה.</p>
+  <button class="btn" id="installBtn">⬇ להוריד את אפליקציית Cuey</button>
+  <div class="ios" id="iosHow">באייפון: לוחצים <b>שיתוף</b> <b>⎋</b> בספארי, ואז <b>הוסף למסך הבית</b>.</div>
+  <a class="btn sec" href="../mobile/">לפתוח בדפדפן במקום</a>
+  <a class="btn sec" id="mailMe" href="#">✉ שלח לי במייל את הלינק למחשב</a>
+</div>
+
+<script>
+(function(){
+  try{localStorage.setItem('cuey.site.lang','he')}catch(e){}
+  const ua=navigator.userAgent;
+  const mobile=/Android|iPhone|iPad|iPod/i.test(ua)||(navigator.maxTouchPoints>1&&innerWidth<900);
+  const isIOS=/iPhone|iPad|iPod/i.test(ua);
+  // Let's start
+  document.getElementById('start').onclick=()=>{
+    if(!mobile){location.href='../app/';return}
+    document.getElementById('mobSheet').classList.add('open');document.getElementById('scrim').classList.add('on');
+    if(isIOS)document.getElementById('iosHow').style.display='block';
+  };
+  document.getElementById('scrim').onclick=()=>{document.getElementById('mobSheet').classList.remove('open');document.getElementById('scrim').classList.remove('on')};
+  // install (Android PWA prompt); fallback → mobile page
+  let deferred=null;
+  addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e});
+  document.getElementById('installBtn').onclick=async()=>{
+    if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;location.href='../mobile/';return}
+    if(isIOS){document.getElementById('iosHow').style.display='block';location.href='../mobile/';return}
+    location.href='../mobile/';
+  };
+  document.getElementById('mailMe').href='mailto:?subject='+encodeURIComponent('Cuey — לפתוח במחשב')+'&body='+encodeURIComponent('פותחים את Cuey במחשב שמחובר למסך:\nhttps://bergerman1-svg.github.io/cuey/he/\n\nפתיחה בדפדפן: https://bergerman1-svg.github.io/cuey/app/\nהורדה למק/ווינדוס: https://bergerman1-svg.github.io/cuey/he/#download');
+  // demo video
+  const v=document.getElementById('demo'),box=document.getElementById('vid');
+  document.getElementById('play').onclick=()=>{box.classList.add('on');v.play()};
+  v.onclick=()=>{if(v.paused)v.play();else v.pause()};
+  // highlight the right download
+  const isMac=/Mac/i.test(ua)&&!isIOS;
+  if(isMac){document.getElementById('dlWin').classList.add('sec')}
+  else if(/Win/i.test(ua)){document.getElementById('dlWin').classList.remove('sec')}
+})();
+</script>
+</body>
+</html>

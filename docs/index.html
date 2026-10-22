@@ -98,6 +98,7 @@ footer a{color:var(--mut);text-decoration:none;margin:0 10px}
     <a class="l" href="#how">How it works</a>
     <a class="l" href="#download">Download</a>
     <a class="l desk" href="app/">Open in browser</a>
+    <a class="l" href="he/" id="toHe" style="display:inline;color:var(--txt)">עברית</a>
   </nav>
 
   <header class="hero">
@@ -173,6 +174,9 @@ footer a{color:var(--mut);text-decoration:none;margin:0 10px}
 
 <script>
 (function(){
+  const q=new URLSearchParams(location.search);let st=null;try{st=localStorage.getItem('cuey.site.lang')}catch(e){}
+  if(q.get('lang')==='en'){try{localStorage.setItem('cuey.site.lang','en')}catch(e){}}
+  else if(st==='he'||(!st&&/^he/i.test(navigator.language||''))){location.replace('he/'+location.hash);return}
   const ua=navigator.userAgent;
   const mobile=/Android|iPhone|iPad|iPod/i.test(ua)||(navigator.maxTouchPoints>1&&innerWidth<900);
   const isIOS=/iPhone|iPad|iPod/i.test(ua);
