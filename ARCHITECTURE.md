@@ -1,6 +1,6 @@
 # Cuey — Architecture & Status
 
-_Last updated: 2026-10-22 · app v0.16.6 · 20+ commits_
+_Last updated: 2026-10-22 · app v0.17.1_
 
 Cuey is a free, simple playback app for live events run by non-technical people
 (teachers, lecturers, producers): drop videos/slides into a cue list, press **GO**,
@@ -14,8 +14,8 @@ how it is built, and where it is going.
 | Rule | Meaning in practice |
 |---|---|
 | **Never break what exists** | `app/cuey.html` is the one source of truth; every change must keep the current show-running flow working. |
-| **Free tier never expires** | No time bombs, no watermarks on the free version. |
-| **Never lock a feature that endangers a live event** | GO, BLACK, output window, open/save — always available. |
+| **Free tier never expires** | No time bombs. Free shows a small "Powered by Cuey" badge in the screen corner; a one-time payment removes it. Nothing given for free is ever taken back. |
+| **Never lock a feature that endangers a live event** | GO, BLACK, output window, open/save — always available. Badge, never a block: no "sign in to continue", ever; offline = everything works as last seen. |
 | **Look like Canva / CapCut** | Dark UI, lime `#C8FF00` for GO/live, orange `#FF751F` for NEXT/standby/auto, Poppins + Heebo + JetBrains Mono. |
 | **Keep it simple** | No templates, no "my shows" library in mobile; one list, one button. |
 | **Language** | Product UI & website in English (Hebrew toggle inside the app); conversation with Avi in Hebrew. |
@@ -108,6 +108,8 @@ Two instances: **PROGRAM preview** (in the operator window, muted) and the **Out
 | Export | `startExport/drawFrame/finishExport/saveExport` — 1920×1080 canvas composite + AudioContext → MediaRecorder (avc1 preferred) → MP4/WebM |
 | i18n | `L.en / L.he`, `t(key)`, `applyLang()`, `dir` + logical CSS; `localStorage cuey.lang` |
 | Output | `openOut`, `setStatus`, `clearStages` |
+| Share screen (v0.17) | `startShare/stopShare/shConnect/shOffer` — PROGRAM composited to a 1920×1080 canvas (`drawFrame`) + audio from `acDest`, streamed over **WebRTC** to `docs/s/?c=CODE`; signalling (hello/offer/answer) via ntfy.sh topic `cuey-v1-CODE`; STUN only, so same-LAN is the reliable case |
+| Badge | `BADGE` (base64 PNG), `licensed` flag (localStorage `cuey.licensed`, to be set by the account check), drawn in `drawFrame` (share + export) and as `#badge` in the Output window |
 
 ### 4.4 Notable fixes baked in (don't regress)
 - Dissolve uses Web Animations with full duration (CSS transition reversal dipped dark).
@@ -147,13 +149,28 @@ What is **fake** in the mockup: QR, code, link `cuey.app/s/4k7p`, "1 screen conn
 
 ---
 
-## 6. Roadmap (agreed direction, not yet built)
+## 6. Business model (agreed 2026-10-22)
+
+| | Free | Remove badge | Pro |
+|---|---|---|---|
+| Price | 0, forever | **$8 one-time** per account | Subscription (price set once there is something to sell) |
+| Running a show | Everything (cues, GO, dissolve, audio, text, IN/OUT, export, basic share screen) | Same | Same |
+| Screen badge | "Powered by Cuey" in the corner (Output, shared screen, export) | None | None, or the venue's logo |
+| Account | Not needed | Yes (Google / email) — removal follows the account to every computer | Yes |
+| Phone remote + screen link | 1 screen, 1 active show, ~500 MB, deleted 24 h after | Same | Multiple screens, no limits |
+| Cloud & team | — | — | Shows in the cloud, share with a colleague, several operators |
+
+Rules: badge, never a block; offline always works; sign-in is offered after the first GO, not before; Pro only sells what needs a server. Payments on the web (Lemon Squeezy / Paddle as merchant of record), apps only sign in — avoids the 15–30% app-store cut.
+
+Licensing mechanics (to build): Supabase accounts → after purchase the webhook marks the account → app fetches a **signed entitlement** once online and caches it (valid offline indefinitely) → `licensed=true` hides the badge. If the check fails for any reason the app keeps working with the badge.
+
+## 7. Roadmap (agreed direction, not yet built)
 
 | Stage | Scope | Status |
 |---|---|---|
-| 1 ✅ | Single-file app, Electron installers, CI releases, landing page, PWA, Hebrew UI, logo | **Done** (v0.16.6) |
+| 1 ✅ | Single-file app, Electron installers, CI releases, landing page (EN + HE, demo video), PWA, Hebrew UI, logo, share screen (WebRTC), badge | **Done** (v0.17.1) |
 | 1b | Apple Developer signing + notarization (removes "damaged" dialog) | Awaiting decision (~$99/yr) |
-| 1c | Add white-triangle logo as `docs/logo-mono.png`; Hebrew landing `/cuey/he/` | On request |
+| 1c | Accounts (Supabase) + sign-in button; Lemon Squeezy checkout for the $8 badge removal | Next |
 | 2 | **Phone remote + screen link**: a screen opens `cuey.app/s/<code>` in any browser; the phone sends GO/back/black over WebSocket/WebRTC; media cached on the screen before "Go live" | Prototype only (§5) |
 | 3 | Cloud accounts & show sync; "Go live" = offline bundle on the screen device | Not started |
 | 4 | Pricing: free tier forever; paid = multi-screen, cloud storage, team | Later |
@@ -165,7 +182,7 @@ screen's Cache Storage so the live run needs no network.
 
 ---
 
-## 7. Working notes
+## 8. Working notes
 
 - Source of the mockup lives in the session at `/home/claude/cuey-mobile-mockup.html`; `docs/mobile/index.html`
   is that file wrapped with a doctype/head. Edit the source, regenerate, commit.
