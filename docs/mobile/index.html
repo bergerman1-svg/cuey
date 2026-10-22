@@ -251,5 +251,15 @@ fmt();
 </script>
 
 <script>if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{})</script>
+<script>
+/* ?install=1 → offer to install Cuey (Android prompt / iPhone instructions) */
+(function(){if(!/[?&]install=1/.test(location.search))return;let d=null;const ios=/iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const bar=document.createElement('div');bar.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:9999;background:#18181D;border:1px solid #2C2C35;border-inline-start:3px solid #C8FF00;border-radius:14px;padding:14px;color:#F2F2F5;font:15px/1.45 Heebo,Poppins,sans-serif;display:flex;gap:10px;align-items:center;box-shadow:0 16px 40px -12px #000';
+  bar.innerHTML=ios?'<span style="flex:1">להתקנה: לוחצים <b>שיתוף</b> ⎋ בספארי ואז <b>הוסף למסך הבית</b>.</span><button style="background:none;border:none;color:#888;font-size:18px">✕</button>':'<span style="flex:1">להוסיף את Cuey למסך הבית?</span><button id="cuInst" style="background:#C8FF00;color:#0A0A0C;border:none;border-radius:10px;padding:10px 14px;font-weight:700;font-size:15px">התקן</button><button style="background:none;border:none;color:#888;font-size:18px">✕</button>';
+  document.body.appendChild(bar);bar.querySelector('button:last-child').onclick=()=>bar.remove();
+  addEventListener('beforeinstallprompt',e=>{e.preventDefault();d=e});
+  const b=bar.querySelector('#cuInst');if(b)b.onclick=async()=>{if(d){d.prompt();await d.userChoice;d=null;bar.remove()}else{bar.querySelector('span').innerHTML='בתפריט הדפדפן (⋮) בוחרים <b>התקן אפליקציה</b> או <b>הוסף למסך הבית</b>.';b.remove()}};
+})();
+</script>
 </body>
 </html>
