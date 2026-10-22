@@ -2,163 +2,204 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0A0A0C">
-<title>Cuey — One button. GO.</title>
-<meta name="description" content="Cuey — free video & slide playback for live events. No PowerPoint, no complicated software, no VJ. Drop your files, press Space, move on.">
-<meta property="og:title" content="Cuey — One button. GO.">
-<meta property="og:description" content="Video & slide playback for live events, without a VJ and without PowerPoint. Free for Mac & Windows.">
-<meta property="og:image" content="https://bergerman1-svg.github.io/cuey/screenshot.png">
+<title>Cuey — Present it. One button. GO.</title>
+<meta name="description" content="Planning an event or a show? Designed it in Canva? Cut it in CapCut? Present it with Cuey — free video & slide playback for live events. No PowerPoint, no VJ, one button.">
+<meta property="og:title" content="Cuey — Present it. One button. GO.">
+<meta property="og:description" content="Designed it in Canva? Cut it in CapCut? Present it with Cuey. Free video & slide playback for live events.">
+<meta property="og:image" content="https://bergerman1-svg.github.io/cuey/demo-poster.jpg">
 <link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0A0A0C;--panel:#131317;--line:#222229;--txt:#F2F2F5;--mut:#9A9AA8;--go:#C8FF00;--amb:#FF751F;--glow:rgba(200,255,0,.18)}
+:root{--bg:#0A0A0C;--panel:#131317;--panel2:#1A1A20;--line:#222229;--txt:#F2F2F5;--mut:#9A9AA8;--go:#C8FF00;--amb:#FF751F;--glow:rgba(200,255,0,.18)}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--txt);font-family:'Poppins',-apple-system,system-ui,sans-serif;font-size:16.5px;line-height:1.7;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:'Poppins',-apple-system,system-ui,sans-serif;font-size:16.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
 a{color:inherit}
-.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
-nav{display:flex;align-items:center;gap:14px;padding:22px 0}
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none;direction:ltr}
-.logo .mark{width:34px;height:34px;border-radius:10px;background:var(--go);display:grid;place-items:center;box-shadow:0 6px 20px var(--glow)}
-.logo .mark svg{width:15px;height:15px;margin-left:2px}
-.logo .word{font-family:'Poppins',sans-serif;font-weight:700;font-size:24px;letter-spacing:-.6px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+nav{display:flex;align-items:center;gap:14px;padding:18px 0}
+nav img{height:30px}
 nav .sp{flex:1}
-nav a.l{color:var(--mut);text-decoration:none;font-size:15px}
+nav a.l{color:var(--mut);text-decoration:none;font-size:15px;padding:8px 2px}
 nav a.l:hover{color:var(--txt)}
-.btn{display:inline-flex;align-items:center;gap:8px;background:var(--go);color:#0A0A0C;font-weight:700;text-decoration:none;padding:14px 26px;border-radius:12px;font-size:17px;box-shadow:0 10px 40px -10px var(--glow);transition:transform .08s,filter .12s}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;background:var(--go);color:#0A0A0C;font-weight:700;text-decoration:none;padding:16px 28px;border-radius:14px;font-size:18px;border:0;cursor:pointer;font-family:inherit;box-shadow:0 12px 40px -10px var(--glow);transition:transform .08s,filter .12s}
 .btn:hover{filter:brightness(1.05)}.btn:active{transform:translateY(1px)}
 .btn.sec{background:var(--panel);color:var(--txt);border:1px solid var(--line);box-shadow:none}
 .btn small{font-family:'JetBrains Mono',monospace;font-size:11px;opacity:.7;font-weight:500}
-header.hero{padding:70px 0 40px;text-align:center;position:relative}
-header.hero:before{content:'';position:absolute;inset:-200px 0 0;background:radial-gradient(900px 500px at 50% 0%,#1A2008 0%,transparent 60%);z-index:-1}
+.btn.big{padding:20px 40px;font-size:21px;border-radius:16px}
+/* hero */
+header.hero{padding:40px 0 20px;text-align:center;position:relative}
+header.hero:before{content:'';position:absolute;inset:-200px 0 0;background:radial-gradient(900px 520px at 50% 0%,#1A2008 0%,transparent 60%);z-index:-1}
 .kicker{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:2px;color:var(--go);text-transform:uppercase}
-h1{font-size:clamp(36px,5.6vw,64px);line-height:1.08;margin:14px 0 18px;font-weight:800;letter-spacing:-1.2px}
-h1 .go{color:var(--go);display:inline-block}
-.sub{font-size:21px;color:var(--mut);max-width:680px;margin:0 auto 34px}
-.cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+h1{font-size:clamp(34px,6.2vw,66px);line-height:1.06;margin:12px 0 10px;font-weight:800;letter-spacing:-1.2px}
+.qs{font-size:clamp(20px,3.4vw,30px);font-weight:600;color:var(--txt);margin:0 auto 6px;max-width:760px;line-height:1.3}
+.qs span{color:var(--mut);font-weight:500}
+.pitch{font-size:clamp(26px,4.6vw,44px);font-weight:800;margin:6px 0 26px;letter-spacing:-.8px}
+.pitch b{color:var(--go)}
+.cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;align-items:center}
 .free{margin-top:14px;color:var(--mut);font-size:14px}
-.shot{margin:50px auto 0;border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 40px 120px -40px #000,0 0 0 1px #000;background:#000}
-.shot img{display:block;width:100%}
-section{padding:70px 0}
-h2{font-size:34px;margin:0 0 10px;letter-spacing:-.5px;font-weight:800}
-.lead{color:var(--mut);font-size:19px;margin:0 0 36px;max-width:720px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px}
-.card .ic{width:44px;height:44px;border-radius:12px;background:#1A2008;color:var(--go);display:grid;place-items:center;font-family:'Poppins';font-weight:700;font-size:20px;margin-bottom:16px;direction:ltr}
-.card h3{margin:0 0 8px;font-size:20px}
-.card p{margin:0;color:var(--mut);font-size:16px}
-.steps{counter-reset:s;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
-.step{position:relative;background:linear-gradient(180deg,#141418,#0F0F13);border:1px solid var(--line);border-radius:16px;padding:26px 26px 26px}
+/* video */
+.video{margin:34px auto 0;max-width:900px;border-radius:18px;overflow:hidden;border:1px solid var(--line);box-shadow:0 40px 120px -40px #000;background:#000;position:relative;aspect-ratio:16/10}
+.video video{display:block;width:100%;height:100%;object-fit:cover}
+.video .play{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(180deg,transparent 40%,#000a);cursor:pointer}
+.video .play b{width:84px;height:84px;border-radius:50%;background:var(--go);display:grid;place-items:center;color:#000;font-size:34px;box-shadow:0 20px 60px -10px var(--glow)}
+.video .play span{position:absolute;bottom:18px;color:#fff;font-size:15px;font-weight:600;text-shadow:0 2px 8px #000}
+.video.on .play{display:none}
+section{padding:56px 0}
+h2{font-size:clamp(26px,4vw,34px);margin:0 0 8px;letter-spacing:-.5px;font-weight:800}
+.lead{color:var(--mut);font-size:18px;margin:0 0 28px;max-width:720px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px}
+.card .ic{width:44px;height:44px;border-radius:12px;background:#1A2008;color:var(--go);display:grid;place-items:center;font-weight:700;font-size:20px;margin-bottom:14px}
+.card h3{margin:0 0 6px;font-size:19px}
+.card p{margin:0;color:var(--mut);font-size:15.5px}
+.steps{counter-reset:s;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.step{background:linear-gradient(180deg,#141418,#0F0F13);border:1px solid var(--line);border-radius:16px;padding:24px}
 .step:before{counter-increment:s;content:counter(s,decimal-leading-zero);font-family:'JetBrains Mono',monospace;color:var(--go);font-size:13px;letter-spacing:2px}
-.step h3{margin:8px 0 6px;font-size:20px}
-.step p{margin:0;color:var(--mut);font-size:16px}
+.step h3{margin:6px 0 6px;font-size:19px}
+.step p{margin:0;color:var(--mut);font-size:15.5px}
 kbd{font-family:'JetBrains Mono',monospace;font-size:13px;background:#1C1C23;border:1px solid #33333D;border-bottom-width:2px;border-radius:6px;padding:1px 8px;color:var(--txt)}
-.who{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:22px}
-.chip{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:8px 16px;color:var(--mut);font-size:15px}
-.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 24px;list-style:none;padding:0;margin:0}
-.feat li{padding:10px 0;border-bottom:1px solid var(--line);color:var(--txt);font-size:16px}
-.feat li b{color:var(--go);font-family:'Poppins';margin-left:8px}
-.dl{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:40px;text-align:center}
-.dl h2{margin-bottom:6px}
-.note{color:var(--mut);font-size:14px;margin-top:18px;max-width:640px;margin-inline:auto}
-footer{padding:40px 0 50px;color:var(--mut);font-size:14px;text-align:center;border-top:1px solid var(--line)}
-footer a{color:var(--mut)}
-@media(max-width:640px){header.hero{padding-top:40px}.sub{font-size:18px}section{padding:50px 0}.dl{padding:28px 18px}}
+.who{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:18px}
+.chip{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 14px;color:var(--mut);font-size:14.5px}
+.dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:22px}
+.dl .btn{width:100%}
+.note{margin-top:18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14.5px;color:var(--mut)}
+.note code{font-family:'JetBrains Mono',monospace;background:#1C1C23;padding:2px 7px;border-radius:6px;color:var(--txt);font-size:13px}
+footer{padding:40px 0 60px;color:var(--mut);font-size:14px;text-align:center;border-top:1px solid var(--line)}
+footer a{color:var(--mut);text-decoration:none;margin:0 10px}
+/* mobile sheet */
+.scrim{position:fixed;inset:0;background:#0009;opacity:0;pointer-events:none;transition:.2s;z-index:40}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{visibility:hidden;position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-radius:22px 22px 0 0;padding:14px 20px calc(24px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .25s,visibility .25s;z-index:50;max-width:560px;margin:0 auto}
+.sheet.open{transform:none;visibility:visible}
+.sheet .grab{width:40px;height:4px;border-radius:2px;background:#333;margin:0 auto 14px}
+.sheet h3{margin:0 0 4px;font-size:22px}
+.sheet p{margin:0 0 16px;color:var(--mut);font-size:15px}
+.sheet .btn{width:100%;margin-top:10px}
+.sheet .ios{display:none;margin-top:12px;background:var(--panel2);border-radius:12px;padding:12px 14px;font-size:14.5px;color:var(--mut)}
+.sheet .ios b{color:var(--txt)}
+.mob{display:none}
+@media (max-width:720px){
+  .desk{display:none}.mob{display:inline-flex}
+  nav .l{display:none}
+  header.hero{padding-top:22px}
+  .btn.big{width:100%}
+  section{padding:40px 0}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
   <nav>
-    <a class="logo" href="#"><img src="logo-header.png" alt="Cuey" style="height:34px;width:auto;display:block"></a>
+    <a href="./"><img src="logo-header.png" alt="Cuey"></a>
     <span class="sp"></span>
     <a class="l" href="#how">How it works</a>
-    <a class="l" href="#features">Features</a>
-    <a class="btn" href="#download" style="padding:10px 18px;font-size:15px">Download free</a>
+    <a class="l" href="#download">Download</a>
+    <a class="l desk" href="app/">Open in browser</a>
   </nav>
 
   <header class="hero">
-    <img src="logo-mark.png" alt="" style="height:96px;width:auto;margin:0 auto 18px;display:block;filter:drop-shadow(0 16px 40px rgba(200,255,0,.18))">
-    <div class="kicker">Video &amp; slides for live events</div>
-    <h1>Your event's videos and slides.<br>One button. <span class="go">GO.</span></h1>
-    <p class="sub">No PowerPoint. No complicated video software. No VJ.<br>Drop your files in, plug in the projector, and press Space when it's time for the next one.</p>
+    <div class="kicker">Free · Mac · Windows · Browser</div>
+    <h1>Planning an event<br>or a show?</h1>
+    <p class="qs">Designed it in <span>Canva</span>? Cut it in <span>CapCut</span>?</p>
+    <p class="pitch">Present it with <b>Cuey.</b></p>
     <div class="cta">
-      <a class="btn" id="heroDl" href="#download">⬇ Download free</a>
-      <a class="btn sec" href="app/">▶ Open in browser <small>NO INSTALL</small></a>
+      <button class="btn big" id="start">Let's start →</button>
     </div>
-    <div class="free">Free · Runs in Chrome or as an app · Works offline</div>
-    <div class="shot"><img src="screenshot.png" alt="Cuey operator screen: cue list, PROGRAM monitor and a big GO button"></div>
-  </header>
+    <p class="free">Drop your videos and slides in. Press <kbd>Space</kbd>. That's the whole job.<br>No PowerPoint. No VJ. Free, forever.</p>
 
-  <section>
-    <h2>Who it's for</h2>
-    <p class="lead">Anyone who has to put content on a screen at an event — without a technical crew. If you can drag a file, you can run Cuey.</p>
-    <div class="grid">
-      <div class="card"><div class="ic">✓</div><h3>No PowerPoint needed</h3><p>Videos and images go in as they are — MP4, MOV, JPG, PNG. No embedding video in a deck, no "media not found", no waiting for it to load on stage.</p></div>
-      <div class="card"><div class="ic">✓</div><h3>Nothing to learn</h3><p>The main screen shows what's live and what's next. One GO button. Everything else — loop, smooth transition, hold — is a switch next to the file.</p></div>
-      <div class="card"><div class="ic">✓</div><h3>No VJ needed</h3><p>The teacher, speaker or producer runs the content themselves, from a laptop. The second screen gets the picture fullscreen, automatically.</p></div>
+    <div class="video" id="vid">
+      <video id="demo" src="demo.mp4" poster="demo-poster.jpg" playsinline muted loop preload="metadata"></video>
+      <div class="play" id="play"><b>▶</b><span>Watch the 20-second demo</span></div>
     </div>
     <div class="who">
-      <span class="chip">Teachers</span><span class="chip">Speakers &amp; lecturers</span><span class="chip">Event producers</span><span class="chip">Conferences</span><span class="chip">School ceremonies</span><span class="chip">Venues &amp; houses of worship</span><span class="chip">Weddings &amp; family events</span>
+      <span class="chip">School ceremonies</span><span class="chip">Lectures &amp; talks</span><span class="chip">Weddings &amp; family events</span><span class="chip">Conferences</span><span class="chip">Memorials</span><span class="chip">Small venues</span>
+    </div>
+  </header>
+
+  <section id="why">
+    <h2>The screen is the easy part. Running it isn't.</h2>
+    <p class="lead">Every event has a screen — and someone who has to make the right video appear at the right moment. Cuey is built for that person, not for a video technician.</p>
+    <div class="grid">
+      <div class="card"><div class="ic">▶</div><h3>One button. GO.</h3><p>Space, Enter, or the big green button. The next cue plays. Nothing else to think about.</p></div>
+      <div class="card"><div class="ic">◐</div><h3>Looks professional</h3><p>Clean cuts or smooth dissolves between every cue. Loop a video. Hold a slide. Fade to black.</p></div>
+      <div class="card"><div class="ic">⧉</div><h3>See it before the room does</h3><p>PROGRAM shows exactly what's on the projector. NEXT shows what's coming. No surprises.</p></div>
+      <div class="card"><div class="ic">✈</div><h3>Works without internet</h3><p>Your files stay on your computer. No uploads, no account, no Wi-Fi needed in the hall.</p></div>
+      <div class="card"><div class="ic">♫</div><h3>Audio, text, trims</h3><p>Put music under a still. Add a text slide with the speaker's name. Trim a video with IN/OUT — no editor needed.</p></div>
+      <div class="card"><div class="ic">0</div><h3>Free. Really.</h3><p>Everything you need to run a show is free and stays free. No watermark, no time limit.</p></div>
     </div>
   </section>
 
   <section id="how">
     <h2>How it works</h2>
-    <p class="lead">Three steps. No setup.</p>
+    <p class="lead">Three steps. Five minutes before the event is enough.</p>
     <div class="steps">
-      <div class="step"><h3>Drop</h3><p>All your videos and slides into the list, in the order they should play. Reorder by dragging.</p></div>
-      <div class="step"><h3>Plug in the projector</h3><p>Click "Open Output" — the picture goes fullscreen on the second display. On the laptop you see what's live and what's next.</p></div>
-      <div class="step"><h3>Press <kbd>Space</kbd></h3><p>Every press — the next cue. Cut or dissolve, loop or play once, exactly as you set next to each file.</p></div>
+      <div class="step"><h3>Drop your files in</h3><p>Videos (MP4, MOV, WEBM) and slides (JPG, PNG). Export from Canva or CapCut, drag into Cuey, reorder by dragging.</p></div>
+      <div class="step"><h3>Plug in the screen</h3><p>Connect the projector or TV. Cuey opens the Output window on it, full screen, by itself.</p></div>
+      <div class="step"><h3>Press GO</h3><p><kbd>Space</kbd> advances. <kbd>B</kbd> is black. <kbd>←</kbd> goes back. That's all anyone needs to know.</p></div>
     </div>
-  </section>
-
-  <section id="features">
-    <h2>What's inside</h2>
-    <p class="lead">Simple on the outside, professional underneath. The tools a show operator would want — without the menus they don't need.</p>
-    <ul class="feat">
-      <li><b>GO</b> Space, Enter or the big button — next cue</li>
-      <li><b>PROGRAM</b> A monitor that shows exactly what the projector shows, dissolves included — even when rehearsing at home</li>
-      <li><b>NEXT</b> Always see what's coming up</li>
-      <li><b>Cut / Dissolve</b> A transition per cue, with its length in seconds</li>
-      <li><b>Loop</b> A video or slide that runs until you press</li>
-      <li><b>Standby</b> The video comes up on its first frame — one more GO plays it when the speaker says so</li>
-      <li><b>IN / OUT</b> Trim a video without an editor — just drag a marker</li>
-      <li><b>Fit / Fill / Stretch</b> How each picture fills the screen</li>
-      <li><b>Audio</b> Volume per video, and a soundtrack for a still slide</li>
-      <li><b>AUTO</b> Background loop: slides advance by themselves, videos play through, back to the start</li>
-      <li><b>Export MP4</b> Turn the loop into one video file that plays anywhere</li>
-      <li><b>BLACK / FREEZE</b> Emergency buttons, always within reach</li>
-      <li><b>Countdown</b> The last 5 seconds of a video, counted down — on your screen only, never on the projector</li>
-      <li><b>Save</b> Save the whole show to a file and open it at the event</li>
-    </ul>
   </section>
 
   <section id="download">
+    <h2>Get Cuey</h2>
+    <p class="lead">Try it right now in the browser — nothing to install. For the event itself, install it on the computer that connects to the screen.</p>
     <div class="dl">
-      <div class="kicker">Free download</div>
-      <h2>Download and go</h2>
-      <p class="lead" style="margin-inline:auto;text-align:center">Install on Mac or Windows — or just open it in Chrome. No sign-up.</p>
-      <div class="cta">
-        <a class="btn" id="dlArm" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-arm64.dmg" download>⬇ Mac <small>APPLE SILICON · M1–M4</small></a>
-        <a class="btn" id="dlIntel" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-x64.dmg" download>⬇ Mac <small>INTEL</small></a>
-        <a class="btn" id="dlWin" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-windows.exe" download>⬇ Windows <small>.EXE</small></a>
-      </div>
-      <div class="cta" style="margin-top:14px"><a class="btn sec" href="app/">▶ Open in browser <small>CHROME · NO INSTALL</small></a></div>
-      <p class="note" style="margin-top:12px">Not sure which Mac? Apple menu → About This Mac: "Apple M…" = Apple Silicon, "Intel" = Intel.</p>
-      <p class="note"><b>First launch on Mac:</b> early builds aren't notarized by Apple yet, so macOS may say the app "is damaged". It isn't. Drag Cuey to Applications, open Terminal and paste <code style="font-family:'JetBrains Mono',monospace;background:#1C1C23;padding:2px 6px;border-radius:5px">xattr -cr /Applications/Cuey.app</code>, then open it normally. Once only.<br><b>Windows:</b> if SmartScreen appears, choose "More info → Run anyway".</p>
+      <a class="btn" href="app/">▶ Open in browser <small>NO INSTALL</small></a>
+      <a class="btn sec" id="dlArm" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-arm64.dmg" download>⬇ Mac <small>APPLE SILICON</small></a>
+      <a class="btn sec" id="dlIntel" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-x64.dmg" download>⬇ Mac <small>INTEL</small></a>
+      <a class="btn sec" id="dlWin" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-windows.exe" download>⬇ Windows <small>.EXE</small></a>
     </div>
+    <p class="note"><b>First launch on Mac:</b> early builds aren't notarized by Apple yet, so macOS may say the app "is damaged". It isn't. Drag Cuey to Applications, open Terminal and paste <code>xattr -cr /Applications/Cuey.app</code>, then open it normally.</p>
   </section>
 
   <footer>
-    Cuey · Built by show people, for people who shouldn't have to be. · © Avi Berger Productions
+    Cuey · Made for the person who got handed the clicker. <a href="mobile/">Phone remote (preview)</a>
   </footer>
 </div>
+
+<!-- mobile: Let's start -->
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="mobSheet">
+  <div class="grab"></div>
+  <h3>Cuey on your phone</h3>
+  <p>Build the cue list from your gallery and run the show from your hand. The screen opens from a link on any computer or TV.</p>
+  <button class="btn" id="installBtn">⬇ Get the Cuey app</button>
+  <div class="ios" id="iosHow">On iPhone: tap <b>Share</b> <b>⎋</b> in Safari, then <b>Add to Home Screen</b>.</div>
+  <a class="btn sec" href="mobile/">Open in the browser instead</a>
+  <a class="btn sec" id="mailMe" href="#">✉ Email me the link for my computer</a>
+</div>
+
 <script>
-// point the hero button at the right installer for this computer
-(function(){const ua=navigator.userAgent,h=document.getElementById('heroDl');if(!h)return;
- if(/Windows/i.test(ua)){h.href=document.getElementById('dlWin').href;h.setAttribute('download','');h.textContent='⬇ Download for Windows'}
- else if(/Macintosh/i.test(ua)){h.href='#download';h.textContent='⬇ Download for Mac'}
+(function(){
+  const ua=navigator.userAgent;
+  const mobile=/Android|iPhone|iPad|iPod/i.test(ua)||(navigator.maxTouchPoints>1&&innerWidth<900);
+  const isIOS=/iPhone|iPad|iPod/i.test(ua);
+  // Let's start
+  document.getElementById('start').onclick=()=>{
+    if(!mobile){location.href='app/';return}
+    document.getElementById('mobSheet').classList.add('open');document.getElementById('scrim').classList.add('on');
+    if(isIOS)document.getElementById('iosHow').style.display='block';
+  };
+  document.getElementById('scrim').onclick=()=>{document.getElementById('mobSheet').classList.remove('open');document.getElementById('scrim').classList.remove('on')};
+  // install (Android PWA prompt); fallback → mobile page
+  let deferred=null;
+  addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e});
+  document.getElementById('installBtn').onclick=async()=>{
+    if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;location.href='mobile/';return}
+    if(isIOS){document.getElementById('iosHow').style.display='block';location.href='mobile/';return}
+    location.href='mobile/';
+  };
+  document.getElementById('mailMe').href='mailto:?subject='+encodeURIComponent('Cuey — open this on the computer')+'&body='+encodeURIComponent('Open Cuey on the computer that connects to the screen:\nhttps://bergerman1-svg.github.io/cuey/\n\nOpen in browser: https://bergerman1-svg.github.io/cuey/app/\nDownload for Mac/Windows: https://bergerman1-svg.github.io/cuey/#download');
+  // demo video
+  const v=document.getElementById('demo'),box=document.getElementById('vid');
+  document.getElementById('play').onclick=()=>{box.classList.add('on');v.play()};
+  v.onclick=()=>{if(v.paused)v.play();else v.pause()};
+  // highlight the right download
+  const isMac=/Mac/i.test(ua)&&!isIOS;
+  if(isMac){document.getElementById('dlWin').classList.add('sec')}
+  else if(/Win/i.test(ua)){document.getElementById('dlWin').classList.remove('sec')}
 })();
 </script>
 </body>

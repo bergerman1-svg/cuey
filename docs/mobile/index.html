@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#0A0A0C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" href="../favicon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="../app/icon-192.png">
 <title>Cuey Mobile</title>
 </head>
 <body style="margin:0">
@@ -248,5 +250,6 @@ let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on
 fmt();
 </script>
 
+<script>if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{})</script>
 </body>
 </html>
