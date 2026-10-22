@@ -154,6 +154,7 @@ html.m .monly{display:block}
 .mbox p{margin:0 0 4px;color:var(--mut);font-size:16px;line-height:1.55}.mbox p b{color:var(--txt)}
 .sheet .sfoot{display:block;text-align:center;color:var(--mut);font-size:13.5px;margin-top:14px}
 html.m .mbox .pcta .btn{width:100%}
+.mbox .sfoot2{margin:14px 0 0;font-size:13.5px;text-align:center}
 </style>
 <script>(function(){var u=navigator.userAgent;if(/Android|iPhone|iPad|iPod/i.test(u)||(navigator.maxTouchPoints>1&&innerWidth<900))document.documentElement.classList.add("m")})()</script>
 </head>
@@ -237,7 +238,7 @@ html.m .mbox .pcta .btn{width:100%}
   <section id="download">
     <h2>Get Cuey</h2>
     <p class="lead">Try it right now in the browser — nothing to install. For the event itself, install it on the computer that connects to the screen.</p>
-    <div class="monly mbox"><p><b>On a computer</b> Cuey runs on Mac, Windows or any computer browser — open this site there to download it. <b>On this phone</b> you can start right now:</p><div class="pcta"><a class="btn" href="mobile/">▶ Open Cuey</a></div></div>
+    <div class="monly mbox"><p><b>Cuey runs on the computer that connects to the screen</b> — Mac, Windows or any computer browser. The phone app is coming soon to the stores. Send yourself the link to Cuey for desktop:</p><div class="pcta"><a class="btn" data-wa href="#">💬 Send me the link on WhatsApp</a><a class="btn sec" data-mail href="#">✉ Email me the link</a></div><p class="sfoot2">📱 Cuey app — coming soon to the App Store and Google Play</p></div>
     <div class="dl">
       <a class="btn" href="app/">▶ Open in browser <small>NO INSTALL</small></a>
       <a class="btn sec" id="dlArm" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-arm64.dmg" download>⬇ Mac <small>APPLE SILICON</small></a>
@@ -256,12 +257,11 @@ html.m .mbox .pcta .btn{width:100%}
 <div class="scrim" id="scrim"></div>
 <div class="sheet" id="mobSheet">
   <div class="grab"></div>
-  <h3>Cuey on your phone</h3>
-  <p>Build the cue list from your phone's gallery, put the show on any screen with a link, and run it from your hand.</p>
-  <a class="btn" href="mobile/">▶ Open Cuey</a>
-  <a class="btn sec" id="installBtn" href="mobile/?install=1">⬇ Get the Cuey app</a>
-  <div class="ios" id="iosHow">On iPhone: tap <b>Share</b> <b>⎋</b> in Safari, then <b>Add to Home Screen</b>.</div>
-  <span class="sfoot">The full desktop version (Mac · Windows) — open this site on your computer.</span>
+  <h3>Cuey runs on your computer</h3>
+  <p>The Cuey app for phones is coming soon to the App Store and Google Play. Meanwhile, send yourself the link to Cuey for desktop and open it on the computer that connects to the screen.</p>
+  <a class="btn" data-wa href="#">💬 Send me the link on WhatsApp</a>
+  <a class="btn sec" data-mail href="#">✉ Email me the link</a>
+  <span class="sfoot">📱 Cuey app — coming soon to the App Store and Google Play</span>
 </div>
 
 <script>
@@ -282,9 +282,11 @@ html.m .mbox .pcta .btn{width:100%}
     document.getElementById('mobSheet').classList.add('open');document.getElementById('scrim').classList.add('on');
   };
   document.getElementById('scrim').onclick=()=>{document.getElementById('mobSheet').classList.remove('open');document.getElementById('scrim').classList.remove('on')};
-  // phones: any "open the app" link opens the phone sheet; iPhone shows how to install
+  // phones: Cuey runs on a computer — send yourself the link (WhatsApp / email); phone app coming soon
+  const dl='https://bergerman1-svg.github.io/cuey/',msg='Cuey for desktop — open this on the computer that connects to the screen: ';
+  document.querySelectorAll('[data-wa]').forEach(a=>{a.href='https://wa.me/?text='+encodeURIComponent(msg+dl);a.target='_blank';a.rel='noopener'});
+  document.querySelectorAll('[data-mail]').forEach(a=>{a.href='mailto:?subject='+encodeURIComponent('Cuey for desktop')+'&body='+encodeURIComponent(msg+dl)});
   if(mobile)document.querySelectorAll('a[href$="app/"]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();document.getElementById('mobSheet').classList.add('open');document.getElementById('scrim').classList.add('on')}));
-  if(isIOS){const ib=document.getElementById('installBtn');ib.addEventListener('click',e=>{const h=document.getElementById('iosHow');if(h.style.display!=='block'){e.preventDefault();h.style.display='block'}})}
   // demo video
   const v=document.getElementById('demo'),box=document.getElementById('vid');
   document.getElementById('play').onclick=()=>{box.classList.add('on');v.play()};
