@@ -67,6 +67,10 @@ kbd{font-family:'JetBrains Mono',monospace;font-size:13px;background:#1C1C23;bor
 .dl .btn{width:100%}
 .note{margin-top:18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14.5px;color:var(--mut)}
 .note code{font-family:'JetBrains Mono',monospace;background:#1C1C23;padding:2px 7px;border-radius:6px;color:var(--txt);font-size:13px}
+.gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.gal figure{margin:0;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#000}
+.gal img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.gal figcaption{padding:10px 14px;color:var(--mut);font-size:14px}
 footer{padding:40px 0 60px;color:var(--mut);font-size:14px;text-align:center;border-top:1px solid var(--line)}
 footer a{color:var(--mut);text-decoration:none;margin:0 10px}
 /* mobile sheet */
@@ -134,6 +138,15 @@ footer a{color:var(--mut);text-decoration:none;margin:0 10px}
     </div>
   </section>
 
+
+  <section id="gallery">
+    <h2>Cuey at real events</h2>
+    <p class="lead">Not a mockup — this is Cuey running the opening of a conference: three LED screens in the hall, one laptop, one GO.</p>
+    <div class="gal">
+      <figure><img src="gallery/event-01.jpg" alt="Cuey running a three-screen conference opening" loading="lazy"><figcaption>Conference opening · 3 LED screens · PROGRAM on the operator laptop shows exactly what the hall sees</figcaption></figure>
+    </div>
+    <p class="free">Ran an event with Cuey? Send a photo and we'll add it here.</p>
+  </section>
   <section id="how">
     <h2>How it works</h2>
     <p class="lead">Three steps. Five minutes before the event is enough.</p>
@@ -167,7 +180,7 @@ footer a{color:var(--mut);text-decoration:none;margin:0 10px}
   </section>
 
   <footer>
-    Cuey · Made for the person who got handed the clicker. <a href="mobile/">Phone remote (preview)</a>
+    Cuey · Made for the person who got handed the clicker.
   </footer>
 </div>
 

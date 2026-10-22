@@ -67,6 +67,10 @@ kbd{font-family:'JetBrains Mono',monospace;font-size:13px;background:#1C1C23;bor
 .dl .btn{width:100%}
 .note{margin-top:18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14.5px;color:var(--mut)}
 .note code{font-family:'JetBrains Mono',monospace;background:#1C1C23;padding:2px 7px;border-radius:6px;color:var(--txt);font-size:13px}
+.gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.gal figure{margin:0;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#000}
+.gal img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.gal figcaption{padding:10px 14px;color:var(--mut);font-size:14px}
 footer{padding:40px 0 60px;color:var(--mut);font-size:14px;text-align:center;border-top:1px solid var(--line)}
 footer a{color:var(--mut);text-decoration:none;margin:0 10px}
 /* mobile sheet */
@@ -134,6 +138,15 @@ footer a{color:var(--mut);text-decoration:none;margin:0 10px}
     </div>
   </section>
 
+
+  <section id="gallery">
+    <h2>Cuey באירועים אמיתיים</h2>
+    <p class="lead">לא הדמיה — זה Cuey מריץ פתיחה של כנס: שלושה מסכי LED באולם, לפטופ אחד, GO אחד.</p>
+    <div class="gal">
+      <figure><img src="../gallery/event-01.jpg" alt="Cuey מריץ פתיחת כנס על שלושה מסכים" loading="lazy"><figcaption>פתיחת כנס · 3 מסכי LED · ה-PROGRAM בלפטופ של המפעיל מראה בדיוק מה שהאולם רואה</figcaption></figure>
+    </div>
+    <p class="free">הרצתם אירוע עם Cuey? שלחו תמונה ונוסיף אותה כאן.</p>
+  </section>
   <section id="how">
     <h2>איך זה עובד</h2>
     <p class="lead">שלושה שלבים. חמש דקות לפני האירוע מספיקות.</p>
@@ -167,7 +180,7 @@ footer a{color:var(--mut);text-decoration:none;margin:0 10px}
   </section>
 
   <footer>
-    Cuey · נבנה בשביל מי שקיבל את השלט ביד. <a href="../mobile/">שלט בטלפון (תצוגה מקדימה)</a>
+    Cuey · נבנה בשביל מי שקיבל את השלט ביד.
   </footer>
 </div>
 
