@@ -166,14 +166,16 @@ body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:16p
     <div class="grab"></div>
     <h3>הצג על המסך</h3><div class="nm">פתח את הלינק בדפדפן של המחשב, הטלוויזיה או המקרן. כמה מסכים — אותו לינק, אותו GO.</div>
     <div class="qr"><canvas id="qr" width="21" height="21"></canvas></div>
-    <div class="code">CUEY-4K7P</div>
-    <div class="link">cuey.app/s/4k7p</div>
+    <div class="code" id="codeTxt">CUEY-····</div>
+    <div class="link" id="linkTxt"></div>
     <div class="share"><button class="btn" id="copyLink">⎘ העתק לינק</button><button class="btn go" id="shareNative">⤴ שתף לינק לצפייה</button></div>
   </div>
   <div class="toast" id="toast"></div>
   <input type="file" id="pick" accept="video/*,image/*" multiple hidden>
 </div>
 
+<script src="../lib/mqtt.min.js"></script>
+<script src="../lib/qrcode.js"></script>
 <script>
 const $=s=>document.querySelector(s);
 function paint(c,cue){const x=c.getContext('2d');x.fillStyle='#000';x.fillRect(0,0,c.width,c.height);if(cue&&cue.img){const m=cue.img,r=Math.min(c.width/m.w,c.height/m.h);x.drawImage(m.el,(c.width-m.w*r)/2,(c.height-m.h*r)/2,m.w*r,m.h*r)}}
@@ -210,7 +212,7 @@ function lift(card,e){
   raf=requestAnimationFrame(step);
   const mv=ev=>{lastY=ev.clientY;ev.preventDefault()};
   const up=()=>{cancelAnimationFrame(raf);document.removeEventListener('pointermove',mv);document.removeEventListener('pointerup',up);document.removeEventListener('pointercancel',up);ghost.remove();card.classList.remove('gap');scroller.style.touchAction='';
-    cues=[...list.children].map(x=>x._cue);renderCues();if(navigator.vibrate)navigator.vibrate(8)};
+    cues=[...list.children].map(x=>x._cue);renderCues();pubCues();pubState();if(navigator.vibrate)navigator.vibrate(8)};
   document.addEventListener('pointermove',mv,{passive:false});document.addEventListener('pointerup',up);document.addEventListener('pointercancel',up);
 }
 
@@ -224,19 +226,27 @@ $('#delCue').onclick=()=>{cues.splice(sel,1);closeSheets();renderCues()};
 function closeSheets(){document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('open'));$('#scrim').classList.remove('on')}
 $('#scrim').onclick=closeSheets;
 /* go live: screen downloads everything first, only then the remote appears */
-$('#goLive').onclick=()=>{const dl=$('#dl');dl.classList.add('on');let n=0;const N=cues.length;const tick=()=>{n++;$('#dlBar').style.width=(n/N*100)+'%';$('#dlTxt').textContent=n+' / '+N+' · '+cues[n-1].n;if(n<N)setTimeout(tick,420);else setTimeout(()=>{dl.classList.remove('on');go(2);if(!window._shown){window._shown=1;setTimeout(()=>$('#showLink').click(),350)}},500)};$('#dlTxt').textContent='0 / '+N;setTimeout(tick,300)};
+$('#goLive').onclick=()=>{mqConnect();pubCues();pubState();const dl=$('#dl');dl.classList.add('on');let n=0;const N=cues.length;const tick=()=>{n++;$('#dlBar').style.width=(n/N*100)+'%';$('#dlTxt').textContent=n+' / '+N+' · '+cues[n-1].n;if(n<N)setTimeout(tick,420);else setTimeout(()=>{dl.classList.remove('on');go(2);if(!window._shown){window._shown=1;setTimeout(()=>$('#showLink').click(),350)}},500)};$('#dlTxt').textContent='0 / '+N;setTimeout(tick,300)};
 const S=[null,$('#s1'),$('#s2')];function go(n){[1,2].forEach(i=>{S[i].hidden=i!==n});if(n===2)renderRemote()}
 $('#back2').onclick=()=>go(1);
 function renderRemote(){const n=cues[live],x=cues[live+1];const cn=$('#cvNow'),cx=$('#cvNext');cn.getContext('2d').clearRect(0,0,320,180);cx.getContext('2d').clearRect(0,0,320,180);if(n)paint(cn,n);if(x)paint(cx,x);$('#nmNow').textContent=n?n.n:'מוכן — לחץ GO';$('#nmNext').textContent=x?x.n+(x.k==='video'&&x.end==='next'?' · ממשיך לבד':''):'—';$('#rmPos').textContent=(live<0?'—':live+1)+' / '+cues.length;renderCues()}
-$('#goBtn').onclick=()=>{if(live+1<cues.length){live++;if(navigator.vibrate)navigator.vibrate(12)}else toast('סוף ההופעה');black=false;$('#pvBlk').classList.remove('on');$('#blkBtn').classList.remove('on');renderRemote()};
-$('#backBtn').onclick=()=>{if(live>0)live--;renderRemote()};
-$('#blkBtn').onclick=()=>{black=!black;$('#pvBlk').classList.toggle('on',black);$('#blkBtn').classList.toggle('on',black)};
-const LINK='https://cuey.app/s/4k7p',MSG='הלינק להצגה על המסך של הטקס: '+LINK+'\n(פותחים בדפדפן במחשב שמחובר למקרן — ואני שולט מהטלפון)';
+$('#goBtn').onclick=()=>{setTimeout(pubState,0);if(live+1<cues.length){live++;if(navigator.vibrate)navigator.vibrate(12)}else toast('סוף ההופעה');black=false;$('#pvBlk').classList.remove('on');$('#blkBtn').classList.remove('on');renderRemote()};
+$('#backBtn').onclick=()=>{if(live>0)live--;renderRemote();pubState()};
+$('#blkBtn').onclick=()=>{black=!black;$('#pvBlk').classList.toggle('on',black);$('#blkBtn').classList.toggle('on',black);pubState()};
+const CODE=(()=>{let c=null;try{c=sessionStorage.getItem('cuey.code')}catch(e){}if(!c){const A='ABCDEFGHJKMNPQRSTUVWXYZ23456789';c='';for(let i=0;i<4;i++)c+=A[Math.floor(Math.random()*A.length)];try{sessionStorage.setItem('cuey.code',c)}catch(e){}}return c})();
+const LINK='https://bergerman1-svg.github.io/cuey/s/?c='+CODE,MSG='הלינק להצגה על המסך: '+LINK+'\n(פותחים בדפדפן במחשב שמחובר למקרן — ואני שולט מהטלפון)';
+$('#codeTxt').textContent='CUEY-'+CODE;$('#linkTxt').textContent=LINK.replace('https://','');
+/* ---- live link to the screen (MQTT over WebSocket, public broker — mockup only) ---- */
+let mq=null;const TOPIC='cuey/v1/'+CODE+'/';
+function mqConnect(){if(mq||typeof mqtt==='undefined')return;mq=mqtt.connect('wss://broker.emqx.io:8084/mqtt',{clientId:'cuey_p_'+Math.random().toString(36).slice(2,10),keepalive:30,reconnectPeriod:2000});mq.on('connect',()=>{pubCues();pubState()})}
+function thumbData(c){const cv=document.createElement('canvas');cv.width=960;cv.height=540;paint(cv,c);return cv.toDataURL('image/jpeg',.72)}
+function pubCues(){if(!mq||!mq.connected)return;cues.forEach((c,i)=>mq.publish(TOPIC+'cue/'+i,JSON.stringify({n:c.n,k:c.k,t:thumbData(c)}),{retain:true,qos:0}));for(let i=cues.length;i<60;i++)mq.publish(TOPIC+'cue/'+i,'',{retain:true})}
+function pubState(){if(!mq||!mq.connected)return;const c=cues[live];mq.publish(TOPIC+'state',JSON.stringify({live,black,trans:c?c.trans:'dissolve',n:cues.length}),{retain:true,qos:0})}
 $('#showLink').onclick=()=>{$('#linkSheet').classList.add('open');$('#scrim').classList.add('on');$('#showLink').classList.add('done')};
 $('#shareNative').onclick=()=>{if(navigator.share){navigator.share({title:'Cuey',text:MSG,url:LINK}).catch(()=>{})}else (navigator.clipboard?navigator.clipboard.writeText(LINK):Promise.reject()).then(()=>toast('הלינק הועתק — הדבק בוואטסאפ או במייל')).catch(()=>toast(LINK))};
 $('#copyLink').onclick=()=>{(navigator.clipboard?navigator.clipboard.writeText(LINK):Promise.reject()).then(()=>toast('הלינק הועתק')).catch(()=>toast(LINK))};
 let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2200)}
-(function(){const c=$('#qr'),x=c.getContext('2d');let s=0x4b7a;const r=()=>(s=(s*1103515245+12345)&0x7fffffff)/0x7fffffff;x.fillStyle='#fff';x.fillRect(0,0,21,21);x.fillStyle='#000';for(let i=0;i<21;i++)for(let j=0;j<21;j++)if(r()<.45)x.fillRect(i,j,1,1);const eye=(ox,oy)=>{x.fillStyle='#000';x.fillRect(ox,oy,7,7);x.fillStyle='#fff';x.fillRect(ox+1,oy+1,5,5);x.fillStyle='#000';x.fillRect(ox+2,oy+2,3,3)};eye(0,0);eye(14,0);eye(0,14)})();
+(function(){if(typeof qrcode!=='undefined'){try{const q=qrcode(0,'M');q.addData(LINK);q.make();const n=q.getModuleCount(),c=$('#qr');c.width=n;c.height=n;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,n,n);x.fillStyle='#000';for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.isDark(r,k))x.fillRect(k,r,1,1);return}catch(e){}}const c=$('#qr'),x=c.getContext('2d');let s=0x4b7a;const r=()=>(s=(s*1103515245+12345)&0x7fffffff)/0x7fffffff;x.fillStyle='#fff';x.fillRect(0,0,21,21);x.fillStyle='#000';for(let i=0;i<21;i++)for(let j=0;j<21;j++)if(r()<.45)x.fillRect(i,j,1,1);const eye=(ox,oy)=>{x.fillStyle='#000';x.fillRect(ox,oy,7,7);x.fillStyle='#fff';x.fillRect(ox+1,oy+1,5,5);x.fillStyle='#000';x.fillRect(ox+2,oy+2,3,3)};eye(0,0);eye(14,0);eye(0,14)})();
 fmt();
 </script>
 

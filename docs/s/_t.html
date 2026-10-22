@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cuey Screen</title>
+<link rel="icon" href="../favicon.png">
+<style>
+html,body{margin:0;height:100%;background:#000;color:#fff;font-family:Poppins,system-ui,sans-serif;overflow:hidden}
+.ly{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .6s}
+.ly.on{opacity:1}
+.ly img{max-width:100%;max-height:100%;object-fit:contain}
+.ly video{max-width:100%;max-height:100%}
+#black{position:fixed;inset:0;background:#000;opacity:0;transition:opacity .4s;pointer-events:none}
+#black.on{opacity:1}
+#wait{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#0A0A0C;text-align:center;padding:24px;transition:opacity .5s}
+#wait.off{opacity:0;pointer-events:none}
+#wait img{width:200px}
+#wait .code{font:600 44px/1 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.12em;color:#C8FF00;margin-top:6px}
+#wait p{margin:0;color:#8a8a93;font-size:15px;max-width:420px}
+#wait .dot{width:10px;height:10px;border-radius:50%;background:#FF751F;animation:p 1.2s infinite}
+@keyframes p{50%{opacity:.3}}
+#st{position:fixed;top:12px;right:14px;font:12px ui-monospace,monospace;color:#555;opacity:0;transition:opacity .3s}
+body:hover #st{opacity:1}
+#fs{position:fixed;bottom:16px;right:16px;padding:10px 14px;border-radius:10px;border:1px solid #333;background:#111;color:#ddd;font:14px Poppins,system-ui;cursor:pointer;opacity:.9}
+</style>
+</head>
+<body>
+<div class="ly" id="a"></div><div class="ly" id="b"></div>
+<div id="black"></div>
+<div id="wait">
+  <img src="../logo-full.png" alt="Cuey">
+  <div class="dot"></div>
+  <p id="msg">Waiting for the phone…</p>
+  <div class="code" id="code"></div>
+  <p>Keep this window on the projector. The phone does the rest.</p>
+  <button id="fs">⛶ Fullscreen</button>
+</div>
+<div id="st"></div>
+<script src="../lib/mqtt.min.js"></script>
+<script>
+const code=(new URLSearchParams(location.search).get('c')||'').toUpperCase();
+document.getElementById('code').textContent=code?'CUEY-'+code:'';
+if(!code){document.getElementById('msg').textContent='No show code in the link.'}
+const cues={};let live=-1,cur='a',shown=null;
+const L={a:document.getElementById('a'),b:document.getElementById('b')};
+function show(i,trans){const c=cues[i];if(!c)return;const nxt=cur==='a'?'b':'a';const el=L[nxt];el.innerHTML='';
+  const im=new Image();im.src=c.t;el.appendChild(im);
+  const old=L[cur];if(trans==='cut'){old.style.transition='none';el.style.transition='none'}else{old.style.transition='';el.style.transition=''}
+  el.classList.add('on');old.classList.remove('on');cur=nxt;shown=i}
+function setBlack(b){document.getElementById('black').classList.toggle('on',!!b)}
+document.getElementById('fs').onclick=()=>document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();
+document.addEventListener('dblclick',()=>document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen());
+const st=document.getElementById('st');
+if(code){
+  const cl=mqtt.connect('ws://127.0.0.1:18083',{clientId:'cuey_s_'+Math.random().toString(36).slice(2,10),keepalive:30,reconnectPeriod:2000});
+  const base='cuey/v1/'+code+'/';
+  cl.on('connect',()=>{st.textContent='connected';cl.subscribe(base+'#');document.getElementById('msg').textContent='Connected. Waiting for GO…'});
+  cl.on('reconnect',()=>st.textContent='reconnecting…');cl.on('error',e=>st.textContent='error');
+  cl.on('message',(t,m)=>{const k=t.slice(base.length);let d;try{d=JSON.parse(m.toString())}catch(e){return}
+    if(k.startsWith('cue/')){cues[+k.slice(4)]=d;if(shown===null&&live>=0&&live===+k.slice(4)){show(live,'cut')}}
+    else if(k==='state'){if(d.live>=0)document.getElementById('wait').classList.add('off');else document.getElementById('msg').textContent='Ready — press GO on the phone.';
+      if(d.live!==live){live=d.live;if(live>=0&&cues[live])show(live,d.trans||'dissolve')}
+      setBlack(d.black)}
+    else if(k==='bye'){document.getElementById('wait').classList.remove('off');document.getElementById('msg').textContent='Show ended.'}
+  });
+}
+</script>
+</body>
+</html>
