@@ -42,9 +42,9 @@ body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:16p
 .steps{display:flex;gap:18px;margin-top:8px;color:var(--dim);font-size:12.5px;font-family:var(--mono)}
 .steps b{color:var(--mut);font-weight:500}
 /* cue rows */
-.cue{display:grid;grid-template-columns:24px 136px 1fr 36px;gap:12px;align-items:center;padding:10px 6px 10px 10px;border:1px solid var(--line);border-radius:16px;background:var(--panel);margin-bottom:10px;cursor:pointer;position:relative;user-select:none;-webkit-user-select:none}
-.cue.drag{opacity:.92;z-index:5;box-shadow:0 18px 40px -12px #000,0 0 0 1px var(--go);transform:scale(1.02);transition:none}
-.cue.gap{opacity:.25}
+.cue{display:grid;grid-template-columns:24px 136px 1fr 40px;gap:12px;align-items:center;padding:10px 6px 10px 10px;border:1px solid var(--line);border-radius:16px;background:var(--panel);margin-bottom:10px;cursor:pointer;position:relative;user-select:none;-webkit-user-select:none}
+.cue.ghost{box-shadow:0 24px 50px -12px #000,0 0 0 1.5px var(--go);transform:scale(1.03);background:var(--panel2)}
+.cue.gap{opacity:.22;border-style:dashed}
 .cue .no{font-family:var(--mono);font-size:12px;color:var(--dim)}
 .cue .th{width:136px;height:76px;border-radius:10px;overflow:hidden;background:#000;position:relative}
 .cue .th canvas{width:100%;height:100%;display:block}
@@ -53,7 +53,7 @@ body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:16p
 .cue .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:3px}
 .tag{font-size:11px;font-family:var(--mono);padding:2px 7px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--mut)}
 .tag.on{color:var(--go);border-color:#3A4A00;background:#141A06}
-.cue .hd{width:36px;height:60px;display:grid;place-items:center;color:var(--dim);font-size:22px;letter-spacing:-2px;cursor:grab;touch-action:none;border-radius:10px}
+.cue .hd{width:40px;height:72px;display:grid;place-items:center;color:var(--dim);font-size:22px;letter-spacing:-2px;cursor:grab;touch-action:none;border-radius:10px}
 .cue .hd:active{color:var(--go);background:var(--panel2)}
 .cue.live{border-color:var(--go);box-shadow:0 0 0 1px var(--go) inset}
 .cue.next{border-color:#5a2e12}
@@ -88,7 +88,19 @@ body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:16p
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:none}
 .sq{border-radius:18px;background:var(--panel2);border:1px solid var(--line);color:var(--txt);font-family:var(--disp);font-size:17px;font-weight:700;padding:18px;cursor:pointer}
 .sq.blk.on{background:#000;border-color:#FF4545;color:#FF4545;box-shadow:0 0 30px -8px #ff454588}
-.stat{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:12px;color:var(--mut);flex:none}
+.stat{font-family:var(--mono);font-size:12px;color:var(--mut)}
+.cta{display:flex;align-items:center;gap:12px;width:100%;text-align:start;border:1.5px solid var(--go);background:#141A06;color:var(--txt);border-radius:16px;padding:12px 14px;cursor:pointer;font-family:var(--font);flex:none;box-shadow:0 10px 30px -14px var(--glow);animation:pulse 2.4s ease-in-out infinite}
+.cta .ic{font-size:26px}
+.cta b{display:block;font-size:16px;color:var(--go)}
+.cta small{display:block;color:var(--mut);font-size:12px;line-height:1.3}
+.cta .arr{margin-inline-start:auto;color:var(--go);font-size:24px}
+.cta.done{animation:none;border-color:var(--line);background:var(--panel);box-shadow:none}
+.cta.done b{color:var(--txt)}
+@keyframes pulse{0%,100%{box-shadow:0 10px 30px -14px var(--glow)}50%{box-shadow:0 10px 40px -8px var(--glow)}}
+.share{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.share .btn{padding:13px;font-size:15px;gap:8px}
+.share .wa{background:#1B3A2A;border-color:#25D366;color:#9BF0C0}
+.share .ml{background:#1A2238;border-color:#4C7DFF;color:#B9CBFF}
 .stat b{color:var(--go)}
 .stat .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--go);box-shadow:0 0 8px var(--go);margin-inline-end:6px;vertical-align:middle}
 .code{font-family:var(--mono);font-size:30px;letter-spacing:5px;text-align:center;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px;direction:ltr;margin:10px 0}
@@ -125,8 +137,8 @@ body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:16p
 
   <!-- 2 · remote -->
   <section class="screen" id="s2" hidden>
-    <div class="top"><button class="ib" id="back2">›</button><div><h1>שלט</h1></div><span class="sp"></span><button class="ib" id="showLink" title="הצג על מסך">📺</button></div>
-    <div class="stat"><span><span class="dot"></span><b>1 מסך</b> מחובר · מוכן</span><span id="rmPos">—</span></div>
+    <div class="top"><button class="ib" id="back2">›</button><div><h1>שלט</h1></div><span class="sp"></span><span class="stat" id="rmPos">—</span></div>
+    <button class="cta" id="showLink"><span class="ic">📺</span><span><b>הצג על המסך</b><small>פתח את הלינק במחשב / בטלוויזיה · שתף בוואטסאפ או במייל</small></span><span class="arr">›</span></button>
     <div class="mon">
       <div class="pv now"><canvas id="cvNow" width="320" height="180"></canvas><span class="lbl">NOW</span><div class="nm" id="nmNow">—</div><div class="blk" id="pvBlk"></div></div>
       <div class="pv nx"><canvas id="cvNext" width="320" height="180"></canvas><span class="lbl">NEXT</span><div class="nm" id="nmNext">—</div></div>
@@ -151,11 +163,11 @@ body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:16p
   </div>
   <div class="sheet" id="linkSheet">
     <div class="grab"></div>
-    <h3>הצג על מסך</h3><div class="nm">פתח בדפדפן של המחשב, הטלוויזיה או המקרן. כמה מסכים — אותו לינק.</div>
+    <h3>הצג על המסך</h3><div class="nm">פתח את הלינק בדפדפן של המחשב, הטלוויזיה או המקרן. כמה מסכים — אותו לינק, אותו GO.</div>
     <div class="qr"><canvas id="qr" width="21" height="21"></canvas></div>
     <div class="code">CUEY-4K7P</div>
     <div class="link">cuey.app/s/4k7p</div>
-    <button class="btn" id="copyLink" style="margin-top:12px">העתק לינק</button>
+    <div class="share"><a class="btn wa" id="shareWa" href="#" target="_blank" rel="noopener">💬 וואטסאפ</a><a class="btn ml" id="shareMail" href="#">✉️ מייל</a><button class="btn" id="shareNative">⤴ שתף…</button><button class="btn" id="copyLink">⎘ העתק לינק</button></div>
   </div>
   <div class="toast" id="toast"></div>
   <input type="file" id="pick" accept="video/*,image/*" multiple hidden>
@@ -168,28 +180,33 @@ function loadThumb(cue,done){if(cue.k==='video'){const v=document.createElement(
 let cues=[],live=-1,sel=-1,black=false;
 function fmt(){const n=cues.length;$('#meta').textContent=n?n+' קיוז':'';$('#goLive').disabled=!n;$('#empty').hidden=!!n;$('#list').hidden=!n}
 function renderCues(){const h=$('#cues');h.innerHTML='';cues.forEach((c,i)=>{const d=document.createElement('div');d.className='cue'+(i===live?' live':'')+(i===live+1?' next':'');d.innerHTML=`<div class="no">${String(i+1).padStart(2,'0')}</div><div class="th"><canvas width="184" height="104"></canvas>${c.k==='video'?`<i>${c.d}</i>`:''}</div><div><div class="nm">${c.n}</div><div class="tags"><span class="tag ${c.trans==='dissolve'?'on':''}">${c.trans==='dissolve'?'דיזולב':'קאט'}</span>${c.loop?'<span class="tag on">לופ</span>':''}<span class="tag ${c.end==='next'?'on':''}">${c.end==='next'?'ממשיך לבד':'מחכה ל-GO'}</span></div></div><div class="hd">⋮⋮</div>`;paint(d.querySelector('canvas'),c);d._cue=c;d.onclick=e=>{if(e.target.closest('.hd'))return;openCue(cues.indexOf(c))};dragify(d,d.querySelector('.hd'));h.appendChild(d)});fmt()}
-/* touch drag-and-drop reorder */
+/* touch drag-and-drop reorder: lift a ghost, move a placeholder, drop */
 function dragify(card,handle){
+  handle.addEventListener('contextmenu',e=>e.preventDefault());
   handle.addEventListener('pointerdown',e=>{
-    e.preventDefault();
-    const list=$('#cues');let y0=e.clientY,base=card.getBoundingClientRect().top;
-    card.classList.add('drag');card.style.position='relative';
-    const place=()=>{const r=card.getBoundingClientRect();return r.top-parseFloat((card.style.transform.match(/-?[\d.]+/)||[0])[0])};
-    const mv=ev=>{
-      card.style.transform='translateY('+(ev.clientY-y0)+'px) scale(1.02)';
-      const sibs=[...list.children].filter(x=>x!==card&&x.classList.contains('cue'));
-      for(const sb of sibs){const r=sb.getBoundingClientRect(),mid=r.top+r.height/2;
-        const cardAfter=!!(sb.compareDocumentPosition(card)&Node.DOCUMENT_POSITION_FOLLOWING);
-        if(ev.clientY<mid&&cardAfter){const before=card.getBoundingClientRect().top;list.insertBefore(card,sb);card.style.transform='';const after=card.getBoundingClientRect().top;y0+=after-(before-(ev.clientY-y0));card.style.transform='translateY('+(ev.clientY-y0)+'px) scale(1.02)';break}
-        if(ev.clientY>mid&&!cardAfter){const before=card.getBoundingClientRect().top;list.insertBefore(card,sb.nextSibling);card.style.transform='';const after=card.getBoundingClientRect().top;y0+=after-(before-(ev.clientY-y0));card.style.transform='translateY('+(ev.clientY-y0)+'px) scale(1.02)';break}
-      }
-    };
-    const up=()=>{document.removeEventListener('pointermove',mv);document.removeEventListener('pointerup',up);document.removeEventListener('pointercancel',up);
-      card.classList.remove('drag');card.style.transform='';card.style.position='';
-      cues=[...list.children].filter(x=>x.classList.contains('cue')).map(x=>x._cue);renderCues();if(navigator.vibrate)navigator.vibrate(8)};
-    document.addEventListener('pointermove',mv);document.addEventListener('pointerup',up);document.addEventListener('pointercancel',up);
+    e.preventDefault();e.stopPropagation();
+    const list=$('#cues'),scroller=$('#list'),r0=card.getBoundingClientRect();
+    const ghost=card.cloneNode(true);ghost.className='cue ghost';ghost.style.cssText='position:fixed;left:'+r0.left+'px;top:'+r0.top+'px;width:'+r0.width+'px;margin:0;pointer-events:none;z-index:50';
+    document.body.appendChild(ghost);
+    card.classList.add('gap');
+    const offY=e.clientY-r0.top;let lastY=e.clientY,raf=0;
+    if(navigator.vibrate)navigator.vibrate(10);
+    const step=()=>{ghost.style.top=(lastY-offY)+'px';
+      // placeholder follows the finger
+      const sibs=[...list.children].filter(x=>x!==card);
+      let target=null;for(const sb of sibs){const r=sb.getBoundingClientRect();if(lastY<r.top+r.height/2){target=sb;break}}
+      if(target!==card.nextSibling)list.insertBefore(card,target);
+      // autoscroll near edges
+      const sr=scroller.getBoundingClientRect();if(lastY<sr.top+70)scroller.scrollTop-=8;else if(lastY>sr.bottom-110)scroller.scrollTop+=8;
+      raf=requestAnimationFrame(step)};
+    raf=requestAnimationFrame(step);
+    const mv=ev=>{lastY=ev.clientY;ev.preventDefault()};
+    const up=()=>{cancelAnimationFrame(raf);document.removeEventListener('pointermove',mv);document.removeEventListener('pointerup',up);document.removeEventListener('pointercancel',up);ghost.remove();card.classList.remove('gap');
+      cues=[...list.children].map(x=>x._cue);renderCues();if(navigator.vibrate)navigator.vibrate(8)};
+    document.addEventListener('pointermove',mv,{passive:false});document.addEventListener('pointerup',up);document.addEventListener('pointercancel',up);
   });
 }
+
 
 function add(){$('#pick').click()}
 $('#pick').onchange=e=>{const fs=[...e.target.files];e.target.value='';let first=!cues.length;for(const f of fs){const k=f.type.startsWith('video/')?'video':f.type.startsWith('image/')?'image':null;if(!k)continue;const c={n:f.name.replace(/\.[^.]+$/,''),k,d:'',url:URL.createObjectURL(f),img:null,trans:'dissolve',loop:0,end:k==='video'?'next':'hold'};cues.push(c);loadThumb(c,()=>{renderCues();if(live>=0)renderRemote()})}renderCues();if(first&&cues.length)toast('ברירות מחדל חכמות: דיזולב · סרטון פעם אחת · תמונה מחכה')};
@@ -200,15 +217,19 @@ $('#delCue').onclick=()=>{cues.splice(sel,1);closeSheets();renderCues()};
 function closeSheets(){document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('open'));$('#scrim').classList.remove('on')}
 $('#scrim').onclick=closeSheets;
 /* go live: screen downloads everything first, only then the remote appears */
-$('#goLive').onclick=()=>{const dl=$('#dl');dl.classList.add('on');let n=0;const N=cues.length;const tick=()=>{n++;$('#dlBar').style.width=(n/N*100)+'%';$('#dlTxt').textContent=n+' / '+N+' · '+cues[n-1].n;if(n<N)setTimeout(tick,420);else setTimeout(()=>{dl.classList.remove('on');go(2)},500)};$('#dlTxt').textContent='0 / '+N;setTimeout(tick,300)};
+$('#goLive').onclick=()=>{const dl=$('#dl');dl.classList.add('on');let n=0;const N=cues.length;const tick=()=>{n++;$('#dlBar').style.width=(n/N*100)+'%';$('#dlTxt').textContent=n+' / '+N+' · '+cues[n-1].n;if(n<N)setTimeout(tick,420);else setTimeout(()=>{dl.classList.remove('on');go(2);if(!window._shown){window._shown=1;setTimeout(()=>$('#showLink').click(),350)}},500)};$('#dlTxt').textContent='0 / '+N;setTimeout(tick,300)};
 const S=[null,$('#s1'),$('#s2')];function go(n){[1,2].forEach(i=>{S[i].hidden=i!==n});if(n===2)renderRemote()}
 $('#back2').onclick=()=>go(1);
 function renderRemote(){const n=cues[live],x=cues[live+1];const cn=$('#cvNow'),cx=$('#cvNext');cn.getContext('2d').clearRect(0,0,320,180);cx.getContext('2d').clearRect(0,0,320,180);if(n)paint(cn,n);if(x)paint(cx,x);$('#nmNow').textContent=n?n.n:'מוכן — לחץ GO';$('#nmNext').textContent=x?x.n+(x.k==='video'&&x.end==='next'?' · ממשיך לבד':''):'—';$('#rmPos').textContent=(live<0?'—':live+1)+' / '+cues.length;renderCues()}
 $('#goBtn').onclick=()=>{if(live+1<cues.length){live++;if(navigator.vibrate)navigator.vibrate(12)}else toast('סוף ההופעה');black=false;$('#pvBlk').classList.remove('on');$('#blkBtn').classList.remove('on');renderRemote()};
 $('#backBtn').onclick=()=>{if(live>0)live--;renderRemote()};
 $('#blkBtn').onclick=()=>{black=!black;$('#pvBlk').classList.toggle('on',black);$('#blkBtn').classList.toggle('on',black)};
-$('#showLink').onclick=()=>{$('#linkSheet').classList.add('open');$('#scrim').classList.add('on')};
-$('#copyLink').onclick=()=>{const s='https://cuey.app/s/4k7p';(navigator.clipboard?navigator.clipboard.writeText(s):Promise.reject()).then(()=>toast('הלינק הועתק')).catch(()=>toast('cuey.app/s/4k7p'))};
+const LINK='https://cuey.app/s/4k7p',MSG='הלינק להצגה על המסך של הטקס: '+LINK+'\n(פותחים בדפדפן במחשב שמחובר למקרן — ואני שולט מהטלפון)';
+$('#showLink').onclick=()=>{$('#linkSheet').classList.add('open');$('#scrim').classList.add('on');$('#showLink').classList.add('done')};
+$('#shareWa').href='https://wa.me/?text='+encodeURIComponent(MSG);
+$('#shareMail').href='mailto:?subject='+encodeURIComponent('Cuey — לינק להצגה על המסך')+'&body='+encodeURIComponent(MSG);
+$('#shareNative').onclick=()=>{if(navigator.share){navigator.share({title:'Cuey',text:MSG,url:LINK}).catch(()=>{})}else toast('שיתוף מערכת לא זמין בדפדפן הזה')};
+$('#copyLink').onclick=()=>{(navigator.clipboard?navigator.clipboard.writeText(LINK):Promise.reject()).then(()=>toast('הלינק הועתק')).catch(()=>toast(LINK))};
 let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2200)}
 (function(){const c=$('#qr'),x=c.getContext('2d');let s=0x4b7a;const r=()=>(s=(s*1103515245+12345)&0x7fffffff)/0x7fffffff;x.fillStyle='#fff';x.fillRect(0,0,21,21);x.fillStyle='#000';for(let i=0;i<21;i++)for(let j=0;j<21;j++)if(r()<.45)x.fillRect(i,j,1,1);const eye=(ox,oy)=>{x.fillStyle='#000';x.fillRect(ox,oy,7,7);x.fillStyle='#fff';x.fillRect(ox+1,oy+1,5,5);x.fillStyle='#000';x.fillRect(ox+2,oy+2,3,3)};eye(0,0);eye(14,0);eye(0,14)})();
 fmt();
