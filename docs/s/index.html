@@ -27,6 +27,8 @@ body:hover #st{opacity:1}
 </head>
 <body>
 <div class="ly" id="a"></div><div class="ly" id="b"></div>
+<video id="rtc" autoplay playsinline muted style="position:fixed;inset:0;width:100%;height:100%;object-fit:contain;background:#000;display:none"></video>
+<button id="snd" style="display:none;position:fixed;bottom:16px;left:16px;padding:10px 14px;border-radius:10px;border:1px solid #333;background:#111;color:#ddd;font:14px Poppins,system-ui;cursor:pointer;opacity:.9">🔇 Sound off — click to unmute</button>
 <div id="black"></div>
 <div id="wait">
   <img src="../logo-full.png" alt="Cuey">
@@ -51,6 +53,23 @@ function setBlack(b){document.getElementById('black').classList.toggle('on',!!b)
 document.getElementById('fs').onclick=()=>document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();
 document.addEventListener('dblclick',()=>document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen());
 const st=document.getElementById('st'),msg=document.getElementById('msg');
+/* ---- live stream from the Cuey app (WebRTC) ---- */
+const myId=Math.random().toString(36).slice(2,10);let pc=null,rtcOn=false,helloT=0;
+const rtc=document.getElementById('rtc'),snd=document.getElementById('snd');
+function post(o){return fetch('https://ntfy.sh/cuey-v1-'+code,{method:'POST',body:JSON.stringify(o)}).catch(()=>{})}
+async function body(d){if(d.attachment&&d.attachment.url){try{return await (await fetch(d.attachment.url)).text()}catch(e){return ''}}return d.message||''}
+function hello(){if(!rtcOn)post({t:'hello',id:myId})}
+function waitIce(p){return new Promise(r=>{if(p.iceGatheringState==='complete')return r();const f=()=>{if(p.iceGatheringState==='complete'){p.removeEventListener('icegatheringstatechange',f);r()}};p.addEventListener('icegatheringstatechange',f);setTimeout(r,2500)})}
+async function onOffer(m){
+  if(pc){try{pc.close()}catch(e){}}
+  pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
+  pc.ontrack=e=>{rtc.srcObject=e.streams[0];rtc.style.display='block';snd.style.display='block';rtcOn=true;document.getElementById('wait').classList.add('off');rtc.play().catch(()=>{})};
+  pc.onconnectionstatechange=()=>{st.textContent=pc.connectionState;if(['failed','disconnected','closed'].includes(pc.connectionState)){rtcOn=false;rtc.style.display='none';snd.style.display='none';document.getElementById('wait').classList.remove('off');msg.textContent='Connection lost — reconnecting…';setTimeout(hello,1500)}};
+  await pc.setRemoteDescription({type:'offer',sdp:m.sdp});const ans=await pc.createAnswer();await pc.setLocalDescription(ans);await waitIce(pc);
+  post({t:'answer',id:myId,sdp:pc.localDescription.sdp});
+}
+snd.onclick=()=>{rtc.muted=!rtc.muted;snd.textContent=rtc.muted?'🔇 Sound off — click to unmute':'🔊 Sound on'};
+setInterval(()=>{if(!rtcOn&&code)hello()},20000);
 function handle(d){
   if(d.event!=='message')return;
   const m=d.message||'';
@@ -61,8 +80,11 @@ function handle(d){
   if(s.live!==live||shown!==s.live){live=s.live;if(live>=0&&cues[live])show(live,s.trans||'dissolve')}
   setBlack(s.black)}
 function connect(){const ws=new WebSocket('wss://ntfy.sh/cuey-v1-'+code+'/ws?since=6h');
-  ws.onopen=()=>{st.textContent='connected';if(live<0)msg.textContent='Connected. Waiting for GO…'};
-  ws.onmessage=e=>{try{handle(JSON.parse(e.data))}catch(x){}};
+  ws.onopen=()=>{st.textContent='connected';if(live<0)msg.textContent='Connected. Waiting for the show…';hello()};
+  ws.onmessage=async e=>{let d;try{d=JSON.parse(e.data)}catch(x){return}if(d.event!=='message')return;let m=null;try{m=JSON.parse(await body(d))}catch(x){}
+    if(m&&m.t==='offer'&&m.to===myId){onOffer(m);return}
+    if(m&&m.t==='bye'&&m.host){if(pc){try{pc.close()}catch(x){}}return}
+    handle(d)};
   ws.onclose=()=>{st.textContent='reconnecting…';setTimeout(connect,2000)};ws.onerror=()=>st.textContent='error'}
 if(code)connect();
 </script>
