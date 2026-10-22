@@ -46,6 +46,8 @@ header .sep{width:1px;height:24px;background:var(--line2);margin:0 6px}
 .menu .dd button{display:flex;justify-content:space-between;width:100%;background:transparent;border:none;text-align:start;padding:8px 10px;border-radius:6px}
 .menu .dd button:hover{background:#26262E}
 .menu .dd button span{color:var(--dim);font-family:var(--mono);font-size:11px;margin-inline-start:16px}
+.menu .dd button span:last-child{direction:ltr;unicode-bidi:isolate}
+.menu .dd button span[data-t]{color:var(--txt);font-family:inherit;font-size:inherit;margin:0}
 .menu .dd .sep{height:1px;background:var(--line);margin:6px 4px}
 body.native-darwin #fileMenu,body.native-win32 #fileMenu,body.native-linux #fileMenu{display:none}
 .status{font-family:var(--mono);font-size:11px;letter-spacing:.6px;color:var(--mut);padding:0 8px}
