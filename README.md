@@ -5,8 +5,8 @@
 <p align="center"><b>Video &amp; slides for live events. One button. GO.</b><br>
 Free · Mac &amp; Windows · No PowerPoint, no VJ software, no crew.</p>
 <p align="center">
-  <a href="https://github.com/bergerman1-svg/cuey/releases/latest">⬇ Download</a> ·
-  <a href="https://bergerman1-svg.github.io/cuey/">Website (עברית)</a>
+  <a href="https://bergerman1-svg.github.io/cuey/app/">▶ Open in browser</a> ·
+  <a href="https://bergerman1-svg.github.io/cuey/">Website & direct download</a>
 </p>
 
 ![Cuey operator screen](docs/screenshot.png)
@@ -62,3 +62,7 @@ build/          icon
 ## License
 
 MIT — © Avi Berger Productions
+
+## Architecture
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) — repo map, data model, stage engine, release procedure, mobile prototype and roadmap.
