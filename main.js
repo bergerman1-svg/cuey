@@ -21,8 +21,11 @@ function createWindow() {
 
   // The Output window is opened by the page with window.open('', 'cuey_output').
   // Put it on the second display (if there is one) as a frameless fullscreen window.
-  win.webContents.setWindowOpenHandler(({ frameName }) => {
-    if (frameName !== 'cuey_output') return { action: 'deny' };
+  win.webContents.setWindowOpenHandler(({ frameName, url }) => {
+    if (frameName !== 'cuey_output') {
+      if (/^https?:\/\//.test(url)) shell.openExternal(url);
+      return { action: 'deny' };
+    }
     const displays = screen.getAllDisplays();
     const primary = screen.getPrimaryDisplay();
     const ext = displays.find(d => d.id !== primary.id);
