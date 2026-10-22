@@ -192,3 +192,19 @@ screen's Cache Storage so the live run needs no network.
 - Test DnD and touch flows with Playwright (`has_touch`, `is_mobile`) before pushing; dispatch
   `PointerEvent`s on `document` because pointer capture drops moves.
 - The Claude app's in-app viewer blocks file pickers and popups — always test on the hosted URL or a real phone.
+
+## 9. Anonymous usage counts (v0.17.7)
+
+Purpose: decide *when* to offer sign-in from Cuey's own numbers, not other products' benchmarks.
+GoatCounter (no cookies, no personal data → no consent banner). Off until the site code is set in **two places**:
+`STATS_CODE` in `app/cuey.html` and `CODE` in the snippet at the bottom of `docs/index.html` + `docs/he/index.html`.
+Fire-and-forget image pixel — offline or blocked requests are simply dropped; never touches playback. Opt-out: `localStorage cuey.nostats=1`.
+
+| Where | Events |
+|---|---|
+| Site | `/site/en`, `/site/he` (visits, `?utm` kept) · `site/download-mac-arm` / `-mac-intel` / `-win` · `site/open-in-browser` · `site/pricing-click` |
+| App (once per session) | `app/open-<door>` (mac, win, web, pwa, file) · `app/files-added` · `app/go-first` · `app/output-open` · `app/share-open` |
+| App (once per install) | `app/first-open-<door>` · `app/files-added-ever` · `app/go-first-ever` |
+| App (every time) | `app/studio-dialog-export` / `-auto` · `app/studio-buy-click` |
+
+Funnel to watch: visit → open → files-added → go-first. When the sign-in banner ships, add `signin-shown` / `signin-click` / `signin-done` with the same `track()` helper.

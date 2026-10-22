@@ -259,5 +259,14 @@ nav .links{display:flex;align-items:center;gap:14px}
   else if(/Win/i.test(ua)){document.getElementById('dlWin').classList.remove('sec')}
 })();
 </script>
+<script>
+/* anonymous visit + click counts (GoatCounter, no cookies). Same code as STATS_CODE in app/cuey.html; empty = off */
+(function(){var CODE='';if(!CODE)return;
+function t(n,ev){try{var i=new Image();i.referrerPolicy='no-referrer';i.src='https://'+CODE+'.goatcounter.com/count?p='+encodeURIComponent(n)+(ev?'&e=true&t='+encodeURIComponent(n):'&t=Cuey')+'&r='+encodeURIComponent(document.referrer)+'&rnd='+Math.random().toString(36).slice(2)}catch(e){}}
+t('/site/he'+location.search,false);
+document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(!a)return;var h=a.getAttribute('href')||'';
+if(/Cuey-mac-arm64/.test(h))t('site/download-mac-arm',1);else if(/Cuey-mac-x64/.test(h))t('site/download-mac-intel',1);else if(/Cuey-windows/.test(h))t('site/download-win',1);
+else if(/(^|\/)app\/?$/.test(h))t('site/open-in-browser',1);else if(/#pricing/.test(h))t('site/pricing-click',1)},true)})();
+</script>
 </body>
 </html>
