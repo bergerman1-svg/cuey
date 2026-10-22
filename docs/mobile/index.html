@@ -26,7 +26,8 @@ body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:16p
 .ib{width:38px;height:38px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);color:var(--txt);display:grid;place-items:center;font-size:18px;cursor:pointer}
 .logo{height:26px;width:auto;display:block}
 .scroll{flex:1;overflow:auto;min-height:0;padding-block:4px 120px;-webkit-overflow-scrolling:touch}
-.bottom{position:absolute;left:0;right:0;bottom:0;padding:12px max(16px,env(safe-area-inset-left,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px));background:linear-gradient(180deg,transparent,var(--bg) 30%);display:flex;gap:10px}
+.bottom{position:absolute;left:0;right:0;bottom:0;padding:12px max(16px,env(safe-area-inset-left,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px));background:linear-gradient(180deg,transparent,var(--bg) 30%);display:flex;gap:10px;pointer-events:none}
+.bottom .btn{pointer-events:auto}
 .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border-radius:16px;padding:16px;font-family:var(--font);font-size:17px;font-weight:600;cursor:pointer;color:var(--txt);background:var(--panel2);border:1px solid var(--line)}
 .btn.pri{background:var(--go);color:#0A0A0C;border-color:var(--go);box-shadow:0 12px 36px -10px var(--glow)}
 .btn:disabled{opacity:.35;box-shadow:none}
@@ -40,18 +41,19 @@ body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:16p
 .steps{display:flex;gap:18px;margin-top:8px;color:var(--dim);font-size:12.5px;font-family:var(--mono)}
 .steps b{color:var(--mut);font-weight:500}
 /* cue rows */
-.cue{display:grid;grid-template-columns:28px 92px 1fr 34px;gap:10px;align-items:center;padding:8px 8px 8px 10px;border:1px solid var(--line);border-radius:14px;background:var(--panel);margin-bottom:8px;cursor:pointer;position:relative;transition:transform .15s,opacity .15s}
+.cue{display:grid;grid-template-columns:24px 136px 1fr 36px;gap:12px;align-items:center;padding:10px 6px 10px 10px;border:1px solid var(--line);border-radius:16px;background:var(--panel);margin-bottom:10px;cursor:pointer;position:relative;user-select:none;-webkit-user-select:none}
+.cue.drag{opacity:.92;z-index:5;box-shadow:0 18px 40px -12px #000,0 0 0 1px var(--go);transform:scale(1.02);transition:none}
+.cue.gap{opacity:.25}
 .cue .no{font-family:var(--mono);font-size:12px;color:var(--dim)}
-.cue .th{width:92px;height:52px;border-radius:8px;overflow:hidden;background:#000;position:relative}
+.cue .th{width:136px;height:76px;border-radius:10px;overflow:hidden;background:#000;position:relative}
 .cue .th canvas{width:100%;height:100%;display:block}
 .cue .th i{position:absolute;bottom:4px;inset-inline-end:4px;font-family:var(--mono);font-size:10px;background:#000c;color:#fff;padding:1px 5px;border-radius:4px;font-style:normal}
-.cue .nm{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cue .nm{font-weight:600;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cue .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:3px}
 .tag{font-size:11px;font-family:var(--mono);padding:2px 7px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--mut)}
 .tag.on{color:var(--go);border-color:#3A4A00;background:#141A06}
-.cue .mv{display:flex;flex-direction:column;gap:2px}
-.cue .mv button{width:30px;height:22px;border:none;background:var(--panel2);color:var(--mut);border-radius:6px;font-size:11px;cursor:pointer}
-.cue .mv button:active{color:var(--go)}
+.cue .hd{width:36px;height:60px;display:grid;place-items:center;color:var(--dim);font-size:22px;letter-spacing:-2px;cursor:grab;touch-action:none;border-radius:10px}
+.cue .hd:active{color:var(--go);background:var(--panel2)}
 .cue.live{border-color:var(--go);box-shadow:0 0 0 1px var(--go) inset}
 .cue.next{border-color:#5a2e12}
 .hint{color:var(--dim);font-size:12.5px;text-align:center;margin-top:6px}
@@ -113,10 +115,10 @@ body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:16p
     <div class="empty" id="empty">
       <div class="big" id="bigAdd">+</div>
       <h2>הוסף תוכן מהטלפון</h2>
-      <p>סרטונים ותמונות מהגלריה או מהקבצים. הסדר ברשימה הוא הסדר במסך.</p>
+      <p>בוחרים כמה סרטונים ותמונות ביחד מהגלריה ולוחצים הוסף. הסדר ברשימה הוא הסדר במסך.</p>
       <div class="steps"><b>1</b> מוסיפים <b>2</b> מסדרים <b>3</b> GO</div>
     </div>
-    <div class="scroll" id="list" hidden><div id="cues"></div><div class="hint">לחיצה על קיו = הגדרות · ▲▼ מסדרים</div></div>
+    <div class="scroll" id="list" hidden><div id="cues"></div><div class="hint">לחיצה על קיו = הגדרות · גוררים מהידית ⋮⋮ לסידור</div></div>
     <div class="bottom"><button class="btn" id="addMedia">＋ הוסף</button><button class="btn pri" id="goLive" disabled>▶ Go live</button></div>
   </section>
 
@@ -164,7 +166,30 @@ function paint(c,cue){const x=c.getContext('2d');x.fillStyle='#000';x.fillRect(0
 function loadThumb(cue,done){if(cue.k==='video'){const v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='auto';v.src=cue.url;v.addEventListener('loadedmetadata',()=>{cue.d=Math.floor(v.duration/60)+':'+String(Math.floor(v.duration%60)).padStart(2,'0');v.currentTime=Math.min(0.5,v.duration/4)});v.addEventListener('seeked',()=>{cue.img={el:v,w:v.videoWidth,h:v.videoHeight};done()},{once:true})}else{const im=new Image();im.onload=()=>{cue.img={el:im,w:im.naturalWidth,h:im.naturalHeight};done()};im.src=cue.url}}
 let cues=[],live=-1,sel=-1,black=false;
 function fmt(){const n=cues.length;$('#meta').textContent=n?n+' קיוז':'';$('#goLive').disabled=!n;$('#empty').hidden=!!n;$('#list').hidden=!n}
-function renderCues(){const h=$('#cues');h.innerHTML='';cues.forEach((c,i)=>{const d=document.createElement('div');d.className='cue'+(i===live?' live':'')+(i===live+1?' next':'');d.innerHTML=`<div class="no">${String(i+1).padStart(2,'0')}</div><div class="th"><canvas width="184" height="104"></canvas>${c.k==='video'?`<i>${c.d}</i>`:''}</div><div><div class="nm">${c.n}</div><div class="tags"><span class="tag ${c.trans==='dissolve'?'on':''}">${c.trans==='dissolve'?'דיזולב':'קאט'}</span>${c.loop?'<span class="tag on">לופ</span>':''}<span class="tag ${c.end==='next'?'on':''}">${c.end==='next'?'ממשיך לבד':'מחכה ל-GO'}</span></div></div><div class="mv"><button data-m="-1">▲</button><button data-m="1">▼</button></div>`;paint(d.querySelector('canvas'),c);d.onclick=e=>{if(e.target.closest('.mv'))return;openCue(i)};d.querySelectorAll('.mv button').forEach(b=>b.onclick=e=>{e.stopPropagation();const j=i+ +b.dataset.m;if(j<0||j>=cues.length)return;[cues[i],cues[j]]=[cues[j],cues[i]];renderCues()});h.appendChild(d)});fmt()}
+function renderCues(){const h=$('#cues');h.innerHTML='';cues.forEach((c,i)=>{const d=document.createElement('div');d.className='cue'+(i===live?' live':'')+(i===live+1?' next':'');d.innerHTML=`<div class="no">${String(i+1).padStart(2,'0')}</div><div class="th"><canvas width="184" height="104"></canvas>${c.k==='video'?`<i>${c.d}</i>`:''}</div><div><div class="nm">${c.n}</div><div class="tags"><span class="tag ${c.trans==='dissolve'?'on':''}">${c.trans==='dissolve'?'דיזולב':'קאט'}</span>${c.loop?'<span class="tag on">לופ</span>':''}<span class="tag ${c.end==='next'?'on':''}">${c.end==='next'?'ממשיך לבד':'מחכה ל-GO'}</span></div></div><div class="hd">⋮⋮</div>`;paint(d.querySelector('canvas'),c);d._cue=c;d.onclick=e=>{if(e.target.closest('.hd'))return;openCue(cues.indexOf(c))};dragify(d,d.querySelector('.hd'));h.appendChild(d)});fmt()}
+/* touch drag-and-drop reorder */
+function dragify(card,handle){
+  handle.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    const list=$('#cues');let y0=e.clientY,base=card.getBoundingClientRect().top;
+    card.classList.add('drag');card.style.position='relative';
+    const place=()=>{const r=card.getBoundingClientRect();return r.top-parseFloat((card.style.transform.match(/-?[\d.]+/)||[0])[0])};
+    const mv=ev=>{
+      card.style.transform='translateY('+(ev.clientY-y0)+'px) scale(1.02)';
+      const sibs=[...list.children].filter(x=>x!==card&&x.classList.contains('cue'));
+      for(const sb of sibs){const r=sb.getBoundingClientRect(),mid=r.top+r.height/2;
+        const cardAfter=!!(sb.compareDocumentPosition(card)&Node.DOCUMENT_POSITION_FOLLOWING);
+        if(ev.clientY<mid&&cardAfter){const before=card.getBoundingClientRect().top;list.insertBefore(card,sb);card.style.transform='';const after=card.getBoundingClientRect().top;y0+=after-(before-(ev.clientY-y0));card.style.transform='translateY('+(ev.clientY-y0)+'px) scale(1.02)';break}
+        if(ev.clientY>mid&&!cardAfter){const before=card.getBoundingClientRect().top;list.insertBefore(card,sb.nextSibling);card.style.transform='';const after=card.getBoundingClientRect().top;y0+=after-(before-(ev.clientY-y0));card.style.transform='translateY('+(ev.clientY-y0)+'px) scale(1.02)';break}
+      }
+    };
+    const up=()=>{document.removeEventListener('pointermove',mv);document.removeEventListener('pointerup',up);document.removeEventListener('pointercancel',up);
+      card.classList.remove('drag');card.style.transform='';card.style.position='';
+      cues=[...list.children].filter(x=>x.classList.contains('cue')).map(x=>x._cue);renderCues();if(navigator.vibrate)navigator.vibrate(8)};
+    document.addEventListener('pointermove',mv);document.addEventListener('pointerup',up);document.addEventListener('pointercancel',up);
+  });
+}
+
 function add(){$('#pick').click()}
 $('#pick').onchange=e=>{const fs=[...e.target.files];e.target.value='';let first=!cues.length;for(const f of fs){const k=f.type.startsWith('video/')?'video':f.type.startsWith('image/')?'image':null;if(!k)continue;const c={n:f.name.replace(/\.[^.]+$/,''),k,d:'',url:URL.createObjectURL(f),img:null,trans:'dissolve',loop:0,end:k==='video'?'next':'hold'};cues.push(c);loadThumb(c,()=>{renderCues();if(live>=0)renderRemote()})}renderCues();if(first&&cues.length)toast('ברירות מחדל חכמות: דיזולב · סרטון פעם אחת · תמונה מחכה')};
 $('#bigAdd').onclick=add;$('#addMedia').onclick=add;
