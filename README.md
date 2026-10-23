@@ -28,7 +28,7 @@ Cuey is the thing in between: **drag your files in, plug in the projector, press
 - **Standby** — video comes up on its first frame; the next GO plays it
 - **IN / OUT** trim points by dragging markers — no video editor needed
 - **Slides with sound** — attach an audio file to a still image
-- **Hold time / Auto next** per slide, **AUTO** mode runs the whole list in a loop
+- **Hold time / Auto next** per slide, **Slide show** — tick cues, group them, they run and loop by themselves (GO = next cue)
 - **Export MP4** — render the loop to a single video file
 - **BLACK / FREEZE**, 5-second end countdown, timeline with scrub and ±10 s
 - **Save / Open** shows (`.cuey`)
