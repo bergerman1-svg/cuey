@@ -47,6 +47,10 @@ function createWindow() {
 
   win.webContents.on('did-create-window', (child) => {
     child.setMenuBarVisibility(false);
+    // a screen plugged in (or back) while the show runs → move the Output there, full screen
+    const onAdd = (_e, d) => { if (child.isDestroyed()) return; const b = d.bounds; child.setFullScreen(false); child.setBounds({ x: b.x, y: b.y, width: b.width, height: b.height }); child.setFullScreen(true); };
+    screen.on('display-added', onAdd);
+    child.on('closed', () => screen.removeListener('display-added', onAdd));
     child.on('closed', () => { if (win && !win.isDestroyed()) win.focus(); });
   });
 
