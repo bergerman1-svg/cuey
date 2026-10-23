@@ -156,7 +156,7 @@ What is **fake** in the mockup: QR, code, link `cuey.app/s/4k7p`, "1 screen conn
 | Price | 0, forever | **$8 one-time** per account (chosen over monthly) | Subscription (price set once there is something to sell) |
 | Running a show | Everything — no cue-count limits (cues, GO, dissolve, audio, text, IN/OUT, basic share screen) | Same | Same |
 | Screen badge | "Powered by Cuey" in the corner (Output, shared screen) | None | None, or the venue's logo |
-| Studio tools | — | **Export MP4** + **AUTO** (free during beta, marked STUDIO in the app — v0.17.2) | Included |
+| Studio tools | — | **Export MP4** + **Slide show** (replaced AUTO in v0.20.0 — groups of cues that run and loop by themselves; free to build and preview, Studio to run on the output) (free during beta, marked STUDIO in the app — v0.17.2) | Included |
 | Account | Not needed | Yes (Google / email) — purchase follows the account to every computer | Yes |
 | Phone remote + screen link | 1 screen, 1 active show, ~500 MB, deleted 24 h after | Same | Multiple screens, no limits |
 | Cloud & team | — | — | Shows in the cloud, share with a colleague, several operators |
@@ -227,3 +227,10 @@ Supabase project **Cuey** (`lgemvnntlgasxhrpsdww`, eu-central-1, free plan). The
 - Auth email via **Resend** (free tier) → Supabase SMTP, set up with Resend's Supabase integration. Sender: `Cuey <noreply@cuey.live>`.
 - Supabase templates *Magic link or OTP* and *Confirm sign up* both send a branded code (`{{ .Token }}`, currently 8 digits, valid 1 hour). App verifies with type `email`, falls back to `signup`.
 - Status: email delivery confirmed (inbox, not spam). End-to-end sign-in still to be confirmed by Avi (first try failed only because the code had expired).
+
+## 12. Slide show (v0.20.0 — replaced AUTO)
+- Tick ✓ cues (Shift = range) → "▶ Create Slide show" (or top-bar button / A / Ctrl+G; nothing ticked = whole list).
+- Data: `it.grp` per cue + `groups{g: {name, hold, trans, dur, end:'loop'|'next'|'black', open}}`; members are kept contiguous (makeGroup / moveGroup / moveItem neighbour rule). Group settings are written into members (`applyGrp`).
+- Playback: entering a group runs it by itself (images = group hold, videos to their end); `advance(fromGo)` — GO while a group runs jumps to the cue after the group; `nextIdx()` drives NEXT.
+- Plan gate: free = build + run in the in-app preview; output window / share screen → Studio dialog.
+- Old shows saved with AUTO open as one slide show of the whole list. Export MP4 ignores group loops.
