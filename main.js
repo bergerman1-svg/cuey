@@ -8,7 +8,10 @@ function createWindow() {
     width: 1440, height: 900, minWidth: 1100, minHeight: 700,
     backgroundColor: '#0A0A0C',
     title: 'Cuey',
-    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
+    // the Cuey top bar IS the window title bar — no double bar (Mac: traffic lights inside it; Windows: min/max/close drawn over its right end)
+    titleBarStyle: process.platform === 'linux' ? 'default' : 'hidden',
+    ...(process.platform === 'darwin' ? { trafficLightPosition: { x: 16, y: 19 } } : {}),
+    ...(process.platform === 'win32' ? { titleBarOverlay: { color: '#0F0F13', symbolColor: '#C9C9D3', height: 52 } } : {}),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

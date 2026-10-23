@@ -234,3 +234,9 @@ Supabase project **Cuey** (`lgemvnntlgasxhrpsdww`, eu-central-1, free plan). The
 - Playback: entering a group runs it by itself (images = group hold, videos to their end); `advance(fromGo)` — GO while a group runs jumps to the cue after the group; `nextIdx()` drives NEXT.
 - Plan gate: free = build + run in the in-app preview; output window / share screen → Studio dialog.
 - Old shows saved with AUTO open as one slide show of the whole list. Export MP4 ignores group loops.
+
+## 13. Top bar & language layout (v0.21.0)
+- Same layout in every language (`<html dir="ltr">` always; Hebrew = `body.he`, text reads RTL only inside boxes/menus/dialogs). Cue list on the left.
+- Top bar: logo · File / Show / Help menus · centre OUTPUT group (status, Output window, Share screen) · plan tag + "Get Studio" · profile avatar (sign in / create account / my account, plan, language, shortcuts).
+- Keyboard-shortcut strip removed from the bottom → Help ▸ Keyboard shortcuts dialog (`?`).
+- Desktop: the top bar is the window title bar (Mac hidden + traffic lights inside, Windows titleBarOverlay 52px). Export MP4 button only appears while recording (to stop it).
