@@ -160,6 +160,7 @@ What is **fake** in the mockup: QR, code, link `cuey.app/s/4k7p`, "1 screen conn
 | Account | Not needed | Yes (Google / email) — purchase follows the account to every computer | Yes |
 | Phone remote + screen link | 1 screen, 1 active show, ~500 MB, deleted 24 h after | Same | Multiple screens, no limits |
 | Cloud & team | — | — | Shows in the cloud, share with a colleague, several operators |
+| Design in Canva | — | — | Pro: "Design in Canva" / "Edit in Canva" from inside Cuey (Connect API + Return navigation; pages come back as cues) |
 
 Rules: badge, never a block; offline always works; sign-in is offered after the first GO, not before; Pro only sells what needs a server. Payments on the web (Lemon Squeezy / Paddle as merchant of record), apps only sign in — avoids the 15–30% app-store cut.
 
