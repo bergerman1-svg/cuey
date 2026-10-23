@@ -159,6 +159,20 @@ html.m .mbox .pcta .btn{width:100%}
 .kicker.plat{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;letter-spacing:1px}
 .kicker.plat span{display:inline-flex;align-items:center;gap:7px}
 .kicker.plat svg{width:15px;height:15px;color:var(--go);flex:none}
+
+/* share: one link, any screen */
+#share .shareband{display:grid;grid-template-columns:1.1fr 1fr;gap:28px;align-items:center;background:linear-gradient(135deg,#141a08,#0f0f13 60%);border:1px solid var(--line);border-radius:20px;padding:34px}
+#share .devs{display:flex;align-items:flex-end;justify-content:center;gap:16px}
+#share .dev{background:#0A0A0C;border:2px solid #3a3a44;border-radius:12px;display:grid;place-items:center;color:var(--go);font-weight:700;position:relative;overflow:hidden}
+#share .dev:after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(200,255,0,.18),rgba(255,117,31,.12));}
+#share .dev img{position:relative;width:34%;max-width:46px;z-index:1}
+#share .dev .live{position:absolute;top:7px;inset-inline-start:7px;z-index:1;font-style:normal;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;color:#0A0A0C;background:var(--go);border-radius:4px;padding:1px 5px;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.45}}
+#share .tv{width:170px;height:100px}#share .tab{width:96px;height:128px;border-radius:14px}#share .ph{width:56px;height:108px;border-radius:14px}
+#share ul{list-style:none;padding:0;margin:18px 0 0;display:grid;gap:10px}
+#share li{color:var(--mut);font-size:15.5px;padding-inline-start:26px;position:relative}
+#share li:before{content:"✓";position:absolute;inset-inline-start:0;color:var(--go);font-weight:800}
+@media (max-width:720px){#share .shareband{grid-template-columns:1fr;padding:24px}#share .tv{width:130px;height:78px}#share .tab{width:74px;height:98px}#share .ph{width:44px;height:84px}}
 </style>
 <script>(function(){var u=navigator.userAgent;if(/Android|iPhone|iPad|iPod/i.test(u)||(navigator.maxTouchPoints>1&&innerWidth<900))document.documentElement.classList.add("m")})()</script>
 </head>
@@ -207,6 +221,13 @@ html.m .mbox .pcta .btn{width:100%}
     </div>
   </section>
 
+
+  <section id="share">
+    <div class="shareband">
+      <div><h2>One link. Any screen.</h2><p class="lead" style="margin-bottom:0">Press <b>Share screen</b> in the browser version and Cuey gives you a link. Open it on any device with internet — an iPad, a phone, a smart-TV browser or another computer — and it shows exactly what PROGRAM shows, live, with sound.</p><ul><li>No cables to the projector — the screen can be across the room or across town</li><li>Several screens can open the same link at once</li><li>You keep running the show from your own computer</li></ul></div>
+      <div class="devs" aria-hidden="true"><div class="dev tv"><img src="logo-mark.png" alt=""><i class="live">LIVE</i></div><div class="dev tab"><img src="logo-mark.png" alt=""><i class="live">LIVE</i></div><div class="dev ph"><img src="logo-mark.png" alt=""><i class="live">LIVE</i></div></div>
+    </div>
+  </section>
 
   <section id="gallery">
     <h2>Cuey at real events</h2>
@@ -277,7 +298,7 @@ html.m .mbox .pcta .btn{width:100%}
 
   // reveal on scroll
   const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
-  document.querySelectorAll('section h2,section .lead,.card,.step,.gal figure,.dl .btn,.note,.quote,.ptable').forEach((el,i)=>{el.classList.add('rv','d'+((i%5)+1));io.observe(el)});
+  document.querySelectorAll('section h2,section .lead,.card,.step,.gal figure,.dl .btn,.note,.quote,.ptable,.shareband').forEach((el,i)=>{el.classList.add('rv','d'+((i%5)+1));io.observe(el)});
   const ua=navigator.userAgent;
   const mobile=/Android|iPhone|iPad|iPod/i.test(ua)||(navigator.maxTouchPoints>1&&innerWidth<900);
   const isIOS=/iPhone|iPad|iPod/i.test(ua);
