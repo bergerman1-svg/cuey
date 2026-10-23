@@ -14,7 +14,7 @@ how it is built, and where it is going.
 | Rule | Meaning in practice |
 |---|---|
 | **Never break what exists** | `app/cuey.html` is the one source of truth; every change must keep the current show-running flow working. |
-| **Free tier never expires** | No time bombs. Free shows a small "Powered by Cuey" badge in the screen corner; the one-time Cuey Studio purchase removes it. Nothing given for free is ever taken back. |
+| **Free to start (no "free forever" promise in copy)** | Free shows a small "Powered by Cuey" badge in the screen corner; the one-time Cuey Studio purchase removes it. Site/app copy says "Try it free" — Avi does not want to commit publicly to "free forever" (2026-10-23). |
 | **Never lock a feature that endangers a live event** | GO, BLACK, output window, open/save — always available. Badge, never a block: no "sign in to continue", ever; offline = everything works as last seen. |
 | **Look like Canva / CapCut** | Dark UI, lime `#C8FF00` for GO/live, orange `#FF751F` for NEXT/standby/auto, Poppins + Heebo + JetBrains Mono. |
 | **Keep it simple** | No templates, no "my shows" library in mobile; one list, one button. |
