@@ -55,24 +55,37 @@ function createWindow() {
 
 const template = [
   ...(process.platform === 'darwin' ? [{ role: 'appMenu' }] : []),
-  { label: 'File', submenu: [
-      { label: 'Open Show…', accelerator: 'CmdOrCtrl+O', click: () => win && win.webContents.send('menu', 'open') },
+  { label: 'Show', submenu: [
+      { label: 'Open…', accelerator: 'CmdOrCtrl+O', click: () => win && win.webContents.send('menu', 'open') },
+      { type: 'separator' },
       { label: 'Save', accelerator: 'CmdOrCtrl+S', click: () => win && win.webContents.send('menu', 'save') },
       { label: 'Save As…', accelerator: 'CmdOrCtrl+Shift+S', click: () => win && win.webContents.send('menu', 'saveas') },
       { type: 'separator' },
-      { label: 'Export Video…', click: () => win && win.webContents.send('menu', 'export') },
+      { label: 'Export Show MP4…', click: () => win && win.webContents.send('menu', 'export') },
       { type: 'separator' },
       process.platform === 'darwin' ? { role: 'close' } : { role: 'quit' }
   ]},
-  { label: 'Show', submenu: [
-      { label: 'Open Output Window', accelerator: 'CmdOrCtrl+Shift+O', click: () => win && win.webContents.send('menu', 'output') },
-      { label: 'Black', accelerator: 'B', click: () => win && win.webContents.send('menu', 'black') },
+  { label: 'Cue', submenu: [
+      { label: 'Move Up', accelerator: 'Alt+Up', click: () => win && win.webContents.send('menu', 'up') },
+      { label: 'Move Down', accelerator: 'Alt+Down', click: () => win && win.webContents.send('menu', 'down') },
+      { label: 'Duplicate Cue', accelerator: 'CmdOrCtrl+D', click: () => win && win.webContents.send('menu', 'dup') },
+      { label: 'Remove', click: () => win && win.webContents.send('menu', 'del') },
       { type: 'separator' },
+      { label: 'Select All', click: () => win && win.webContents.send('menu', 'selall') },
+      { label: 'Clear All List…', click: () => win && win.webContents.send('menu', 'clear') },
+      { type: 'separator' },
+      { label: 'Create Slide Show', click: () => win && win.webContents.send('menu', 'slideshow') }
+  ]},
+  { label: 'Output', submenu: [
+      { label: 'Output Window', accelerator: 'CmdOrCtrl+Shift+O', click: () => win && win.webContents.send('menu', 'output') },
+      { label: 'Share Output Screen…', click: () => win && win.webContents.send('menu', 'share') },
+      { type: 'separator' },
+      { label: 'Black', click: () => win && win.webContents.send('menu', 'black') },
       { role: 'togglefullscreen' }
   ]},
   { role: 'viewMenu' },
   { role: 'windowMenu' },
-  { role: 'help', submenu: [{ label: 'Cuey on GitHub', click: () => shell.openExternal('https://github.com/bergerman1-svg') }] }
+  { role: 'help', submenu: [{ label: 'Keyboard Shortcuts', click: () => win && win.webContents.send('menu', 'keys') }, { label: 'About Cuey', click: () => win && win.webContents.send('menu', 'about') }, { type: 'separator' }, { label: 'Cuey Website', click: () => shell.openExternal('https://bergerman1-svg.github.io/cuey/') }] }
 ];
 
 app.whenReady().then(() => {

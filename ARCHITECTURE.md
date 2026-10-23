@@ -237,6 +237,6 @@ Supabase project **Cuey** (`lgemvnntlgasxhrpsdww`, eu-central-1, free plan). The
 
 ## 13. Top bar & language layout (v0.21.0)
 - Same layout in every language (`<html dir="ltr">` always; Hebrew = `body.he`, text reads RTL only inside boxes/menus/dialogs). Cue list on the left.
-- Top bar: logo · File / Show / Help menus · centre OUTPUT group (status, Output window, Share screen) · plan tag + "Get Studio" · profile avatar (sign in / create account / my account, plan, language, shortcuts).
+- Top bar (v0.21.1, per Avi's spec sheet): logo · Show (open recent, open, save, save as, export show MP4) / Cue (move up/down, duplicate, remove, select all, clear all, create slide show, add cue from ▸ Canva · Music — Pro soon) / Output (output window, share output screen) / Help (keyboard shortcuts, about) menus; same structure in the native Electron menu; Cue menu acts on ticked cues, else the live cue · centre OUTPUT group (status, Output window, Share screen) · plan tag + "Get Studio" · profile avatar (sign in / create account / my account, plan, language, shortcuts).
 - Keyboard-shortcut strip removed from the bottom → Help ▸ Keyboard shortcuts dialog (`?`).
 - Desktop: the top bar is the window title bar (Mac hidden + traffic lights inside, Windows titleBarOverlay 52px). Export MP4 button only appears while recording (to stop it).
