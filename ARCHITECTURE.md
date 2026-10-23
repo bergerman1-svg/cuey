@@ -229,7 +229,7 @@ Supabase project **Cuey** (`lgemvnntlgasxhrpsdww`, eu-central-1, free plan). The
 - Status: email delivery confirmed (inbox, not spam). End-to-end sign-in still to be confirmed by Avi (first try failed only because the code had expired).
 
 ## 12. Slide show (v0.20.0 — replaced AUTO)
-- Tick ✓ cues (Shift = range) → "▶ Create Slide show" (or top-bar button / A / Ctrl+G; nothing ticked = whole list).
+- Tick ✓ cues (Shift = range) → "▶ Create Slide show" (or A / Ctrl+G). v0.20.1: violet identity (never lime/orange), closed by default as one cue-sized card with a 2×2 thumbnail; "📁 Open" shows its cues (numbered 2.1, 2.2…), "⤴ Take out" per cue, dashed row to add files or drop cues; Loop-show and top-bar AUTO/Slide show buttons removed; GO on a slide show that is last in the list stops it (haltGrp).
 - Data: `it.grp` per cue + `groups{g: {name, hold, trans, dur, end:'loop'|'next'|'black', open}}`; members are kept contiguous (makeGroup / moveGroup / moveItem neighbour rule). Group settings are written into members (`applyGrp`).
 - Playback: entering a group runs it by itself (images = group hold, videos to their end); `advance(fromGo)` — GO while a group runs jumps to the cue after the group; `nextIdx()` drives NEXT.
 - Plan gate: free = build + run in the in-app preview; output window / share screen → Studio dialog.
