@@ -11,7 +11,7 @@ jobs:
     environment: { name: github-pages, url: '${{ steps.d.outputs.page_url }}' }
     steps:
       - uses: actions/checkout@v4
-      - run: cp app/cuey.html docs/app/index.html
+      - run: cp app/cuey.html docs/app/index.html && mkdir -p docs/app/vendor && cp app/vendor/* docs/app/vendor/
       - uses: actions/upload-pages-artifact@v3
         with: { path: docs }
       - id: d

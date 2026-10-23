@@ -89,6 +89,12 @@ const template = [
 ];
 
 app.whenReady().then(() => {
+  // YouTube / Vimeo players refuse to run inside a page without a web address (error 153). The app is a local file,
+  // so we tell those two players which site the request comes from.
+  const { session } = require('electron');
+  session.defaultSession.webRequest.onBeforeSendHeaders(
+    { urls: ['https://www.youtube-nocookie.com/*', 'https://www.youtube.com/*', 'https://player.vimeo.com/*'] },
+    (d, cb) => { d.requestHeaders['Referer'] = 'https://cuey.live/'; cb({ requestHeaders: d.requestHeaders }); });
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
   createWindow();
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
