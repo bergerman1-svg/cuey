@@ -337,7 +337,6 @@ html.m .mbox .pcta .btn{width:100%}
   const tall=matchMedia('(max-width:700px) and (orientation:portrait)').matches, src='../promo-he-'+(tall?'v':'h');
   if(tall)box.classList.add('tall'); v.poster=src+'.jpg';
   document.getElementById('play').onclick=()=>{box.classList.add('on');if(!v.getAttribute('src'))v.src=src+'.mp4';v.muted=false;v.controls=true;v.play()};
-  v.onended=()=>{box.classList.remove('on');v.controls=false};
   // highlight the right download
   const isMac=/Mac/i.test(ua)&&!isIOS;
   if(isMac){document.getElementById('dlWin').classList.add('sec')}
