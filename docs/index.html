@@ -192,6 +192,7 @@ html.m .mbox .pcta .btn{width:100%}
 #share li{color:var(--mut);font-size:15.5px;padding-inline-start:26px;position:relative}
 #share li:before{content:"✓";position:absolute;inset-inline-start:0;color:var(--go);font-weight:800}
 @media (max-width:720px){#share .shareband{grid-template-columns:1fr;padding:24px}#share .tv{width:130px;height:78px}#share .tab{width:74px;height:98px}#share .ph{width:44px;height:84px}}
+.dl1{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}.dl1 .btn{width:auto}.dl1 .btn.big{font-size:18px;padding:16px 26px}.dlo{text-align:center;font-size:13px;color:var(--mut);margin:14px 0 0}.dlo a{color:var(--txt)}details.note summary{cursor:pointer;font-weight:600}details.note{max-width:640px;margin:18px auto 0}
 </style>
 <script>(function(){var u=navigator.userAgent;if(/Android|iPhone|iPad|iPod/i.test(u)||(navigator.maxTouchPoints>1&&innerWidth<900))document.documentElement.classList.add("m")})()</script>
 </head>
@@ -202,7 +203,7 @@ html.m .mbox .pcta .btn{width:100%}
     <span class="sp"></span>
     <div class="links"><a class="l" href="#how">How it works</a>
     <a class="l" href="#pricing">Pricing</a>
-    <a class="l" href="#download">Download</a>
+    <a class="l" href="#download">Cuey for desktop</a>
     <a class="l desk" href="app/">Open in browser</a>
     <a class="l" href="he/" id="toHe" style="display:inline;color:var(--txt)">עברית</a></div>
   </nav>
@@ -281,16 +282,15 @@ html.m .mbox .pcta .btn{width:100%}
     <div class="pcta"><a class="btn" href="app/">▶ Start free</a><a class="btn sec" href="app/">Studio — free in beta: sign in in Cuey</a></div>
   </section>
   <section id="download">
-    <h2>Get Cuey</h2>
-    <p class="lead">Try it right now in the browser — nothing to install. For the event itself, install it on the computer that connects to the screen.</p>
+    <h2>Cuey for desktop</h2>
+    <p class="lead">Download Cuey to your computer today — your event runs from it on its own, even without internet. Free, for Mac and Windows.</p>
     <div class="monly mbox"><p><b>Cuey runs on the computer that connects to the screen</b> — Mac, Windows or any computer browser. The phone app is coming soon to the stores. Send yourself the link to Cuey for desktop:</p><div class="pcta"><a class="btn" data-wa href="#">💬 Send me the link on WhatsApp</a><a class="btn sec" data-mail href="#">✉ Email me the link</a></div><p class="sfoot2">📱 Cuey app — coming soon to the App Store and Google Play</p></div>
-    <div class="dl">
-      <a class="btn" href="app/">▶ Open in browser <small>NO INSTALL</small></a>
-      <a class="btn sec" id="dlArm" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-arm64.dmg" download>⬇ Mac <small>APPLE SILICON</small></a>
-      <a class="btn sec" id="dlIntel" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-x64.dmg" download>⬇ Mac <small>INTEL</small></a>
-      <a class="btn sec" id="dlWin" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-windows.exe" download>⬇ Windows <small>.EXE</small></a>
+    <div class="dl dl1">
+      <a class="btn big" id="dlMain" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-arm64.dmg" download>⬇ Download Cuey for desktop <small id="dlOs">Mac</small></a>
+      <a class="btn sec" href="app/">▶ Or try it now in the browser <small>no install</small></a>
     </div>
-    <p class="note"><b>First launch on Mac:</b> early builds aren't notarized by Apple yet, so macOS may say the app "is damaged". It isn't. Drag Cuey to Applications, open Terminal and paste <code>xattr -cr /Applications/Cuey.app</code>, then open it normally.</p>
+    <p class="dlo">Other versions: <a id="dlArm" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-arm64.dmg" download>Mac · Apple Silicon</a> · <a id="dlIntel" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-x64.dmg" download>Mac · Intel</a> · <a id="dlWin" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-windows.exe" download>Windows</a></p>
+    <details class="note"><summary>Mac: opening it the first time</summary>early builds aren't notarized by Apple yet, so macOS may say the app "is damaged". It isn't. Drag Cuey to Applications, open Terminal and paste <code>xattr -cr /Applications/Cuey.app</code>, then open it normally.</details>
   </section>
 
   <footer>
@@ -340,8 +340,12 @@ html.m .mbox .pcta .btn{width:100%}
   document.getElementById('play').onclick=()=>{box.classList.add('on');if(!v.getAttribute('src'))v.src=src+'.mp4';v.muted=false;v.controls=true;v.play()};
   // highlight the right download
   const isMac=/Mac/i.test(ua)&&!isIOS;
-  if(isMac){document.getElementById('dlWin').classList.add('sec')}
-  else if(/Win/i.test(ua)){document.getElementById('dlWin').classList.remove('sec')}
+  // one download button: pick the right file for this computer
+  (async()=>{const b=document.getElementById('dlMain'),os=document.getElementById('dlOs');if(!b)return;
+    if(/Win/i.test(ua)){b.href=document.getElementById('dlWin').href;os.textContent='Windows';return}
+    if(isMac){let intel=false;try{const h=navigator.userAgentData&&await navigator.userAgentData.getHighEntropyValues(['architecture']);if(h&&h.architecture)intel=h.architecture==='x86';else{const g=document.createElement('canvas').getContext('webgl'),d=g&&g.getExtension('WEBGL_debug_renderer_info'),r=d?g.getParameter(d.UNMASKED_RENDERER_WEBGL):'';intel=/Intel/i.test(r)&&!/Apple/i.test(r)}}catch(e){}
+      b.href=document.getElementById(intel?'dlIntel':'dlArm').href;os.textContent=intel?'Mac · Intel':'Mac · Apple Silicon';return}
+    os.textContent='Mac · Windows'})();
 })();
 </script>
 <script>

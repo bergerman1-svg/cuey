@@ -193,6 +193,7 @@ html.m .mbox .pcta .btn{width:100%}
 #share li{color:var(--mut);font-size:15.5px;padding-inline-start:26px;position:relative}
 #share li:before{content:"✓";position:absolute;inset-inline-start:0;color:var(--go);font-weight:800}
 @media (max-width:720px){#share .shareband{grid-template-columns:1fr;padding:24px}#share .tv{width:130px;height:78px}#share .tab{width:74px;height:98px}#share .ph{width:44px;height:84px}}
+.dl1{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}.dl1 .btn{width:auto}.dl1 .btn.big{font-size:18px;padding:16px 26px}.dlo{text-align:center;font-size:13px;color:var(--mut);margin:14px 0 0}.dlo a{color:var(--txt)}details.note summary{cursor:pointer;font-weight:600}details.note{max-width:640px;margin:18px auto 0}
 </style>
 <script>(function(){var u=navigator.userAgent;if(/Android|iPhone|iPad|iPod/i.test(u)||(navigator.maxTouchPoints>1&&innerWidth<900))document.documentElement.classList.add("m")})()</script>
 </head>
@@ -203,7 +204,7 @@ html.m .mbox .pcta .btn{width:100%}
     <span class="sp"></span>
     <div class="links"><a class="l" href="#how">איך זה עובד</a>
     <a class="l" href="#pricing">מחירים</a>
-    <a class="l" href="#download">הורדה</a>
+    <a class="l" href="#download">Cuey למחשב</a>
     <a class="l desk" href="../app/">פתח בדפדפן</a>
     <a class="l" href="../?lang=en" id="toEn" style="display:inline;color:var(--txt)">English</a></div>
   </nav>
@@ -282,16 +283,15 @@ html.m .mbox .pcta .btn{width:100%}
     <div class="pcta"><a class="btn" href="../app/">▶ להתחיל בחינם</a><a class="btn sec" href="../app/">Studio — בחינם בבטא: מתחברים ב-Cuey</a></div>
   </section>
   <section id="download">
-    <h2>להשיג את Cuey</h2>
-    <p class="lead">נסו עכשיו בדפדפן — בלי להתקין. לאירוע עצמו, מתקינים על המחשב שמתחבר למסך.</p>
+    <h2>Cuey למחשב</h2>
+    <p class="lead">הורידו עוד היום את Cuey למחשב — האירוע רץ ממנו לבד, גם בלי אינטרנט. בחינם, ל-Mac ול-Windows.</p>
     <div class="monly mbox"><p><b>Cuey רץ על המחשב שמחובר למסך.</b> עובד ב-Mac, ב-Windows ובכל דפדפן במחשב. אפליקציה לטלפון עולה בקרוב לחנויות. בינתיים, שלחו לעצמכם לינק <span class="nw">ל-Cuey למחשב</span>:</p><div class="pcta"><a class="btn" data-wa href="#">💬 שלח לי לינק בוואטסאפ</a><a class="btn sec" data-mail href="#">✉ שלח לי לינק במייל</a></div><p class="sfoot2">📱 אפליקציית Cuey — בקרוב <span class="nw">ב-App Store</span> <span class="nw">וב-Google Play</span></p></div>
-    <div class="dl">
-      <a class="btn" href="../app/">▶ פתח בדפדפן <small>בלי התקנה</small></a>
-      <a class="btn sec" id="dlArm" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-arm64.dmg" download>⬇ Mac <small>APPLE SILICON</small></a>
-      <a class="btn sec" id="dlIntel" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-x64.dmg" download>⬇ Mac <small>INTEL</small></a>
-      <a class="btn sec" id="dlWin" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-windows.exe" download>⬇ Windows <small>.EXE</small></a>
+    <div class="dl dl1">
+      <a class="btn big" id="dlMain" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-arm64.dmg" download>⬇ הורידו את Cuey למחשב <small id="dlOs">Mac</small></a>
+      <a class="btn sec" href="../app/">▶ או נסו עכשיו בדפדפן <small>בלי התקנה</small></a>
     </div>
-    <p class="note"><b>פתיחה ראשונה במק:</b> הגרסאות הראשונות עדיין לא חתומות אצל Apple, אז macOS עלול להגיד שהאפליקציה "פגומה". היא לא. גוררים את Cuey ל-Applications, פותחים Terminal ומדביקים <code dir="ltr">xattr -cr /Applications/Cuey.app</code>, ואז פותחים רגיל.</p>
+    <p class="dlo">גרסאות אחרות: <a id="dlArm" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-arm64.dmg" download>Mac · Apple Silicon</a> · <a id="dlIntel" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-x64.dmg" download>Mac · Intel</a> · <a id="dlWin" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-windows.exe" download>Windows</a></p>
+    <details class="note"><summary>Mac: פתיחה ראשונה</summary>הגרסאות הראשונות עדיין לא חתומות אצל Apple, אז macOS עלול להגיד שהאפליקציה "פגומה". היא לא. גוררים את Cuey ל-Applications, פותחים Terminal ומדביקים <code dir="ltr">xattr -cr /Applications/Cuey.app</code>, ואז פותחים רגיל.</details>
   </section>
 
   <footer>
@@ -339,8 +339,12 @@ html.m .mbox .pcta .btn{width:100%}
   document.getElementById('play').onclick=()=>{box.classList.add('on');if(!v.getAttribute('src'))v.src=src+'.mp4';v.muted=false;v.controls=true;v.play()};
   // highlight the right download
   const isMac=/Mac/i.test(ua)&&!isIOS;
-  if(isMac){document.getElementById('dlWin').classList.add('sec')}
-  else if(/Win/i.test(ua)){document.getElementById('dlWin').classList.remove('sec')}
+  // one download button: pick the right file for this computer
+  (async()=>{const b=document.getElementById('dlMain'),os=document.getElementById('dlOs');if(!b)return;
+    if(/Win/i.test(ua)){b.href=document.getElementById('dlWin').href;os.textContent='Windows';return}
+    if(isMac){let intel=false;try{const h=navigator.userAgentData&&await navigator.userAgentData.getHighEntropyValues(['architecture']);if(h&&h.architecture)intel=h.architecture==='x86';else{const g=document.createElement('canvas').getContext('webgl'),d=g&&g.getExtension('WEBGL_debug_renderer_info'),r=d?g.getParameter(d.UNMASKED_RENDERER_WEBGL):'';intel=/Intel/i.test(r)&&!/Apple/i.test(r)}}catch(e){}
+      b.href=document.getElementById(intel?'dlIntel':'dlArm').href;os.textContent=intel?'Mac · Intel':'Mac · Apple Silicon';return}
+    os.textContent='Mac · Windows'})();
 })();
 </script>
 <script>
