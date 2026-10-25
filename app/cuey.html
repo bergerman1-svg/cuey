@@ -214,9 +214,9 @@ aside{border-inline-end:1px solid var(--line);display:flex;flex-direction:column
 #libDlg .lbar{display:flex;gap:8px;align-items:center;margin:4px 0 10px}#libDlg .lbar input{flex:1;font-size:15px}
 #libDlg .ltabs{display:flex;gap:6px}#libDlg .ltabs button.on{border-color:var(--go);color:var(--go)}
 #libDlg .chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}#libDlg .chips button{font-size:12px;padding:4px 10px;border-radius:99px}
-#libDlg .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;overflow:auto;min-height:240px;flex:1;padding:2px}
-#libDlg .cell{position:relative;aspect-ratio:16/9;border-radius:8px;overflow:hidden;background:#15151a;border:1px solid var(--line2);cursor:pointer;padding:0}
-#libDlg .cell img,#libDlg .cell video{width:100%;height:100%;object-fit:cover;display:block}
+#libDlg .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));grid-auto-rows:max-content;align-content:start;gap:8px;overflow:auto;min-height:240px;flex:1 1 auto;padding:2px}
+#libDlg .cell{position:relative;display:block;height:0;padding:0 0 56.25%;border-radius:8px;overflow:hidden;background:#15151a;border:1px solid var(--line2);cursor:pointer}
+#libDlg .cell img,#libDlg .cell video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 #libDlg .cell:hover{border-color:var(--go);box-shadow:0 0 0 1px var(--go)}
 #libDlg .cell .dur{position:absolute;bottom:5px;inset-inline-end:6px;font:600 10px var(--mono);background:#000a;color:#fff;border-radius:4px;padding:1px 5px}
 #libDlg .cell .by{position:absolute;bottom:5px;inset-inline-start:6px;font-size:10px;color:#fffc;text-shadow:0 1px 3px #000}
@@ -1425,7 +1425,7 @@ async function pbSearch(fresh){if(fresh){pb.page=1;$('#pbGrid').innerHTML='<div 
     if(!r.ok)throw new Error(r.status);const d=await r.json();pb.total=d.total;
     if(fresh)g.innerHTML='';
     if(!d.hits.length&&fresh){g.innerHTML=`<div class="msg">${esc(t('pb_none'))}${/[֐-׿]/.test(pb.q)&&t('pb_heb')?'<br>'+esc(t('pb_heb')):''}</div>`;return}
-    for(const h of d.hits){const b=document.createElement('button');b.className='cell';b._h=h;
+    for(const h of d.hits){const b=document.createElement('div');b.className='cell';b.tabIndex=0;b.setAttribute('role','button');b._h=h;
       b.innerHTML=`<img loading="lazy" src="${esc(h.thumb||'')}" alt="">`+(pb.type==='video'?`<span class="dur">${h.dur|0}s · ${esc(t('pb_loop'))}</span>`:'')+`<span class="by">${esc(h.user||'')}</span>`;
       if(pb.type==='video'&&h.preview){b.onmouseenter=()=>{if(b.querySelector('video'))return;const v=document.createElement('video');v.src=h.preview;v.muted=true;v.loop=true;v.playsInline=true;v.style.cssText='position:absolute;inset:0';b.prepend(v);v.play().catch(()=>{})};b.onmouseleave=()=>{const v=b.querySelector('video');if(v){v.pause();v.remove()}}}
       g.appendChild(b)}
@@ -1439,7 +1439,7 @@ async function pbPick(cell){if(cell.classList.contains('busy'))return;const h=ce
     if(pb.mode==='bg'&&pb.it){const it=pb.it,im=new Image();im.onload=()=>{it.text.bgImg=im;it.text.bgName=f.name;$('#tdBgName').textContent=f.name};im.src=URL.createObjectURL(f);closeLib();flash(t('pb_bgset'));return}
     const n0=items.length,lbl=(($('#pbQ').value||'').trim()||pb.q).slice(0,30);addFiles([f]);setTimeout(()=>{for(let i=n0;i<items.length;i++)if(items[i].file===f){if(isV)items[i].loop=true;items[i].name=lbl.charAt(0).toUpperCase()+lbl.slice(1)+' · Pixabay';items[i].renamed=true;render()}},0);closeLib();flash(t('pb_added'));
   }catch(e){alert(t('pb_err'))}finally{cell.classList.remove('busy')}}
-$('#pbGrid').onclick=e=>{const c=e.target.closest('.cell');if(c)pbPick(c)};
+$('#pbGrid').onclick=e=>{const c=e.target.closest('.cell');if(c)pbPick(c)};$('#pbGrid').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){const c=e.target.closest('.cell');if(c){e.preventDefault();pbPick(c)}}});
 $('#pbChips').onclick=e=>{const b=e.target.closest('button');if(!b)return;pb.q=b.dataset.q;$('#pbQ').value=b.textContent;pbSearch(true)};
 let pbT=0;$('#pbQ').addEventListener('input',e=>{clearTimeout(pbT);pbT=setTimeout(()=>{const v=e.target.value.trim();if(v.length<2)return;pb.q=v;pbSearch(true)},450)});
 $('#pbQ').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Escape')closeLib();if(e.key==='Enter'){clearTimeout(pbT);const v=e.target.value.trim();if(v){pb.q=v;pbSearch(true)}}});
