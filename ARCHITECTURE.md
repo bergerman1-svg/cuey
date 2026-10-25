@@ -269,3 +269,12 @@ Direct "cue list + GO" tools: Mitti (closest; Mac only, paid, for technicians), 
 - Colour / picture background → `type:'image'`, one 1920×1080 PNG (`renderTextSlide`). Moving background → `type:'video'` (the loop file, `loop:true`, `scale:'fill'`) + `it.overlay` = transparent 1920×1080 PNG (dim + text, `renderOverlay`). `makeStage.show` adds `<img class="ov">` above the video in preview and Output; `drawFrame` draws every child of a layer, so Share screen and Export MP4 include the text; thumbnails get the overlay too.
 - Save/open: `text.bgKind/x/y/box` are stored; a moving-background cue stores the video as its file (`c.file===text.bgName`), found again via file handles or `gen:` (library files and computer pictures are kept in IndexedDB).
 - One layout function (`drawCardLayer`) draws the preview, the PNG and the overlay, so what you see while dragging is what goes on the screen.
+
+## 18. Debug round 25.10.2026 — v0.29.0
+- Create cue on a moving background = timed like a picture (`still()` / `avOf()`): Edit shows "wait for GO / next after N s", no loop/trim/volume; the background loop never ends the cue (also in slide shows and Export). Always muted.
+- Mask (`it.ovDim`) is its own full-screen layer (`div.dim`) so it covers any Output shape; text overlay stays 16:9.
+- Duplicates get their own video URL (`cloneCue` resets `_vurl`); Colour clears the old background (no stale `bgName` saved); a missing moving background shows "find it" and `relinkCue` re-runs `applyText`.
+- NEXT panel shows a Create cue with its mask + text.
+- Free backgrounds: newest search wins (`pbSeq`), each tile remembers photo/loop (`_t`), 429 → "busy" message, Hebrew words matched whole (prefixes ה/ב/ל/ו/מ/ש), a library download only lands in the Create cue window that asked (`mk.session`).
+- Output notices: the full-screen notice only appears when Cuey itself opened a file window / dialog (`pickerAt`, set by wrapping showOpenFilePicker / showSaveFilePicker / alert / confirm / prompt and file-input clicks); never text on the audience screen. The sound notice only for a real autoplay block (`NotAllowedError`).
+- Tests: `tests/browser_suite.py` (154 checks) + new `tests/feature_suite.py` (feature by feature, EN + HE, ~140 checks). Run both from the folder with the test media.
