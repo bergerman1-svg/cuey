@@ -142,7 +142,8 @@ async def main():
                 ok(L+'duplicate is a real copy', await E(pg, f"(()=>{{const c=cloneCue(items[{tix}]);c.text.title='Changed copy';return items[{tix}].text.title!=='Changed copy'}})()"))
                 # --- output window
                 async with ctx.expect_page() as np:
-                    await pg.click('#openOut')
+                    await pg.click('#openOut'); await pg.wait_for_timeout(250)
+                    if await E(pg, "!$('#pfDlg').hidden"): await pg.click('#pfGo')  # the show has Studio cues (slide show): open without them
                 o = await np.value; await pg.wait_for_timeout(900)
                 ok(L+'output open + close button', await E(pg, "!!outStage&&!$('#closeOut').hidden"))
                 ti = await E(pg, 'items.findIndex(i=>i.text)')

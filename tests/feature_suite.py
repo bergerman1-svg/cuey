@@ -19,7 +19,7 @@ async def pixabay(route):
     if PB_MODE['status'] != 200:
         await route.fulfill(status=PB_MODE['status'], content_type='application/json', headers={'Access-Control-Allow-Origin': '*'}, body='{"error":"x"}'); return
     q = urllib.parse.parse_qs(urllib.parse.urlparse(route.request.url).query); typ = q.get('type', ['image'])[0]
-    hits = [{'id': i, 'thumb': f'https://cdn.pixabay.com/t{i}.png', 'full': f'https://cdn.pixabay.com/f{i}.' + ('webm' if typ == 'video' else 'png'), 'user': 'u', 'dur': 6} for i in range(6)]
+    hits = [{'id': i, 'thumb': f'https://cdn.pixabay.com/t{i}.png', 'full': f'https://cdn.pixabay.com/f{i}.' + ('webm' if typ == 'video' else 'png'), 'preview': 'https://cdn.pixabay.com/p.webm', 'user': 'u', 'dur': 6} for i in range(6)]
     await route.fulfill(status=200, content_type='application/json', headers={'Access-Control-Allow-Origin': '*'}, body=json.dumps({'total': 6, 'hits': hits}))
 async def cdn(route):
     v = route.request.url.endswith('.webm')
@@ -142,15 +142,23 @@ async def features(ctx, L, lang):
     await feature('slide shows', slideshows)
 
     async def studio_gate(pg):
-        await add(pg, 'red.png', 'green.png')
-        await E(pg, "sel.clear();sel.add(items[0].id);sel.add(items[1].id);render()"); await pg.click('#ssMake'); await W(pg, 200)
+        await add(pg, 'red.png', 'green.png', 'blue.png')
+        await E(pg, "sel.clear();sel.add(items[1].id);sel.add(items[2].id);render()"); await pg.click('#ssMake'); await W(pg, 200)
+        ok(L + 'free plan: slide show carries a STUDIO tag', await E(pg, "!!document.querySelector('.grpc .tg.st')"))
+        await pg.click('#openOut'); await W(pg, 300)
+        ok(L + 'opening Output warns about Studio cues first', await E(pg, "!$('#pfDlg').hidden&&$('#pfN').textContent.includes('2')"), await E(pg, "$('#pfN').textContent"))
         async with ctx.expect_page() as np:
-            await pg.click('#openOut')
+            await pg.click('#pfGo')
         o = await np.value; await W(pg, 800)
-        await E(pg, 'show(0)'); await W(pg, 300)
-        ok(L + 'Studio gate shows for a slide show on Output', await E(pg, "!$('#studioDlg').hidden"))
-        await pg.click('#stBeta'); await W(pg, 400)
-        ok(L + 'beta "continue" runs it', await E(pg, 'cur') == 0 and await E(pg, "$('#studioDlg').hidden"))
+        await E(pg, 'show(0)'); await W(pg, 600)
+        await E(pg, 'show(1)'); await W(pg, 600)
+        ok(L + 'GO on a Studio cue: no window in the middle of the show', await E(pg, "$('#studioDlg').hidden"))
+        ok(L + 'GO on a Studio cue: the event screen keeps the previous cue', await E(pg, "outStage.it===items[0]&&pvStage.it===items[1]"))
+        ok(L + 'PROGRAM says it is not on the event screen', await E(pg, "!$('#pvHeld').hidden"))
+        await E(pg, 'setLicensed(true)'); await W(pg, 300); await E(pg, 'show(1)'); await W(pg, 700)
+        ok(L + 'with Studio the slide show goes to the event screen', await E(pg, "outStage.it===items[1]&&$('#pvHeld').hidden&&!document.querySelector('.grpc .tg.st')"))
+        ok(L + 'with Studio no watermark', await E(pg, "!outWin.document.getElementById('badge').classList.contains('on')"))
+        await E(pg, 'setLicensed(false)')
         ok(L + 'watermark element on Output', await E(pg, "!!outWin.document.getElementById('badge')"))
         # PROGRAM follows OUTPUT: a stalled preview copy restarts and lines up
         await add(pg, 'va.webm'); vi = await E(pg, "items.findIndex(i=>i.type==='video')")
@@ -158,7 +166,7 @@ async def features(ctx, L, lang):
         await E(pg, 'pvStage.media.pause();pvStage.media.currentTime=0'); await W(pg, 2300)
         ok(L + 'PROGRAM restarts + follows OUTPUT', await E(pg, '!pvStage.media.paused&&Math.abs(pvStage.media.currentTime-outStage.media.currentTime)<0.6'), await E(pg, '[pvStage.media.paused,pvStage.media.currentTime,outStage.media.currentTime]'))
         await E(pg, 'setBlack(true)'); await W(pg, 700)
-        ok(L + 'Black reaches Output', await E(pg, "parseFloat(getComputedStyle(outWin.document.querySelector('#stage .blk')).opacity)>0.95"), await E(pg, "getComputedStyle(outWin.document.querySelector('#stage .blk')).opacity"))
+        ok(L + 'Black reaches Output', await E(pg, "parseFloat(getComputedStyle(outWin.document.querySelector('#stage .blk')).opacity)>0.95"))
         await E(pg, 'setBlack(false)'); await E(pg, 'closeOut()'); await W(pg, 500)
         ok(L + 'Output closes cleanly', await E(pg, '!outStage'))
     await feature('Studio gate, watermark, Black on Output', studio_gate)
@@ -291,6 +299,8 @@ async def features(ctx, L, lang):
         await pg.click('#pbGrid .cell >> nth=1'); await W(pg, 1200)
         ok(L + 'library photo becomes a cue', await E(pg, "items.length===1&&items[0].type==='image'&&/Pixabay/.test(items[0].name)"), await E(pg, 'items.map(i=>i.name)'))
         await E(pg, "openLib('add')"); await W(pg, 300); await pg.click('#pbTabV'); await W(pg, 500)
+        await pg.hover('#pbGrid .cell >> nth=2'); await W(pg, 1200)
+        ok(L + 'hovering a loop plays it in its tile', await E(pg, "(()=>{const v=document.querySelector('#pbGrid .cell:nth-child(3) video');return !!v&&!v.paused&&v.currentTime>0})()"))
         await pg.click('#pbGrid .cell >> nth=0'); await W(pg, 1500)
         ok(L + 'library loop becomes a looping video cue', await E(pg, "items[1]&&items[1].type==='video'&&items[1].loop"))
         await E(pg, "openCard(null)"); await W(pg, 200); await pg.click('#mkBgSeg [data-b=lib]'); await W(pg, 500)
@@ -309,7 +319,7 @@ async def features(ctx, L, lang):
     async def paste_link(pg):
         await E(pg, "(()=>{const dt=new DataTransfer();dt.setData('text/plain','https://www.youtube.com/watch?v=aqz-KE-bpKQ');document.dispatchEvent(new ClipboardEvent('paste',{clipboardData:dt,bubbles:true}))})()"); await W(pg, 800)
         ok(L + 'Ctrl+V a YouTube link adds an online cue', await E(pg, "items.length===1&&!!items[0].web"))
-        await E(pg, "window.__posts=[];shPost=o=>{__posts.push(o);return Promise.resolve()};sharing=true;cur=0;pvStage.media={currentTime:12,paused:false,tagName:'VIDEO'};shWebTick(true)")
+        await E(pg, "setLicensed(true);window.__posts=[];shPost=o=>{__posts.push(o);return Promise.resolve()};sharing=true;cur=0;pvStage.media={currentTime:12,paused:false,tagName:'VIDEO'};shWebTick(true)")
         ok(L + 'Share screen tells the screen page which online video to play', await E(pg, "__posts.some(p=>p.t==='web'&&p.on&&p.p==='yt'&&p.at===12)"), await E(pg, 'JSON.stringify(__posts)'))
         await E(pg, "setBlack(true)"); await W(pg, 100)
         ok(L + 'Black stops the online video on the screen page', await E(pg, "__posts.some(p=>p.t==='web'&&!p.on)"))

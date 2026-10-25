@@ -278,3 +278,11 @@ Direct "cue list + GO" tools: Mitti (closest; Mac only, paid, for technicians), 
 - Free backgrounds: newest search wins (`pbSeq`), each tile remembers photo/loop (`_t`), 429 → "busy" message, Hebrew words matched whole (prefixes ה/ב/ל/ו/מ/ש), a library download only lands in the Create cue window that asked (`mk.session`).
 - Output notices: the full-screen notice only appears when Cuey itself opened a file window / dialog (`pickerAt`, set by wrapping showOpenFilePicker / showSaveFilePicker / alert / confirm / prompt and file-input clicks); never text on the audience screen. The sound notice only for a real autoplay block (`NotAllowedError`).
 - Tests: `tests/browser_suite.py` (154 checks) + new `tests/feature_suite.py` (feature by feature, EN + HE, ~140 checks). Run both from the folder with the test media.
+
+## 19. Free vs Studio — v0.31.0 (decided 25.10.2026)
+- Studio cues (`isStudioCue`): online video (`it.web`), library backgrounds / loops (`pixabay-*` files), slide shows (`it.grp`). On the free plan (`gated(it)`) they can be added, built and watched in PROGRAM, but never go to OUTPUT or Share: `show()` keeps the event screen on the previous cue (`held`), PROGRAM shows the orange "STUDIO · not on the event screen" pill (`#pvHeld`, click = explanation). No dialog ever appears during a show (the old slide-show gate is gone).
+- STUDIO tag on those cue cards and on slide-show headers. Opening OUTPUT with Studio cues → `#pfDlg` pre-flight ("N cues won't appear — open without them / sign in").
+- Share screen needs a (free) account; free = one shared screen (`shOffer` answers `{t:'full'}`; the screen page explains); Studio = unlimited. Gated cues are not drawn into the shared picture.
+- BETA: `checkPlan` → `setLicensed(has||BETA)`, i.e. signing in unlocks Studio for free until payments are on. Studio = $12 once (site table + app strings).
+- Not in the new list → unchanged and free until decided (rule from Avi: never delete or break a feature; decide where it goes): PDF/PowerPoint, music under slides, audio cues, trims, Freeze, master, save/open, Create cue with your own picture/video, Free music button.
+- Library loops preview on hover inside their tile (the still was covering the video).

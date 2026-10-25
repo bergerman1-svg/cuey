@@ -114,6 +114,7 @@ function connect(){const ws=new WebSocket('wss://ntfy.sh/cuey-v1-'+code+'/ws?sin
     if(m&&m.t==='offer'&&m.to===myId){onOffer(m);return}
     if(m&&m.t==='bye'&&m.host){if(pc){try{pc.close()}catch(x){}}webOff();return}
     if(m&&m.t==='web'){onWeb(m);return}
+    if(m&&m.t==='full'&&m.to===myId){rtcOn=true;msg.textContent='This show is already shared to one screen (free plan). The organiser can share to more screens with Cuey Studio.';return}
     handle(d)};
   ws.onclose=()=>{setSt('warn','reconnecting');setTimeout(connect,2000)};ws.onerror=()=>setSt('warn','error')}
 if(code)connect();
