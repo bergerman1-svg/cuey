@@ -309,6 +309,11 @@ async def features(ctx, L, lang):
     async def paste_link(pg):
         await E(pg, "(()=>{const dt=new DataTransfer();dt.setData('text/plain','https://www.youtube.com/watch?v=aqz-KE-bpKQ');document.dispatchEvent(new ClipboardEvent('paste',{clipboardData:dt,bubbles:true}))})()"); await W(pg, 800)
         ok(L + 'Ctrl+V a YouTube link adds an online cue', await E(pg, "items.length===1&&!!items[0].web"))
+        await E(pg, "window.__posts=[];shPost=o=>{__posts.push(o);return Promise.resolve()};sharing=true;cur=0;pvStage.media={currentTime:12,paused:false,tagName:'VIDEO'};shWebTick(true)")
+        ok(L + 'Share screen tells the screen page which online video to play', await E(pg, "__posts.some(p=>p.t==='web'&&p.on&&p.p==='yt'&&p.at===12)"), await E(pg, 'JSON.stringify(__posts)'))
+        await E(pg, "setBlack(true)"); await W(pg, 100)
+        ok(L + 'Black stops the online video on the screen page', await E(pg, "__posts.some(p=>p.t==='web'&&!p.on)"))
+        await E(pg, "sharing=false;setBlack(false)")
     await feature('paste a link', paste_link)
 
     async def strings(pg):

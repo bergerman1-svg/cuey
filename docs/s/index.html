@@ -32,7 +32,8 @@ body:hover #st{opacity:1}
 <body>
 <div class="ly" id="a"></div><div class="ly" id="b"></div>
 <video id="rtc" autoplay playsinline muted style="position:fixed;inset:0;width:100%;height:100%;object-fit:contain;background:#000;display:none"></video>
-<button id="snd" style="display:none;position:fixed;bottom:16px;left:16px;padding:10px 14px;border-radius:10px;border:1px solid #333;background:#111;color:#ddd;font:14px Poppins,system-ui;cursor:pointer;opacity:.9">🔇 Sound off — click to unmute</button>
+<button id="snd" style="display:none;z-index:5;position:fixed;bottom:16px;left:16px;padding:10px 14px;border-radius:10px;border:1px solid #333;background:#111;color:#ddd;font:14px Poppins,system-ui;cursor:pointer;opacity:.9">🔇 Sound off — click to unmute</button>
+<div id="web" style="position:fixed;inset:0;display:none;background:#000"><div id="ytp" style="width:100%;height:100%"></div></div>
 <div id="black"></div>
 <div id="wait">
   <img src="../logo-full.png" alt="Cuey">
@@ -75,7 +76,28 @@ async function onOffer(m){
   await pc.setRemoteDescription({type:'offer',sdp:m.sdp});const ans=await pc.createAnswer();await pc.setLocalDescription(ans);await waitIce(pc);
   post({t:'answer',id:myId,sdp:pc.localDescription.sdp});
 }
-snd.onclick=()=>{rtc.muted=!rtc.muted;snd.textContent=rtc.muted?'🔇 Sound off — click to unmute':'🔊 Sound on'};
+snd.onclick=()=>{rtc.muted=!rtc.muted;snd.textContent=rtc.muted?'🔇 Sound off — click to unmute':'🔊 Sound on';webSync()};
+/* ---- online videos (YouTube / Vimeo): the Cuey app can't send their picture, so this page plays the same video, in time ---- */
+const webBox=document.getElementById('web');let web=null,yt=null,ytReady=false,vmF=null,ytApi=null;
+function loadYtApi(){if(ytApi)return ytApi;ytApi=new Promise(r=>{window.onYouTubeIframeAPIReady=r;const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s)});return ytApi}
+function webOff(){web=null;webBox.style.display='none';if(yt){try{yt.destroy()}catch(e){}yt=null;ytReady=false;webBox.innerHTML='<div id="ytp" style="width:100%;height:100%"></div>'}if(vmF){vmF.remove();vmF=null}}
+function webTarget(){return web?web.at+(web.playing?(performance.now()-web.rx)/1000:0):0}
+function vm(method,value){if(vmF)vmF.contentWindow.postMessage(JSON.stringify(value===undefined?{method}:{method,value}),'*')}
+async function onWeb(m){
+  if(!m.on){webOff();return}
+  const key=m.p+':'+m.id,fresh=!web||web.key!==key;
+  if(fresh){webOff()}
+  web={...m,key,rx:performance.now()};webBox.style.display='block';document.getElementById('wait').classList.add('off');
+  if(fresh&&m.p==='yt'){await loadYtApi();if(!web||web.key!==key)return;
+    yt=new YT.Player('ytp',{host:'https://www.youtube-nocookie.com',videoId:m.id,playerVars:{autoplay:1,controls:0,rel:0,modestbranding:1,playsinline:1,iv_load_policy:3,disablekb:1,fs:0,mute:1,start:Math.floor(webTarget())},
+      events:{onReady:()=>{ytReady=true;webSync(true)}}})}
+  else if(fresh&&m.p==='vm'){vmF=document.createElement('iframe');vmF.allow='autoplay; fullscreen';vmF.style.cssText='position:absolute;inset:0;width:100%;height:100%;border:0';
+    vmF.src='https://player.vimeo.com/video/'+m.id+'?'+(m.h?'h='+m.h+'&':'')+'autoplay=1&muted=1&controls=0&title=0&byline=0&portrait=0#t='+Math.floor(webTarget())+'s';webBox.appendChild(vmF);vmF.onload=()=>webSync(true)}
+  else webSync(true)}
+function webSync(seek){if(!web)return;const t=webTarget(),mute=rtc.muted||!web.snd;
+  if(yt&&ytReady){try{const c=yt.getCurrentTime();if(seek||Math.abs(c-t)>1.5)yt.seekTo(t,true);web.playing?yt.playVideo():yt.pauseVideo();mute?yt.mute():(yt.unMute(),yt.setVolume(Math.round((web.vol??1)*100)))}catch(e){}}
+  if(vmF){if(seek)vm('setCurrentTime',t);vm(web.playing?'play':'pause');vm('setVolume',mute?0:(web.vol??1))}}
+setInterval(()=>{if(yt&&ytReady)webSync(false)},2000);
 setInterval(()=>{if(!rtcOn&&code)hello()},20000);
 function handle(d){
   if(d.event!=='message')return;
@@ -90,7 +112,8 @@ function connect(){const ws=new WebSocket('wss://ntfy.sh/cuey-v1-'+code+'/ws?sin
   ws.onopen=()=>{setSt('ok','connected');if(live<0)msg.textContent='Ready — waiting for the show to start…';hello()};
   ws.onmessage=async e=>{let d;try{d=JSON.parse(e.data)}catch(x){return}if(d.event!=='message')return;let m=null;try{m=JSON.parse(await body(d))}catch(x){}
     if(m&&m.t==='offer'&&m.to===myId){onOffer(m);return}
-    if(m&&m.t==='bye'&&m.host){if(pc){try{pc.close()}catch(x){}}return}
+    if(m&&m.t==='bye'&&m.host){if(pc){try{pc.close()}catch(x){}}webOff();return}
+    if(m&&m.t==='web'){onWeb(m);return}
     handle(d)};
   ws.onclose=()=>{setSt('warn','reconnecting');setTimeout(connect,2000)};ws.onerror=()=>setSt('warn','error')}
 if(code)connect();
