@@ -286,3 +286,8 @@ Direct "cue list + GO" tools: Mitti (closest; Mac only, paid, for technicians), 
 - BETA: `checkPlan` → `setLicensed(has||BETA)`, i.e. signing in unlocks Studio for free until payments are on. Studio = $12 once (site table + app strings).
 - Not in the new list → unchanged and free until decided (rule from Avi: never delete or break a feature; decide where it goes): PDF/PowerPoint, music under slides, audio cues, trims, Freeze, master, save/open, Create cue with your own picture/video, Free music button.
 - Library loops preview on hover inside their tile (the still was covering the video).
+
+## 20. Build my event (AI) — v0.32.0
+- Add → "Build my event" (also Cue → Add cue from…). `#beDlg`: paste the programme or upload PDF (pdf.js text), Word (.docx via `unzipMedia(buf,/^word\/document\.xml$/)`) or text. Signed-in users only.
+- Supabase Edge Function `build-event` (verify_jwt on): Claude Messages API (`BUILD_MODEL`, default `claude-sonnet-5-5`), forced tool `build_show` → `{title,lang,mood,style:{bg,text,accent,library},cues:[{kind,title,lines,note,hold}]}`. Key in secret `ANTHROPIC_API_KEY`; 503 until set. Daily limit per user in `public.ai_builds` (5 free / 50 Pro). Only the programme text is sent.
+- The plan becomes Create cues: walk-in/opening bigger titles, speakers = lower thirds (box), video = 🎬 placeholder card with the note, hold>0 → "next after N s". Optional library background photo (Studio) for all cards.
