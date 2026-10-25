@@ -67,12 +67,22 @@ English search words for the free video library, 2–3 words, abstract only — 
 ## When a picture of the programme is attached — build on ITS design language
 The picture is the client's own design, so the screens must feel like the same family:
 - Read the programme content from the picture (and from the text, if given).
-- Sample its real colours as #hex: the dominant background → bg (deepen it if it is light — screens need a dark, rich background), its main ink or a light tone → text, its most distinctive colour (logo, ornament, heading colour) → accent.
+- Sample its real colours as #hex: the dominant background → bg (keep the programme's own background, light or dark), its main ink or a light tone → text, its most distinctive colour (logo, ornament, heading colour) → accent.
 - Its typography → style.font: serif if headings are serif / classic / calligraphic, sans if modern.
 - Its ornaments → looks: borders or frames → 'frame'; asymmetric, modern layouts → 'editorial'; centred classic → 'center'.
 - Its mood and imagery → theme and the loop words (e.g. flowers/watercolour → "soft bokeh lights"; tech graphics → "digital particles"; candles → "candle light dark").
 - Keep its wording of the event name and section names.
 Set style.from = "programme" when you did this.
+
+### style.brand — the programme's design kit (ALWAYS fill it when a picture is attached)
+Cuey rebuilds the programme's look on the screen and makes it breathe gently. Copy the programme faithfully — do not "improve" it:
+- paper: the programme's background colour (keep it LIGHT if the programme is light — here we keep the client's look). light: true if paper is light.
+- motif: the programme's decorative graphic → "polygons" (low-poly / triangles / geometric shards), "waves" (curves, flowing bands), "bokeh" (dots, circles, sparkles), "lines" (stripes, diagonal ribbons), "blobs" (soft gradients, watercolour), "none" (plain).
+- band: where the decoration sits → "top", "bottom", "both", "full".
+- colors: 3–8 #hex sampled from the decoration itself, most used first.
+- bar: colour of its section-header bars (or headings background); tab: colour of its small date/label tabs (or a second accent); title: colour of its headings; ink: colour of its body text.
+- logo: the bounding box of the logo/emblem in the picture as fractions of the picture width/height {x, y, w, h} (x,y = top-left). Be tight but include the whole logo (with its numbers or wordmark). Omit if there is no logo.
+- With a brand, each cue's kicker is the text on the section bar (e.g. the day or the part: "יום שלישי", "דיווחים"), and tab is the short date or time on the tab ("22.5", "10:30"). An agenda's lines are "time · item".
 
 ## Colour
 bg, text and accent as #hex. Text must have very strong contrast with bg. The accent is used for kickers, rules and frames — it must pop on the background and fit the mood.`;
@@ -86,14 +96,16 @@ const TOOL = {
       title: { type: "string", description: "Short event name" },
       lang: { type: "string", enum: ["he", "en", "other"] },
       mood: { type: "string", description: "one or two words" },
-      style: { type: "object", properties: { theme: { type: "string", enum: ["gala", "memorial", "conference", "school", "wedding", "party"] }, bg: { type: "string" }, text: { type: "string" }, accent: { type: "string" }, library: { type: "string" }, hero: { type: "string" }, font: { type: "string", enum: ["serif", "sans"] }, from: { type: "string" } }, required: ["theme", "bg", "text", "accent", "library", "hero"] },
+      style: { type: "object", properties: { theme: { type: "string", enum: ["gala", "memorial", "conference", "school", "wedding", "party"] }, bg: { type: "string" }, text: { type: "string" }, accent: { type: "string" }, library: { type: "string" }, hero: { type: "string" }, font: { type: "string", enum: ["serif", "sans"] }, from: { type: "string" },
+        brand: { type: "object", properties: { paper: { type: "string" }, light: { type: "boolean" }, motif: { type: "string", enum: ["polygons", "waves", "bokeh", "lines", "blobs", "none"] }, band: { type: "string", enum: ["top", "bottom", "both", "full"] }, colors: { type: "array", items: { type: "string" }, maxItems: 8 }, bar: { type: "string" }, tab: { type: "string" }, title: { type: "string" }, ink: { type: "string" }, logo: { type: "object", properties: { x: { type: "number" }, y: { type: "number" }, w: { type: "number" }, h: { type: "number" } } } } } }, required: ["theme", "bg", "text", "accent", "library", "hero"] },
       cues: {
         type: "array", maxItems: 40,
         items: {
           type: "object",
           properties: {
             kind: { type: "string", enum: ["walkin", "opening", "agenda", "section", "speaker", "video", "break", "text", "quote", "closing"] },
-            kicker: { type: "string", description: "tiny label above the title" },
+            kicker: { type: "string", description: "tiny label above the title (with a brand: the section-bar text)" },
+            tab: { type: "string", description: "with a brand: short date/time on the tab" },
             look: { type: "string", enum: ["center", "editorial", "frame"] },
             title: { type: "string" },
             lines: { type: "string", description: "short lines separated by \\n" },

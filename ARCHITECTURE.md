@@ -304,3 +304,10 @@ Direct "cue list + GO" tools: Mitti (closest; Mac only, paid, for technicians), 
 - **The skill (AI side)** — `ai/build-event.ts` (deployed as the Supabase function `build-event`): a design playbook — what Cuey can render, 6 themes (gala, memorial, conference, school, wedding, party), 3 looks (center, editorial, frame), loop-search rules, writing rules (never invent facts), a show-shaped running order, a `kicker` on every cue.
 - **The engine (app side)** — `BE_THEMES` in `app/cuey.html`: font (serif = Playfair Display / Frank Ruhl Libre), caps kickers, entrance motion (`anim`: rise / `slow` / `zoom`, CSS on `img.ov`), vignette, accent glow, default look per cue kind. `drawCardLayer` draws looks, kicker, accent rule/bar, frame. Saved text fields: look, font, caps, anim, glow, br.
 - **Programme picture** — PNG/JPG (or page 1 of a PDF) goes as a ≤1400px JPEG with the text (`body.image`); the skill takes the programme's design language (colours, serif/sans → `style.font`, frames → looks, mood → theme/loops). `style.from='programme'`.
+
+## 22. Brand kit from the programme — v0.34.0
+With a programme picture, the skill also returns `style.brand` {paper, light, motif (polygons|waves|bokeh|lines|blobs|none), band, colors[], bar, tab, title, ink, logo:{x,y,w,h}} and per-cue `tab`.
+- `brLogoCut` crops the logo out of the picture (paper colour → transparent); "Replace logo" swaps in a sharp file.
+- `brLoop` paints the motif (`brPaint`, periodic in BR_T = 10 s → seamless) with the logo, records it once with MediaRecorder (`rec.start()` without a timeslice, so the webm has a real duration) → `cuey-brand-*.webm`, kept with `keepGen`, used as the moving background of every cue.
+- Text: `T.look='brand'` → `drawBrandLayer`: section bar + date tab, title/ink colours, no shadows; `kind:'low'` = white card lower third with a tab-colour edge; agenda lines "time · item" become two columns.
+- Not a Studio cue (no Pixabay) — it is our own generated file.
