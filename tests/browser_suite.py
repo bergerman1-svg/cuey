@@ -156,6 +156,16 @@ async def main():
                 await E(pg, f'show({ci})'); await pg.wait_for_timeout(1500)
                 ok(L+'overlay on output', await E(pg, "outWin.document.querySelectorAll('#stage img.ov').length>0"))
                 ok(L+'overlay in preview', await E(pg, "document.querySelectorAll('#nowStage img.ov').length>0"))
+                # --- a moving-background Create cue is timed like a picture: 'next after N s' must advance
+                # put the card just before a plain cue (not in a slide show), then put the list back afterwards
+                kj = await E(pg, f"(()=>{{const x=items.splice({ci},1)[0];const j=items.findIndex(i=>!i.grp&&i.type==='image');items.splice(j,0,x);render();return j}})()")
+                await E(pg, f"openEdit(items[{kj}],true)"); await pg.wait_for_timeout(200)
+                ok(L+'card edit shows timed options, no loop', await E(pg, "!!document.querySelector('#edBox .seg[data-f=onEndI]')&&!document.querySelector('#edBox [data-f=loop]')"))
+                await pg.click('#edBox .seg[data-f=onEndI] button[data-v=next]'); await pg.fill('#edBox [data-f=hold]', '1'); await pg.click('#edOk')
+                await E(pg, f'show({kj})'); await pg.wait_for_timeout(2600)
+                ok(L+'card auto-advances to the next cue', await E(pg, 'cur')==kj+1, [await E(pg, 'cur'), kj])
+                ok(L+'card tag shows the timer', await E(pg, f"document.querySelector('#list .item[data-id=\\''+items[{kj}].id+'\\']').textContent.includes('⏱')"))
+                await E(pg, f"(()=>{{const x=items.splice({kj},1)[0];items.push(x);render()}})()")
 
                 await E(pg, f'show({vi})'); await pg.wait_for_timeout(1200)
                 ok(L+'single sound: preview muted, output not', await E(pg, "[...document.querySelectorAll('#nowStage video')].every(v=>v.muted)&&outStage.media&&!outStage.media.muted"))

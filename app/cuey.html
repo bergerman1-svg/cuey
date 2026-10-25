@@ -736,9 +736,9 @@ function makeStage(doc,root,mutedFn){
       };
       if(it.type==='video'){
         const trimmed=it.in>0||it.out>0;
-        if(trimmed||exporting)el.loop=false;
-        const fin=()=>{if(it.loop&&!exporting){el.currentTime=it.in||0;el.play().catch(()=>{})}else if(onEnded)onEnded()};
-        el.addEventListener('ended',()=>{if(it.loop&&!trimmed&&!exporting)return;fin()});
+        if((trimmed||exporting)&&!it.text)el.loop=false;if(it.text)el.loop=true;
+        const fin=()=>{if(it.text||(it.loop&&!exporting)){el.currentTime=it.in||0;el.play().catch(()=>{})}else if(onEnded)onEnded()};
+        el.addEventListener('ended',()=>{if(it.text||(it.loop&&!trimmed&&!exporting))return;fin()});
         if(it.in>0)el.addEventListener('loadedmetadata',()=>{if(el.currentTime<it.in-0.2)el.currentTime=it.in},{once:true});
         el.addEventListener('timeupdate',()=>{if(it.out>0&&el.currentTime>=it.out&&!el.paused){el.pause();fin()}if(onTime)onTime(el)});
         el.addEventListener('error',()=>{if(tok!==st.tok||!el.isConnected)return;it.bad=true;render();if(onEnded&&it.grp&&!exporting)setTimeout(()=>onEnded(),1500)}); // a broken cue never stops a slide show
@@ -751,7 +751,7 @@ function makeStage(doc,root,mutedFn){
     clear(){ly.forEach(l=>{l.innerHTML='';l.getAnimations().forEach(x=>x.cancel());l.style.opacity=0});st.media=null},
     black(on){blk.style.opacity=on?1:0},
     freeze(on){const v=st.media;if(v&&v.tagName==='VIDEO'){on?v.pause():v.play().catch(()=>{})}},
-    loop(v){const m=st.media;if(m&&m.tagName==='VIDEO')m.loop=v&&!(st.it&&(st.it.in>0||st.it.out>0))},
+    loop(v){const m=st.media;if(m&&m.tagName==='VIDEO')m.loop=(st.it&&st.it.text)?true:v&&!(st.it&&(st.it.in>0||st.it.out>0))},
     fit(mode){const m=st.media;if(m)m.style.objectFit=FIT[mode]||'contain'},
     vol(v){const m=st.media;if(m&&m.tagName==='VIDEO')m.volume=v*master},
     play(){const m=st.media;if(m&&m.tagName==='VIDEO'){if(st.it&&st.it.out>0&&m.currentTime>=st.it.out-0.05)m.currentTime=st.it.in||0;m.play().catch(()=>{m.muted=true;m.play().catch(()=>{})})}},
@@ -1055,7 +1055,7 @@ function stopSlideAudio(){slideAudio.pause();slideAudio.removeAttribute('src');s
 /* ---------- timeline ---------- */
 const fmt=t=>isFinite(t)?Math.floor(t/60).toString().padStart(2,'0')+':'+Math.floor(t%60).toString().padStart(2,'0'):'--:--';
 let seeking=false;
-function tlSource(){const it=items[cur];if(!it)return null;if(it.type==='video')return (outStage&&outStage.media)||pvStage.media;if(it.type==='audio')return slideAudio.src?slideAudio:null;if(holdInfo)return {currentTime:holdInfo.paused?holdInfo.dur-holdInfo.left/1000:Math.min(holdInfo.dur,(performance.now()-holdInfo.start)/1000),duration:holdInfo.dur,paused:!!holdInfo.paused,loop:false,synthetic:true};if(it.audio&&slideAudio.src)return slideAudio;return null}
+function tlSource(){const it=items[cur];if(!it)return null;if(it.type==='video'&&!it.text)return (outStage&&outStage.media)||pvStage.media;if(it.type==='audio')return slideAudio.src?slideAudio:null;if(holdInfo)return {currentTime:holdInfo.paused?holdInfo.dur-holdInfo.left/1000:Math.min(holdInfo.dur,(performance.now()-holdInfo.start)/1000),duration:holdInfo.dur,paused:!!holdInfo.paused,loop:false,synthetic:true};if(it.audio&&slideAudio.src)return slideAudio;return null}
 function tlUpdate(){
   const m=tlSource();const on=!!m;
   $('#rw').disabled=$('#ff').disabled=$('#seek').disabled=!on||armed||(m&&m.synthetic);$('#pp').disabled=!on||armed;
@@ -1516,11 +1516,13 @@ $('#mPdf').onclick=()=>$('#docIn').click();$('#mTxt').onclick=()=>$('#addText').
 
 function cloneCue(x,extra){return {...x,text:x.text&&{...x.text},web:x.web&&{...x.web},audio:x.audio&&{...x.audio},...extra,id:++uid,outUrl:null}}
 /* ---------- clean cue card: small tags say what's set; everything else lives in the Edit panel ---------- */
+function still(x){return x.type==='image'||(x.type==='video'&&!!x.text)} // a Create cue on a moving background is timed like a picture
+function avOf(x){return (x.type==='video'&&!x.text)||x.type==='audio'}
 function cueTags(it){const g=it.grp&&groups[it.grp],T=[];const tg=(x,c)=>T.push(`<span class="tg${c?' '+c:''}">${esc(x)}</span>`);
   if(!g)tg(it.trans==='cut'?t('cut'):t('dissolve')+' '+it.dur+t('sec'));
-  if(it.type==='video'||it.type==='audio'){if(it.loop&&!g)tg('🔁 '+t('tg_loop'),'hot');if(it.standby&&it.type==='video'&&!g)tg('⏸ '+t('tg_wait'),'amb');if(!it.loop&&!g&&it.onEnd==='next')tg('→ '+t('tg_next'));if(!it.loop&&!g&&it.onEnd==='black')tg('■ Black')}
-  if(it.type==='image'&&!g)tg(it.onEnd==='next'?'⏱ '+it.hold+t('sec'):t('tg_go'));
-  if(it.type==='video'&&(it.in>0||it.out>0))tg('✂ '+t('tg_trim'));
+  if(avOf(it)){if(it.loop&&!g)tg('🔁 '+t('tg_loop'),'hot');if(it.standby&&it.type==='video'&&!g)tg('⏸ '+t('tg_wait'),'amb');if(!it.loop&&!g&&it.onEnd==='next')tg('→ '+t('tg_next'));if(!it.loop&&!g&&it.onEnd==='black')tg('■ Black')}
+  if(still(it)&&!g)tg(it.onEnd==='next'?'⏱ '+it.hold+t('sec'):t('tg_go'));
+  if(it.type==='video'&&!it.text&&(it.in>0||it.out>0))tg('✂ '+t('tg_trim'));
   if(it.type!=='audio'&&it.scale&&it.scale!=='fit')tg(t(it.scale));
   if(it.audio)tg('♪ '+it.audio.name);
   return T.join('')}
@@ -1541,7 +1543,7 @@ function closeCtx(){const m=$('#ctxm');if(m)m.remove()}
 /* the Edit panel — one cue, or every ticked cue at once (only what you change is applied) */
 function openEdit(it,onlyThis){
   const T=!onlyThis&&sel.has(it.id)&&sel.size>1?items.filter(x=>sel.has(x.id)):[it],one=T.length===1,c=T[0];
-  const hasAV=T.some(x=>x.type==='video'||x.type==='audio'),hasV=T.some(x=>x.type==='video'),hasI=T.some(x=>x.type==='image'),hasPic=T.some(x=>x.type!=='audio');
+  const hasAV=T.some(avOf),hasV=T.some(x=>x.type==='video'&&!x.text),hasI=T.some(still),hasPic=T.some(x=>x.type!=='audio');
   const inGrp=T.every(x=>x.grp&&groups[x.grp]);
   const seg=(f,opts,val)=>`<div class="seg" data-f="${f}">${opts.map(([v,l])=>`<button type="button" data-v="${v}" class="${String(val)===String(v)?'on':''}">${esc(l)}</button>`).join('')}</div>`;
   let h=`<h3>${one?esc(t('ed_title')):esc(t('ed_multi',{n:T.length}))}</h3>`;
@@ -1551,8 +1553,8 @@ function openEdit(it,onlyThis){
   if(!inGrp&&(hasAV||hasI)){h+=`<div class="sec"><h4>${esc(t('ed_play'))}</h4>`;
     if(hasAV){h+=`<div class="row"><label class="chk"><input type="checkbox" data-f="loop" ${c.loop?'checked':''}> 🔁 ${esc(t('ed_loop'))}</label></div>`;
       if(hasV)h+=`<div class="row"><label class="chk"><input type="checkbox" data-f="standby" ${c.standby?'checked':''}> ⏸ ${esc(t('ed_wait'))}</label></div><p class="hint">${esc(t('ed_wait_h'))}</p>`;
-      h+=`<div class="row"><label>${esc(t('ed_end'))}</label>${seg('onEndV',[['hold',t('ed_end_hold')],['next',t('ed_end_next')],['black','Black']],c.type!=='image'?c.onEnd:'hold')}</div>`}
-    if(hasI)h+=`<div class="row"><label>${esc(t('ed_img'))}</label>${seg('onEndI',[['hold',t('waitgo')],['next',t('ed_img_auto')]],c.type==='image'?c.onEnd:'hold')}<input type="number" data-f="hold" min="0.5" max="3600" step="0.5" value="${c.hold||5}"> ${esc(t('sec'))}</div>`;
+      h+=`<div class="row"><label>${esc(t('ed_end'))}</label>${seg('onEndV',[['hold',t('ed_end_hold')],['next',t('ed_end_next')],['black','Black']],avOf(c)?c.onEnd:'hold')}</div>`}
+    if(hasI)h+=`<div class="row"><label>${esc(t('ed_img'))}</label>${seg('onEndI',[['hold',t('waitgo')],['next',t('ed_img_auto')]],still(c)?c.onEnd:'hold')}<input type="number" data-f="hold" min="0.5" max="3600" step="0.5" value="${c.hold||5}"> ${esc(t('sec'))}</div>`;
     h+=`</div>`}
   if(!inGrp)h+=`<div class="sec"><h4>${esc(t('ed_trans'))}</h4><div class="row">${seg('trans',[['cut',t('cut')],['dissolve',t('dissolve')]],c.trans)}<input type="number" data-f="dur" min="0.1" max="10" step="0.1" value="${c.dur}"> ${esc(t('sec'))}</div></div>`;
   if(hasPic)h+=`<div class="sec"><h4>${esc(t('ed_pic'))}</h4><div class="row">${seg('scale',[['fit',t('fit')],['fill',t('fill')],['stretch',t('stretch')]],c.scale||'fit')}</div><p class="hint">${esc(t('ed_pic_h'))}</p></div>`;
@@ -1560,7 +1562,7 @@ function openEdit(it,onlyThis){
   if(hasAV)h+=`<div class="row"><label>${esc(t('ed_vol'))}</label><input type="range" data-f="vol" min="0" max="100" value="${Math.round((c.vol??1)*100)}"></div>`;
   if(one&&c.type!=='audio')h+=c.audio?`<div class="row"><label>♪ ${esc(c.audio.name)}</label><input type="range" data-f="avol" min="0" max="100" value="${Math.round((c.avol??1)*100)}"><button type="button" id="edNoAud">${esc(t('rmaudio'))}</button></div>`:`<div class="row"><label></label><button type="button" id="edAud">${esc(c.type==='video'?t('addaudio'):t('audio'))}…</button></div>`;
   h+=`</div>`;
-  if(one&&c.type==='video')h+=`<div class="sec"><h4>${esc(t('ed_trim'))}</h4><div class="row"><label>IN</label><input type="number" data-f="in" min="0" step="0.1" value="${c.in||0}"> ${esc(t('sec'))}<label style="min-width:auto;margin-inline-start:12px">OUT</label><input type="number" data-f="out" min="0" step="0.1" value="${c.out||0}"> ${esc(t('sec'))}</div><p class="hint">${esc(t('ed_trim_h'))}</p></div>`;
+  if(one&&c.type==='video'&&!c.text)h+=`<div class="sec"><h4>${esc(t('ed_trim'))}</h4><div class="row"><label>IN</label><input type="number" data-f="in" min="0" step="0.1" value="${c.in||0}"> ${esc(t('sec'))}<label style="min-width:auto;margin-inline-start:12px">OUT</label><input type="number" data-f="out" min="0" step="0.1" value="${c.out||0}"> ${esc(t('sec'))}</div><p class="hint">${esc(t('ed_trim_h'))}</p></div>`;
   h+=`<div class="dbtns"><button type="button" id="edX">${esc(t('cancel'))}</button><button type="button" class="pri" id="edOk">${esc(t('ed_save'))}</button></div>`;
   const box=$('#edBox');box.innerHTML=h;$('#editDlg').hidden=false;
   const ch=new Set(),val={};
@@ -1568,14 +1570,14 @@ function openEdit(it,onlyThis){
   box.querySelectorAll('.seg').forEach(sg=>sg.querySelectorAll('button').forEach(b=>b.onclick=()=>{sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));ch.add(sg.dataset.f);val[sg.dataset.f]=b.dataset.v}));
   box.onkeydown=(e=>{e.stopPropagation();if(e.key==='Escape')close();if(e.key==='Enter'&&e.target.tagName==='INPUT'&&e.target.type!=='range')save()});
   const close=()=>{$('#editDlg').hidden=true;if(document.activeElement)document.activeElement.blur()};
-  const save=()=>{for(const x of T){const av=x.type==='video'||x.type==='audio';
+  const save=()=>{for(const x of T){const av=avOf(x);
       if(ch.has('name')&&one){const v=String(val.name||'').trim();if(v){x.name=v;x.renamed=true}}
       if(ch.has('loop')&&av)x.loop=val.loop;if(ch.has('standby')&&x.type==='video')x.standby=val.standby;
-      if(ch.has('onEndV')&&av)x.onEnd=val.onEndV;if(ch.has('onEndI')&&x.type==='image')x.onEnd=val.onEndI;if(ch.has('hold')&&x.type==='image')x.hold=Math.max(.5,val.hold||5);
+      if(ch.has('onEndV')&&av)x.onEnd=val.onEndV;if(ch.has('onEndI')&&still(x))x.onEnd=val.onEndI;if(ch.has('hold')&&still(x))x.hold=Math.max(.5,val.hold||5);
       if(ch.has('trans'))x.trans=val.trans;if(ch.has('dur'))x.dur=Math.max(.1,val.dur||.8);
       if(ch.has('scale')&&x.type!=='audio')x.scale=val.scale;
       if(ch.has('vol')&&av)x.vol=val.vol/100;if(ch.has('avol')&&x.audio)x.avol=val.avol/100;
-      if(ch.has('in')&&x.type==='video')x.in=Math.max(0,val.in||0);if(ch.has('out')&&x.type==='video')x.out=Math.max(0,val.out||0);
+      if(ch.has('in')&&x.type==='video'&&!x.text)x.in=Math.max(0,val.in||0);if(ch.has('out')&&x.type==='video'&&!x.text)x.out=Math.max(0,val.out||0);
       if(items[cur]===x){pvStage.loop(x.loop);outStage&&outStage.loop(x.loop);pvStage.fit(x.scale);outStage&&outStage.fit(x.scale);pvStage.vol(x.vol);outStage&&outStage.vol(x.vol);if(x.type==='audio')slideAudio.loop=!!x.loop;if(slideAudio.src)slideAudio.volume=(x.type==='audio'?x.vol:(x.avol??1))*master;armHold(x)}}
     close();render();tlUpdate()};
   $('#edX').onclick=close;$('#edOk').onclick=save;
@@ -1836,7 +1838,7 @@ function show(i,force){
   if(blackOn)setBlack(false);
   render();tlUpdate();
 }
-function armHold(it){clearTimeout(holdTimer);holdTimer=null;holdInfo=null;if(it.type!=='image'||it.bad)return;if(!(autoMode||it.grp||it.onEnd==='next'))return;const ms=Math.max(500,(it.hold||5)*1000);holdInfo={start:performance.now(),dur:ms/1000};holdTimer=setTimeout(()=>{if(items[cur]===it)advance()},ms)}
+function armHold(it){clearTimeout(holdTimer);holdTimer=null;holdInfo=null;if(!still(it)||it.bad)return;if(!(autoMode||it.grp||it.onEnd==='next'))return;const ms=Math.max(500,(it.hold||5)*1000);holdInfo={start:performance.now(),dur:ms/1000};holdTimer=setTimeout(()=>{if(items[cur]===it)advance()},ms)}
 function advance(fromGo){if(exportFinishing)return;
   const it=items[cur];
   if(it&&it.grp&&groups[it.grp]&&!exporting){const G=groups[it.grp],[a,b]=grpRange(it.grp);
