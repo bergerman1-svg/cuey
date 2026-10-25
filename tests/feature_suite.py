@@ -152,6 +152,11 @@ async def features(ctx, L, lang):
         await pg.click('#stBeta'); await W(pg, 400)
         ok(L + 'beta "continue" runs it', await E(pg, 'cur') == 0 and await E(pg, "$('#studioDlg').hidden"))
         ok(L + 'watermark element on Output', await E(pg, "!!outWin.document.getElementById('badge')"))
+        # PROGRAM follows OUTPUT: a stalled preview copy restarts and lines up
+        await add(pg, 'va.webm'); vi = await E(pg, "items.findIndex(i=>i.type==='video')")
+        await E(pg, f'show({vi})'); await W(pg, 1200)
+        await E(pg, 'pvStage.media.pause();pvStage.media.currentTime=0'); await W(pg, 2300)
+        ok(L + 'PROGRAM restarts + follows OUTPUT', await E(pg, '!pvStage.media.paused&&Math.abs(pvStage.media.currentTime-outStage.media.currentTime)<0.6'), await E(pg, '[pvStage.media.paused,pvStage.media.currentTime,outStage.media.currentTime]'))
         await E(pg, 'setBlack(true)'); await W(pg, 700)
         ok(L + 'Black reaches Output', await E(pg, "parseFloat(getComputedStyle(outWin.document.querySelector('#stage .blk')).opacity)>0.95"), await E(pg, "getComputedStyle(outWin.document.querySelector('#stage .blk')).opacity"))
         await E(pg, 'setBlack(false)'); await E(pg, 'closeOut()'); await W(pg, 500)
