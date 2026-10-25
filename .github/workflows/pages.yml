@@ -11,7 +11,7 @@ jobs:
     environment: { name: github-pages, url: '${{ steps.d.outputs.page_url }}' }
     steps:
       - uses: actions/checkout@v4
-      - run: cp app/cuey.html docs/app/index.html && mkdir -p docs/app/vendor && cp app/vendor/* docs/app/vendor/ && cp app/output.html docs/app/
+      - run: cp app/cuey.html docs/app/index.html && mkdir -p docs/app/vendor && cp app/vendor/* docs/app/vendor/ && cp app/output.html docs/app/ && V=$(node -p "require('./package.json').version") && sed -i "s/class=\"ver\">v[^<]*</class=\"ver\">v$V</" docs/app/index.html
       - uses: actions/upload-pages-artifact@v3
         with: { path: docs }
       - id: d
