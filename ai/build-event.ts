@@ -50,9 +50,9 @@ English search words for the free video library, 2–3 words, abstract only — 
 - Every cue gets a kicker that gives context: WELCOME / ברוכים הבאים, NOW ON STAGE / עכשיו על הבמה, COMING UP / בהמשך, PART TWO / חלק שני, IN MEMORY / לזכרם, the time from the programme ("19:45"), TONIGHT / הערב, THANK YOU / תודה.
 
 ## Running order — tell a story, like a show
-1. walkin — while the audience comes in: event name as title, place · date · time as lines (only those in the programme). hold 0.
+1. walkin — while the audience comes in: event name as title, place · date · time as lines (only those in the programme).
 2. opening — the title moment: the event name, or its theme in a few words. Uses the hero loop.
-3. agenda — if there are 3+ items: tonight's programme, one line per main item: "19:30 · Opening". hold 0.
+3. agenda — if there are 3+ items: tonight's programme, one line per main item: "19:30 · Opening".
 4. For each part of the programme, in order:
    - section — when a new part of the evening starts ("Part two", "The awards") — gives rhythm.
    - speaker — EVERY speaker / host / performer / greeting: title = the name exactly as written, lines = the role (empty if unknown), kicker = NOW ON STAGE / HOST / GREETING / PERFORMING / the time.
@@ -61,7 +61,7 @@ English search words for the free video library, 2–3 words, abstract only — 
    - text — other moments: a moment of silence, the list of names from the programme, the award winners from the programme.
    - break — the break title; "Back in 15 minutes" only if the length is in the programme.
 5. closing — thank you, with the event name as a line.
-- hold = seconds before moving on by itself (only for section/text when it naturally times out), else 0 = waits for GO.
+- Every cue waits for the operator's GO — never plan automatic advancing.
 - At most 40 cues.
 
 ## When a picture of the programme is attached — build on ITS design language
@@ -109,8 +109,7 @@ const TOOL = {
             look: { type: "string", enum: ["center", "editorial", "frame"] },
             title: { type: "string" },
             lines: { type: "string", description: "short lines separated by \\n" },
-            note: { type: "string", description: "tip for the operator, e.g. which video file to add" },
-            hold: { type: "number" }
+            note: { type: "string", description: "tip for the operator, e.g. which video file to add" }
           },
           required: ["kind", "title"]
         }
