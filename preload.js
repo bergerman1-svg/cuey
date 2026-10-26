@@ -7,5 +7,10 @@ contextBridge.exposeInMainWorld('cueyNative', {
   // Free music: watch the Downloads folder for a new song while the user is on Pixabay
   watchDownloads: (on) => ipcRenderer.send('watch-downloads', !!on),
   onDownloaded: (cb) => ipcRenderer.on('downloaded', (_e, d) => cb(d)),
-  readDownload: (id) => ipcRenderer.invoke('read-download', id)
+  readDownload: (id) => ipcRenderer.invoke('read-download', id),
+  // shows on disk: Save writes the open file, Save As / first save asks where
+  saveShow: (o) => ipcRenderer.invoke('show-save', o),
+  openShow: () => ipcRenderer.invoke('show-open'),
+  readShow: (p) => ipcRenderer.invoke('show-read', p),
+  setRecent: (names) => ipcRenderer.send('recent', names)
 });

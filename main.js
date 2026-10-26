@@ -32,6 +32,29 @@ ipcMain.on('watch-downloads', (_e, on) => {
   } catch (e) { return; }
   dlTimer = setTimeout(stopDl, 20 * 60 * 1000);   // stop watching after 20 minutes
 });
+// ---- shows (.cuey) on disk
+const SHOW_F = [{ name: 'Cuey show', extensions: ['cuey'] }];
+const isShow = (p) => typeof p === 'string' && /\.cuey$/i.test(p);
+ipcMain.handle('show-save', async (_e, o) => {
+  let target = o && isShow(o.path) ? o.path : null;
+  if (!target) {
+    const nm = String((o && o.name) || 'show').replace(/[\\/:*?"<>|]/g, '').slice(0, 80) || 'show';
+    const r = await dialog.showSaveDialog(win, { defaultPath: path.join(app.getPath('documents'), nm + '.cuey'), filters: SHOW_F });
+    if (r.canceled || !r.filePath) return null;
+    target = /\.cuey$/i.test(r.filePath) ? r.filePath : r.filePath + '.cuey';
+  }
+  await fs.promises.writeFile(target, String(o.json), 'utf8');
+  return { path: target, name: path.basename(target) };
+});
+ipcMain.handle('show-open', async () => {
+  const r = await dialog.showOpenDialog(win, { properties: ['openFile'], filters: SHOW_F });
+  if (r.canceled || !r.filePaths[0]) return null;
+  const f = r.filePaths[0];
+  return { path: f, name: path.basename(f), text: await fs.promises.readFile(f, 'utf8') };
+});
+ipcMain.handle('show-read', async (_e, f) => { if (!isShow(f)) return null; try { return await fs.promises.readFile(f, 'utf8'); } catch (e) { return null; } });
+let recentNames = [];
+ipcMain.on('recent', (_e, names) => { recentNames = Array.isArray(names) ? names.slice(0, 8).map(String) : []; Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate())); });
 ipcMain.handle('read-download', async (_e, id) => { const f = dlOk.get(String(id)); if (!f) return null; dlOk.delete(String(id)); try { return await fs.promises.readFile(f); } catch (e) { return null; } });
 
 let win = null;
@@ -100,10 +123,12 @@ function createWindow() {
   win.on('closed', () => { win = null; stopDl(); });
 }
 
-const template = [
+const send = (c) => () => win && win.webContents.send('menu', c);
+const menuTemplate = () => [
   ...(process.platform === 'darwin' ? [{ role: 'appMenu' }] : []),
   { label: 'Show', submenu: [
       { label: 'Open…', accelerator: 'CmdOrCtrl+O', click: () => win && win.webContents.send('menu', 'open') },
+      { label: 'Open Recent', submenu: recentNames.length ? recentNames.map((n, i) => ({ label: n, click: send('recent:' + i) })) : [{ label: '(none yet)', enabled: false }] },
       { type: 'separator' },
       { label: 'Save', accelerator: 'CmdOrCtrl+S', click: () => win && win.webContents.send('menu', 'save') },
       { label: 'Save As…', accelerator: 'CmdOrCtrl+Shift+S', click: () => win && win.webContents.send('menu', 'saveas') },
@@ -123,10 +148,16 @@ const template = [
       { label: 'Select All', click: () => win && win.webContents.send('menu', 'selall') },
       { label: 'Clear All List…', click: () => win && win.webContents.send('menu', 'clear') },
       { type: 'separator' },
-      { label: 'Create Slide Show', click: () => win && win.webContents.send('menu', 'slideshow') }
+      { label: 'Create Slide Show', click: () => win && win.webContents.send('menu', 'slideshow') },
+      { type: 'separator' },
+      { label: 'Add Cue From', submenu: [
+        { label: 'Computer…', click: send('add-pc') }, { label: 'YouTube / Vimeo Link…', click: send('add-link') },
+        { label: 'PDF / PowerPoint…', click: send('add-pdf') }, { label: 'Create Cue…', click: send('add-card') },
+        { label: 'Free Music…', click: send('add-music') }, { label: 'AI Builder…', click: send('add-ai') } ] }
   ]},
   { label: 'Output', submenu: [
       { label: 'Output Window', accelerator: 'CmdOrCtrl+Shift+O', click: () => win && win.webContents.send('menu', 'output') },
+      { label: 'Close Output', click: send('closeout') },
       { label: 'Share Output Screen…', click: () => win && win.webContents.send('menu', 'share') },
       { type: 'separator' },
       { label: 'Black', click: () => win && win.webContents.send('menu', 'black') },
@@ -144,7 +175,7 @@ app.whenReady().then(() => {
   session.defaultSession.webRequest.onBeforeSendHeaders(
     { urls: ['https://www.youtube-nocookie.com/*', 'https://www.youtube.com/*', 'https://player.vimeo.com/*'] },
     (d, cb) => { d.requestHeaders['Referer'] = 'https://cuey.live/'; cb({ requestHeaders: d.requestHeaders }); });
-  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+  Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate()));
   createWindow();
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 });

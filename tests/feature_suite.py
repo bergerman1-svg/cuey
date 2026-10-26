@@ -117,6 +117,7 @@ async def features(ctx, L, lang):
         await edit(pg, ai, ['#edBox .seg[data-f=onEndV] button[data-v=next]'])
         await E(pg, f'show({ai})'); await W(pg, 500)
         ok(L + 'audio cue plays', await E(pg, '!slideAudio.paused'))
+        await W(pg, 700); ok(L + 'audio cue fills the yellow seek bar', float((await E(pg, "$('#seek').style.getPropertyValue('--p')") or '0%').rstrip('%') or 0) > 0)
         await E(pg, "setMaster(0.3)"); await W(pg, 100)
         ok(L + 'master volume reaches the music', await E(pg, 'Math.abs(slideAudio.volume-0.3*(items[2].vol??1))<0.05'), await E(pg, 'slideAudio.volume'))
     await feature('music under pictures + audio cues', music)

@@ -195,6 +195,7 @@ html.m .mbox .pcta .btn{width:100%}
 #share li:before{content:"✓";position:absolute;inset-inline-start:0;color:var(--go);font-weight:800}
 @media (max-width:720px){#share .shareband{grid-template-columns:1fr;padding:24px}#share .tv{width:130px;height:78px}#share .tab{width:74px;height:98px}#share .ph{width:44px;height:84px}}
 .dl1{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}.dl1 .btn{width:auto}.dl1 .btn.big{font-size:18px;padding:16px 26px}.dlo{text-align:center;font-size:13px;color:var(--mut);margin:14px 0 0}.dlo a{color:var(--txt)}details.note summary{cursor:pointer;font-weight:600}details.note{max-width:640px;margin:18px auto 0}
+.choose{position:fixed;inset:0;z-index:60;background:rgba(5,5,7,.72);backdrop-filter:blur(6px);display:grid;place-items:center;padding:16px}.choose[hidden]{display:none}.chbox{position:relative;width:min(440px,100%);background:#141418;border:1px solid var(--line);border-radius:20px;padding:28px 24px 24px}.chbox h3{margin:0 0 18px;font-size:22px}.chx{position:absolute;top:10px;inset-inline-end:12px;background:none;border:0;color:var(--mut,#999);font-size:26px;cursor:pointer;line-height:1}.chopt{display:flex;flex-direction:column;gap:4px;text-decoration:none;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-top:12px;color:var(--txt,#fff);background:#1a1a20;transition:border-color .15s,transform .15s}.chopt:hover{border-color:var(--go,#C8FF00);transform:translateY(-1px)}.chopt b{font-size:17px}.chopt small{color:var(--mut,#9a9aa8);font-size:13px}.chopt.pri{border-color:var(--go,#C8FF00);background:linear-gradient(135deg,#1c2408,#16160f)}.chopt.pri b{color:var(--go,#C8FF00)}
 </style>
 <script>(function(){var u=navigator.userAgent;if(/Android|iPhone|iPad|iPod/i.test(u)||(navigator.maxTouchPoints>1&&innerWidth<900))document.documentElement.classList.add("m")})()</script>
 </head>
@@ -318,6 +319,12 @@ html.m .mbox .pcta .btn{width:100%}
   <span class="sfoot">📱 אפליקציית Cuey — בקרוב <span class="nw">ב-App Store</span> <span class="nw">וב-Google Play</span></span>
 </div>
 
+<div id="chooseDlg" class="choose" hidden role="dialog" aria-modal="true" aria-labelledby="chT"><div class="chbox">
+  <button class="chx" id="chX" aria-label="סגירה">×</button>
+  <h3 id="chT">איך להתחיל?</h3>
+  <a class="chopt pri" id="chDesk" href="#download" download><b>⬇ Cuey למחשב</b><small id="chDeskS">הכי יציב לאירוע · Mac / Windows</small></a>
+  <a class="chopt" href="../app/"><b>▶ המשך בדפדפן</b><small>בלי התקנה · מתחילים מיד</small></a>
+</div></div>
 <script>
 (function(){
   try{localStorage.setItem('cuey.site.lang','he')}catch(e){}
@@ -329,8 +336,13 @@ html.m .mbox .pcta .btn{width:100%}
   const mobile=/Android|iPhone|iPad|iPod/i.test(ua)||(navigator.maxTouchPoints>1&&innerWidth<900);
   const isIOS=/iPhone|iPad|iPod/i.test(ua);
   // Let's start
+  // computers: choose desktop app or browser (a colleague could not find the download)
+  const ch=document.getElementById('chooseDlg'),chOpen=()=>{const m=document.getElementById('dlMain'),o=document.getElementById('dlOs');const d=document.getElementById('chDesk');if(m){d.href=m.href;d.setAttribute('download','')}if(o&&o.textContent)document.getElementById('chDeskS').textContent=(document.documentElement.lang==='he'?'הכי יציב לאירוע · ':'Most stable for the event · ')+o.textContent;ch.hidden=false;d.focus()},chClose=()=>{ch.hidden=true};
+  document.getElementById('chX').onclick=chClose;ch.addEventListener('click',e=>{if(e.target===ch)chClose()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!ch.hidden)chClose()});
+  document.getElementById('chDesk').addEventListener('click',()=>setTimeout(()=>{chClose();const dl=document.getElementById('download');dl&&dl.scrollIntoView({behavior:'smooth'})},300));
+  if(!mobile)document.querySelectorAll('.pcta a.btn:not(.sec)').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();chOpen()}));
   document.getElementById('start').onclick=()=>{
-    if(!mobile){location.href='../app/';return}
+    if(!mobile){chOpen();return}
     document.getElementById('mobSheet').classList.add('open');document.getElementById('scrim').classList.add('on');
   };
   document.getElementById('scrim').onclick=()=>{document.getElementById('mobSheet').classList.remove('open');document.getElementById('scrim').classList.remove('on')};
