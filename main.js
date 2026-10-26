@@ -112,6 +112,8 @@ const template = [
       { type: 'separator' },
       process.platform === 'darwin' ? { role: 'close' } : { role: 'quit' }
   ]},
+  // Edit menu: on a Mac, ⌘C / ⌘V / ⌘X / ⌘A in text fields only work when the app has one (pasting a YouTube link, typing a title…)
+  { role: 'editMenu' },
   { label: 'Cue', submenu: [
       { label: 'Move Up', accelerator: 'Alt+Up', click: () => win && win.webContents.send('menu', 'up') },
       { label: 'Move Down', accelerator: 'Alt+Down', click: () => win && win.webContents.send('menu', 'down') },
