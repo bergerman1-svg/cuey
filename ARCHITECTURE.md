@@ -344,6 +344,7 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - **Namecheap DNS now:**
   - Host records: CNAME `rsend`, CNAME `send` (Resend), TXT `resend._domainkey` (Resend DKIM), TXT `_dmarc` `v=DMARC1; p=none;`, TXT `@` `google-site-verification=…`, TXT `@` `v=spf1 include:_spf.google.com ~all`.
   - Mail settings: Custom MX → `@` `smtp.google.com.` priority 1.
+- TXT `google._domainkey` = Google DKIM (2048-bit, added 2026-10-27). Status 2026-10-27: mail to hello@cuey.live **arrives** (Google's setup wizard lagged behind and still showed "can't verify" for a while).
 - Auth codes keep going out through **Resend** (`noreply@cuey.live`) — unaffected by the MX change.
 - Every recurring cost goes into the project doc `cuey-costs.md`.
 - **Site on cuey.live (v0.37.1, 2026-10-27):** GitHub Pages custom domain (repo Settings ▸ Pages ▸ Custom domain = `cuey.live`, Enforce HTTPS on). Namecheap: four A records `@` → 185.199.108.153 / .109.153 / .110.153 / .111.153 and CNAME `www` → `bergerman1-svg.github.io.`. The site now sits at the domain root (no `/cuey/` prefix); old github.io links redirect by themselves. Every hard-coded link in the app, landing pages, desktop menu and share-screen link points to `https://cuey.live/`. No CNAME file needed (Pages deploys from the Website workflow).
