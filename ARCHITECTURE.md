@@ -1,6 +1,6 @@
 # Cuey — Architecture & Status
 
-_Last updated: 2026-10-27 · app v0.37.1_
+_Last updated: 2026-10-27 · app v0.37.3_
 
 Cuey is a free, simple playback app for live events run by non-technical people
 (teachers, lecturers, producers): drop videos/slides into a cue list, press **GO**,
@@ -358,3 +358,8 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - Assets: `docs/email/icon.png` (app icon, signature) and `docs/email/logo.png` (wordmark for the email header), served from https://cuey.live/email/.
 - **Gmail signature** of hello@cuey.live ("Cuey", default for new mail and replies): icon · Avi Berger · Founder · Cuey · tagline · cuey.live | hello@cuey.live. Source: `ai/email/signature.html`.
 - **Sign-in code email** (Supabase Auth templates *Magic link or OTP* and *Confirm sign up*, subject "Your Cuey code: {{ .Token }}"): dark header with the logo, code in a dark box with lime digits, EN + HE text, footer with cuey.live / support@ / Privacy. Source: `ai/email/code.html` — paste into both templates when changing it.
+
+## 30. Site refresh + app splash (v0.37.3, 2026-10-27)
+- **Landing hero (EN/HE):** the tagline is now a calm subtitle (smaller, muted, balanced lines) under the headline instead of a second giant headline; headlines use `text-wrap:balance`; Hebrew "GO!" is isolated LTR so it reads "ו..GO!".
+- **Motion (one signature moment):** headline words come in one after another, then **GO! is "pressed"** (scale + lime glow + a thin ring). Plus: sticky glass nav after scrolling, nav underline on hover, buttons press in on click, a soft lime light follows the pointer over cards, section titles get a lime rule that draws in. All off with `prefers-reduced-motion`. Code: the `v2 (2026-10-27)` CSS block + `v2 motion` script at the end of both landing pages. `html,body{overflow-x:clip}` (not hidden) so the sticky nav works.
+- **App splash (browser only):** `#cuSplash` right after `<body>` in `app/cuey.html` — black screen, the C draws itself (SVG stroke), the orange play triangle pops in, "cuey" fades in, gone after ~2 s. Once per tab (`sessionStorage cuey.splash`), never in Electron, skipped with `?nosplash`, `pointer-events:none` so it never blocks a click or GO.

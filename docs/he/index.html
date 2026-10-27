@@ -196,6 +196,47 @@ html.m .mbox .pcta .btn{width:100%}
 @media (max-width:720px){#share .shareband{grid-template-columns:1fr;padding:24px}#share .tv{width:130px;height:78px}#share .tab{width:74px;height:98px}#share .ph{width:44px;height:84px}}
 .dl1{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}.dl1 .btn{width:auto}.dl1 .btn.big{font-size:18px;padding:16px 26px}.dlo{text-align:center;font-size:13px;color:var(--mut);margin:14px 0 0}.dlo a{color:var(--txt)}details.note summary{cursor:pointer;font-weight:600}details.note{max-width:640px;margin:18px auto 0}
 .choose{position:fixed;inset:0;z-index:60;background:rgba(5,5,7,.72);backdrop-filter:blur(6px);display:grid;place-items:center;padding:16px}.choose[hidden]{display:none}.chbox{position:relative;width:min(440px,100%);background:#141418;border:1px solid var(--line);border-radius:20px;padding:28px 24px 24px}.chbox h3{margin:0 0 18px;font-size:22px}.chx{position:absolute;top:10px;inset-inline-end:12px;background:none;border:0;color:var(--mut,#999);font-size:26px;cursor:pointer;line-height:1}.chopt{display:flex;flex-direction:column;gap:4px;text-decoration:none;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-top:12px;color:var(--txt,#fff);background:#1a1a20;transition:border-color .15s,transform .15s}.chopt:hover{border-color:var(--go,#C8FF00);transform:translateY(-1px)}.chopt b{font-size:17px}.chopt small{color:var(--mut,#9a9aa8);font-size:13px}.chopt.pri{border-color:var(--go,#C8FF00);background:linear-gradient(135deg,#1c2408,#16160f)}.chopt.pri b{color:var(--go,#C8FF00)}
+/* ---- v2 (2026-10-27): calmer hero type + one signature motion (the GO press) ---- */
+html,body{overflow-x:clip}
+header.hero{padding:64px 0 24px}
+.hero .qs.ask{font-size:clamp(16px,1.6vw,19px);font-weight:500;letter-spacing:0}
+.hero h1.msg{max-width:980px;text-wrap:balance;letter-spacing:-1.6px;line-height:1.04;margin:14px auto 18px}
+.hero h1.msg b{display:inline-block;direction:ltr;unicode-bidi:isolate}
+.pitch{font-size:clamp(18px,2vw,23px);font-weight:500;letter-spacing:0;line-height:1.45;color:var(--mut);max-width:860px;margin:0 auto 34px;text-wrap:balance}
+.pitch b{font-weight:800}
+.hero .src{text-wrap:balance}
+section h2{text-wrap:balance}
+/* words of the headline come in one after another, then GO is "pressed" */
+.hero h1.msg .w{display:inline-block;white-space:pre}
+.js .hero h1.msg{animation:none}
+.js .hero h1.msg .w{opacity:0;transform:translateY(.38em);filter:blur(8px);animation:wordin .62s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes wordin{to{opacity:1;transform:none;filter:none}}
+.js .hero h1.msg b{opacity:0;animation:gopress .75s cubic-bezier(.3,1.6,.5,1) forwards}
+@keyframes gopress{0%{opacity:0;transform:scale(1.6);text-shadow:0 0 0 rgba(200,255,0,0)}45%{opacity:1;transform:scale(.9);text-shadow:0 0 42px rgba(200,255,0,.9)}100%{opacity:1;transform:none;text-shadow:0 0 18px rgba(200,255,0,.25)}}
+.hero h1.msg .burst{position:absolute;pointer-events:none;width:0;height:0;border-radius:50%;border:2px solid var(--go);transform:translate(-50%,-50%);opacity:0;box-shadow:0 0 24px rgba(200,255,0,.35)}
+.hero h1.msg .burst.on{animation:burst .9s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes burst{0%{opacity:.9;width:0;height:0}100%{opacity:0;width:300px;height:300px}}
+/* nav: stays on top while scrolling, glass once you scroll */
+nav{position:sticky;top:0;z-index:40}
+nav:before{content:'';position:absolute;inset:0 -50vw;background:rgba(10,10,12,.72);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);border-bottom:1px solid rgba(255,255,255,.06);opacity:0;transition:opacity .3s;z-index:-1}
+nav.scrolled:before{opacity:1}
+nav .l{position:relative;transition:color .2s}
+nav .l:after{content:'';position:absolute;left:0;right:0;bottom:-4px;height:2px;border-radius:2px;background:var(--go);transform:scaleX(0);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+nav .l:hover{color:var(--txt)}nav .l:hover:after{transform:scaleX(1)}
+/* buttons answer the press */
+.btn{transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .2s,filter .2s}
+.btn:hover{filter:brightness(1.06)}
+.btn:active{transform:translateY(1px) scale(.97)!important}
+/* a soft light follows the pointer over cards */
+.card,.step,.quote,.gal figure{position:relative;isolation:isolate}
+.spot:after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(260px circle at var(--mx,50%) var(--my,50%),rgba(200,255,0,.09),transparent 70%);opacity:0;transition:opacity .3s;z-index:-1}
+.spot:hover:after{opacity:1}
+/* section titles: a lime rule draws in under them */
+section h2.rv{position:relative}
+section h2.rv:after{content:'';display:block;width:44px;height:3px;border-radius:3px;background:var(--go);margin-top:12px;transform:scaleX(0);transform-origin:var(--o,left);transition:transform .7s cubic-bezier(.2,.8,.2,1) .25s}
+html[dir=rtl] section h2.rv:after{--o:right}
+section h2.rv.in:after{transform:scaleX(1)}
+@media (prefers-reduced-motion:reduce){.js .hero h1.msg .w,.js .hero h1.msg b{opacity:1;transform:none;filter:none}}
 </style>
 <script>(function(){var u=navigator.userAgent;if(/Android|iPhone|iPad|iPod/i.test(u)||(navigator.maxTouchPoints>1&&innerWidth<900))document.documentElement.classList.add("m")})()</script>
 </head>
@@ -376,6 +417,36 @@ t('/site/he'+location.search,false);
 document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(!a)return;var h=a.getAttribute('href')||'';
 if(/Cuey-mac-arm64/.test(h))t('site/download-mac-arm',1);else if(/Cuey-mac-x64/.test(h))t('site/download-mac-intel',1);else if(/Cuey-windows/.test(h))t('site/download-win',1);
 else if(/(^|\/)app\/?$/.test(h))t('site/open-in-browser',1);else if(/#pricing/.test(h))t('site/pricing-click',1)},true)})();
+</script>
+<script>
+/* v2 motion: headline words + GO press, sticky glass nav, pointer light on cards */
+(function(){
+  var rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var h=document.querySelector('.hero h1.msg');
+  if(h&&!rm){
+    document.documentElement.classList.add('js');
+    var i=0,base=.18;
+    [].slice.call(h.childNodes).forEach(function(n){
+      if(n.nodeType!==3)return;
+      var f=document.createDocumentFragment();
+      n.textContent.split(/(\s+)/).forEach(function(p){
+        if(!p)return;
+        if(/^\s+$/.test(p)){f.appendChild(document.createTextNode(p));return}
+        var s=document.createElement('span');s.className='w';s.textContent=p;s.style.animationDelay=(base+i++*.055)+'s';f.appendChild(s)});
+      h.replaceChild(f,n)});
+    var b=h.querySelector('b');
+    if(b){var t=base+i*.055+.12;b.style.animationDelay=t+'s';
+      h.style.position='relative';
+      setTimeout(function(){var r=b.getBoundingClientRect(),q=h.getBoundingClientRect(),d=document.createElement('i');d.className='burst';d.style.left=(r.left-q.left+r.width/2)+'px';d.style.top=(r.top-q.top+r.height/2)+'px';h.appendChild(d);requestAnimationFrame(function(){d.classList.add('on')});setTimeout(function(){d.remove()},1200)},(t+.3)*1000)}
+  }
+  var nav=document.querySelector('nav');
+  if(nav){var on=function(){nav.classList.toggle('scrolled',scrollY>8)};on();addEventListener('scroll',on,{passive:true})}
+  if(!rm&&matchMedia('(hover:hover)').matches){
+    [].forEach.call(document.querySelectorAll('.card,.step,.quote,.gal figure'),function(el){
+      el.classList.add('spot');
+      el.addEventListener('pointermove',function(e){var r=el.getBoundingClientRect();el.style.setProperty('--mx',(e.clientX-r.left)+'px');el.style.setProperty('--my',(e.clientY-r.top)+'px')})});
+  }
+})();
 </script>
 </body>
 </html>
