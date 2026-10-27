@@ -237,6 +237,44 @@ section h2.rv:after{content:'';display:block;width:44px;height:3px;border-radius
 html[dir=rtl] section h2.rv:after{--o:right}
 section h2.rv.in:after{transform:scaleX(1)}
 @media (prefers-reduced-motion:reduce){.js .hero h1.msg .w,.js .hero h1.msg b{opacity:1;transform:none;filter:none}}
+
+/* ---- pricing v2 (2026-10-28): three plan cards, monthly/yearly switch, education strip ---- */
+.bill{display:flex;justify-content:center;margin:6px 0 26px}
+.bill .sw{display:inline-flex;gap:4px;background:#121216;border:1px solid var(--line);border-radius:999px;padding:4px}
+.bill button{font:inherit;font-size:14px;font-weight:600;color:var(--mut);background:none;border:0;border-radius:999px;padding:9px 18px;cursor:pointer;transition:background .25s,color .25s}
+.bill button.on{background:var(--go);color:#0A0A0C}
+.bill button em{font-style:normal;font-size:11.5px;font-weight:700;margin-inline-start:6px;padding:2px 7px;border-radius:999px;background:rgba(255,117,31,.16);color:var(--amb)}
+.bill button.on em{background:rgba(10,10,12,.14);color:#0A0A0C}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:stretch}
+.plan{position:relative;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:26px 24px 22px;transition:transform .3s cubic-bezier(.2,.8,.2,1),border-color .3s,box-shadow .3s}
+.plan:hover{transform:translateY(-4px);border-color:#3a3a44;box-shadow:0 30px 60px -36px #000}
+.plan.hl{border-color:rgba(200,255,0,.55);background:linear-gradient(180deg,rgba(200,255,0,.07),var(--panel) 42%);box-shadow:0 0 0 1px rgba(200,255,0,.15),0 30px 70px -40px rgba(200,255,0,.35)}
+.plan .tag{position:absolute;top:-12px;inset-inline-start:24px;font-size:12px;font-weight:700;background:var(--go);color:#0A0A0C;border-radius:999px;padding:4px 11px}
+.plan h3{margin:0;font-size:20px}
+.plan .for{margin:4px 0 16px;color:var(--mut);font-size:14.5px;line-height:1.5;min-height:44px}
+.plan .pr{display:flex;align-items:baseline;gap:6px;direction:ltr;justify-content:flex-start}
+html[dir=rtl] .plan .pr{justify-content:flex-end}
+.plan .pr b{font-size:46px;font-weight:800;letter-spacing:-1.5px;line-height:1;transition:opacity .2s}
+.plan .pr span{color:var(--mut);font-size:15px}
+.plan .yr{min-height:20px;margin:6px 0 18px;font-size:13px;color:var(--mut)}
+.plan ul{list-style:none;padding:0;margin:0 0 22px;display:grid;gap:9px;flex:1}
+.plan li{position:relative;padding-inline-start:24px;font-size:14.5px;line-height:1.45;color:var(--txt)}
+.plan li:before{content:"✓";position:absolute;inset-inline-start:0;color:var(--go);font-weight:800}
+.plan li.soon{color:var(--mut)}.plan li.soon:before{content:"·";color:var(--mut)}
+.plan li small{color:var(--mut)}
+.plan .btn{width:100%}
+.plan .btn.sec{background:transparent;color:var(--txt);border:1px solid #3a3a44;box-shadow:none}
+.edu{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:18px;background:linear-gradient(90deg,rgba(255,117,31,.10),rgba(255,117,31,.02));border:1px solid rgba(255,117,31,.28);border-radius:18px;padding:16px 20px}
+.edu .ei{font-size:26px;line-height:1}
+.edu p{margin:0;flex:1;min-width:220px;color:var(--mut);font-size:15px;line-height:1.5}.edu p b{color:var(--txt)}
+.edu a{color:var(--amb);font-weight:700;text-decoration:none;white-space:nowrap}.edu a:hover{text-decoration:underline}
+details.cmp{margin-top:22px}
+details.cmp summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:8px;color:var(--txt);font-weight:600;font-size:15px;padding:8px 2px}
+details.cmp summary::-webkit-details-marker{display:none}
+details.cmp summary:before{content:"+";display:inline-grid;place-items:center;width:22px;height:22px;border-radius:7px;background:#1C1C23;color:var(--go);font-weight:800;transition:transform .25s}
+details.cmp[open] summary:before{content:"–"}
+details.cmp .ptable{margin-top:12px}
+@media (max-width:860px){.plans{grid-template-columns:1fr}.plan .for{min-height:0}}
 </style>
 <script>(function(){var u=navigator.userAgent;if(/Android|iPhone|iPad|iPod/i.test(u)||(navigator.maxTouchPoints>1&&innerWidth<900))document.documentElement.classList.add("m")})()</script>
 </head>
@@ -281,7 +319,7 @@ section h2.rv.in:after{transform:scaleX(1)}
       <div class="card"><div class="ic">♫</div><h3>סאונד, טקסט, חיתוך</h3><p>מוזיקה מתחת לשקופית. שקופית טקסט עם שם הדובר. חיתוך סרטון עם IN/OUT — בלי תוכנת עריכה.</p></div>
       <div class="card"><div class="ic">🔗</div><h3>מדביקים לינק מיוטיוב. GO.</h3><p>מעתיקים לינק מיוטיוב או Vimeo ולוחצים Ctrl+V ב-Cuey — וזה קיו. Cuey בודק כל לינק לפני האירוע (צריך אינטרנט באולם).</p></div>
       <div class="card"><div class="ic">⇩</div><h3>הגעתם עם PDF או פאוורפוינט?</h3><p>גוררים PDF (קנווה מייצאת בלחיצה) וכל עמוד הופך לשקופית. גוררים פאוורפוינט ו-Cuey שולף ממנו את הסרטונים.</p></div>
-      <div class="card"><div class="ic">0</div><h3>מתחילים בחינם</h3><p>כל מה שצריך כדי להריץ אירוע — נסו בחינם, בלי הגבלה על כמות הקיוז. בפינת המסך יש "Powered by Cuey" קטן — מסירים אותו ב-39 ₪ חד-פעמי מתי שרוצים.</p></div>
+      <div class="card"><div class="ic">0</div><h3>מתחילים בחינם</h3><p>כל מה שצריך כדי להריץ אירוע — נסו בחינם, בלי הגבלה על כמות הקיוז. בפינת המסך יש "Powered by Cuey" קטן — מסירים אותו עם Studio — ₪19 לחודש, מבטלים מתי שרוצים.</p></div>
     </div>
   </section>
 
@@ -326,11 +364,17 @@ section h2.rv.in:after{transform:scaleX(1)}
 
 
   <section id="pricing">
-    <h2>מה מקבלים בכל תוכנית</h2>
-    <p class="lead">מתחילים בחינם ומריצים אירוע שלם. משלמים פעם אחת על Studio — המסך שלכם, לא שלנו. Pro בדרך.</p>
-    <table class="ptable"><thead><tr><th></th><th>חינם<small>₪0</small></th><th class="hl">Studio<small>₪39 · פעם אחת</small></th><th>Pro<small>בקרוב</small></th></tr></thead><tbody><tr class="grp"><td colspan="4">להריץ אירוע שלם — בחינם</td></tr><tr><td>רשימת קיוז בלי הגבלה — סרטונים, תמונות, מוזיקה, PDF ופאוורפוינט</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>GO, קאט ודיזולב, לופ, חיתוך, מוזיקה מתחת לשקופיות</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>יצירת קיו — טקסט על צבע או על תמונה / סרטון שלכם</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>עובד בלי אינטרנט · מק, ווינדוס ודפדפן</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>שיתוף מסך לטאבלט או לטלוויזיה (חשבון חינמי)</td><td><span class="n" style="font-size:.85em">מסך 1</span></td><td class="hl"><span class="n" style="font-size:.85em">בלי הגבלה</span></td><td><span class="n" style="font-size:.85em">בלי הגבלה</span></td></tr><tr class="grp"><td colspan="4">Studio — המסך שלכם, לא שלנו</td></tr><tr><td>בלי “Powered by Cuey” על מסך האירוע</td><td><span class="n">—</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>YouTube ו-Vimeo על מסך האירוע</td><td><span class="n" style="font-size:.85em">תצוגה</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>ספריית רקעים — תמונות ולופים נושמים</td><td><span class="n" style="font-size:.85em">תצוגה</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>Slide show — רץ ומתגלגל לבד</td><td><span class="n" style="font-size:.85em">תצוגה</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>ייצוא MP4 — כל ההופעה כסרטון אחד</td><td><span class="n">—</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr class="grp"><td colspan="4">Pro — בקרוב</td></tr><tr><td>AI Builder — מתוכנייה לשקופיות מוכנות בעיצוב שלה, בלחיצה</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="y" style="font-size:.85em">בטא — פתוח עכשיו</span></td></tr><tr><td>עיצוב ב-Canva מתוך Cuey</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="n" style="font-size:.85em">בקרוב</span></td></tr><tr><td>עובדים יחד על הופעה</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="n" style="font-size:.85em">בקרוב</span></td></tr></tbody></table>
-    <p class="pnote">Studio בחינם בזמן הבטא — רק מתחברים בתוך Cuey. “תצוגה” = בונים ורואים ב-Cuey; זה יוצא למסך האירוע עם Studio. המחיר כולל מע"מ כשנדרש.</p>
-    <div class="pcta"><a class="btn" href="../app/?lang=he">▶ להתחיל בחינם</a><a class="btn sec" href="../app/?lang=he">Studio — בחינם בבטא: מתחברים ב-Cuey</a></div>
+    <h2>תוכניות ומחירים</h2>
+    <p class="lead">מריצים אירוע שלם בחינם. משדרגים רק כשרוצים — ומבטלים מתי שרוצים.</p>
+    <div class="bill"><div class="sw" role="tablist"><button class="on" data-b="m" role="tab" aria-selected="true">חודשי</button><button data-b="y" role="tab" aria-selected="false">שנתי<em>חודשיים מתנה</em></button></div></div>
+    <div class="plans">
+      <div class="plan"><h3>חינם</h3><p class="for">להריץ אירוע שלם, בלי כרטיס אשראי.</p><div class="pr"><b>₪0</b></div><div class="yr"></div><ul><li>רשימת קיוז בלי הגבלה — סרטונים, תמונות, מוזיקה, PDF ופאוורפוינט</li><li>GO, קאט ודיזולב, לופ, חיתוך</li><li>עובד בלי אינטרנט · מק, ווינדוס ודפדפן</li><li>שיתוף מסך לטאבלט או לטלוויזיה (מסך 1)</li><li>“Powered by Cuey” קטן בפינת המסך</li></ul><a class="btn sec" href="../app/?lang=he">▶ להתחיל בחינם</a></div>
+      <div class="plan hl"><span class="tag">הכי פופולרי</span><h3>Studio</h3><p class="for">המסך שלכם, לא שלנו — נקי ומקצועי.</p><div class="pr"><b data-m="₪19" data-y="₪16">₪19</b><span>לחודש</span></div><div class="yr" data-y="משולם ₪190 בשנה"></div><ul><li>כל מה שבחינם, ועוד:</li><li>בלי “Powered by Cuey” על מסך האירוע</li><li>YouTube ו-Vimeo על מסך האירוע</li><li>ספריית רקעים — תמונות ולופים נושמים</li><li>Slide show שרץ לבד · ייצוא MP4</li><li>שיתוף מסך בלי הגבלה</li></ul><a class="btn" href="../app/?lang=he">לנסות את Studio</a></div>
+      <div class="plan"><h3>Pro</h3><p class="for">למפיקים ולמי שמריץ הרבה אירועים.</p><div class="pr"><b data-m="₪59" data-y="₪49">₪59</b><span>לחודש</span></div><div class="yr" data-y="משולם ₪590 בשנה"></div><ul><li>כל מה שב-Studio, ועוד:</li><li>AI Builder — מתוכנייה לשקופיות מעוצבות <small>(עד 100 בניות בחודש)</small></li><li class=soon>עיצוב ב-Canva מתוך Cuey — בקרוב</li><li class=soon>הופעות בענן ועבודה בצוות — בקרוב</li><li class=soon>כמה מסכים ושלט מהטלפון — בקרוב</li></ul><a class="btn sec" href="../app/?lang=he">לנסות את Pro</a></div>
+    </div>
+    <div class="edu"><span class="ei">🎓</span><p><b>סטודנטים, מורים ובתי ספר</b> יכולים לבקש 30% הנחה על Studio ו-Pro, עם אישור על מעמד אקדמי.</p><a href="mailto:support@cuey.live?subject=%D7%94%D7%A0%D7%97%D7%AA%20%D7%97%D7%99%D7%A0%D7%95%D7%9A%20%E2%80%94%20Cuey">פנייה לתמיכה</a></div>
+    <details class="cmp"><summary>השוואה מלאה בין התוכניות</summary><table class="ptable"><thead><tr><th></th><th>חינם<small>₪0</small></th><th class="hl">Studio<small>₪19 לחודש</small></th><th>Pro<small>₪59 לחודש</small></th></tr></thead><tbody><tr class="grp"><td colspan="4">להריץ אירוע שלם — בחינם</td></tr><tr><td>רשימת קיוז בלי הגבלה — סרטונים, תמונות, מוזיקה, PDF ופאוורפוינט</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>GO, קאט ודיזולב, לופ, חיתוך, מוזיקה מתחת לשקופיות</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>יצירת קיו — טקסט על צבע או על תמונה / סרטון שלכם</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>עובד בלי אינטרנט · מק, ווינדוס ודפדפן</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>שיתוף מסך לטאבלט או לטלוויזיה (חשבון חינמי)</td><td><span class="n" style="font-size:.85em">מסך 1</span></td><td class="hl"><span class="n" style="font-size:.85em">בלי הגבלה</span></td><td><span class="n" style="font-size:.85em">בלי הגבלה</span></td></tr><tr class="grp"><td colspan="4">Studio — המסך שלכם, לא שלנו</td></tr><tr><td>בלי “Powered by Cuey” על מסך האירוע</td><td><span class="n">—</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>YouTube ו-Vimeo על מסך האירוע</td><td><span class="n" style="font-size:.85em">תצוגה</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>ספריית רקעים — תמונות ולופים נושמים</td><td><span class="n" style="font-size:.85em">תצוגה</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>Slide show — רץ ומתגלגל לבד</td><td><span class="n" style="font-size:.85em">תצוגה</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>ייצוא MP4 — כל ההופעה כסרטון אחד</td><td><span class="n">—</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr class="grp"><td colspan="4">Pro</td></tr><tr><td>AI Builder — מתוכנייה לשקופיות מוכנות בעיצוב שלה, בלחיצה</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="y" style="font-size:.85em">עד 100 בחודש</span></td></tr><tr><td>עיצוב ב-Canva מתוך Cuey</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="n" style="font-size:.85em">בקרוב</span></td></tr><tr><td>עובדים יחד על הופעה</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="n" style="font-size:.85em">בקרוב</span></td></tr></tbody></table></details>
+    <p class="pnote"><b>בזמן הבטא Studio פתוח בחינם, ו-AI Builder פתוח לכולם</b> — רק מתחברים בתוך Cuey. מנוי מתבטל בלחיצה מתוך החשבון, ולא נעצר באמצע אירוע. המחירים כוללים מע"מ.</p>
   </section>
   <section id="download">
     <h2>Cuey למחשב</h2>
@@ -447,6 +491,14 @@ else if(/(^|\/)app\/?$/.test(h))t('site/open-in-browser',1);else if(/#pricing/.t
       el.addEventListener('pointermove',function(e){var r=el.getBoundingClientRect();el.style.setProperty('--mx',(e.clientX-r.left)+'px');el.style.setProperty('--my',(e.clientY-r.top)+'px')})});
   }
 })();
+</script>
+<script>
+/* pricing: monthly / yearly switch */
+(function(){var sw=document.querySelector('#pricing .bill');if(!sw)return;
+sw.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;var y=b.dataset.b==='y';
+sw.querySelectorAll('button').forEach(function(x){var on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-selected',on)});
+document.querySelectorAll('#pricing .pr b[data-m]').forEach(function(p){p.style.opacity=0;setTimeout(function(){p.textContent=y?p.dataset.y:p.dataset.m;p.style.opacity=1},150)});
+document.querySelectorAll('#pricing .yr[data-y]').forEach(function(r){r.textContent=y?r.dataset.y:''})})})();
 </script>
 </body>
 </html>

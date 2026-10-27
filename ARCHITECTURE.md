@@ -1,6 +1,6 @@
 # Cuey — Architecture & Status
 
-_Last updated: 2026-10-28 · app v0.39.2_
+_Last updated: 2026-10-28 · app v0.40.0_
 
 Cuey is a free, simple playback app for live events run by non-technical people
 (teachers, lecturers, producers): drop videos/slides into a cue list, press **GO**,
@@ -387,3 +387,14 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 
 ## 35. Help ▸ Contact support (v0.39.2)
 - Help menu item "Contact support" (EN/HE) → the person's own mail app, to support@cuey.live, subject "Cuey support vX", a short body template (what happened / what I expected) and a footer with version, browser/desktop/PWA, platform, language and the signed-in email. Native desktop Help menu: "Contact Support" (mailto with the version). Desktop: `setWindowOpenHandler` now also passes `mailto:` to the system.
+
+## 36. New price list on the site + app (v0.40.0, 2026-10-28, decided by Avi)
+| Plan | Monthly | Yearly (2 months free) |
+|---|---|---|
+| Free | ₪0 / $0 | |
+| Studio | ₪19 / $5 | ₪190 / $50 |
+| Pro (incl. AI Builder, up to 100 builds a month) | ₪59 / $16 | ₪590 / $160 |
+- Students, teachers and schools: 30% off Studio and Pro with proof of academic status, via support@cuey.live. Organisation plan (₪149+, several users/screens/venue logo) — later, not on the site.
+- Cancel any time from the account; a plan never stops in the middle of an event (Output open). Beta: Studio free for signed-in users, AI Builder open to all.
+- Site: three plan cards (Studio highlighted "Most popular"), Monthly/Yearly switch, education strip, the full comparison table folded under "Full comparison". App strings (Studio dialog, account, profile menu, badge note) say ₪19/$5 a month.
+- To do when payments go live: Pro AI cap → 100 builds a month in `build-event` (today 50/day); provider = Merchant of Record (FastSpring/Paddle — fees to check and add to cuey-costs.md); 3-day reminder before a yearly renewal.

@@ -209,7 +209,7 @@ async def features(ctx, L, lang):
         m = await E(pg, "['#mPc','#mLink','#mPdf','#mTxt','#mFm'].every(s=>!!document.querySelector(s))&&!document.querySelector('#cueMenu [data-t=m_music]')")
         ok(L + 'Add cue from… matches the Add window', m)
         await pg.mouse.click(900, 600)
-        ok(L + 'version label matches the app version', (await E(pg, "document.querySelector('.ver').textContent")).startswith('v0.3'))
+        ok(L + 'version label matches the app version', (await E(pg, "document.querySelector('.ver').textContent")) == 'v' + __import__('json').load(open(__import__('os').path.join(__import__('os').path.dirname(__import__('os').path.abspath(__file__)), '..', 'package.json')))['version'])
     await feature('cue card clicks + menus', card_click)
 
     async def create_cue(pg):
