@@ -353,3 +353,8 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 ## 28. Price & tagline (2026-10-27)
 - **Studio price:** $12 once on the English site and app; **₪39 once** on the Hebrew site and in the Hebrew app (plan table, Powered-by card, Studio dialogs, account menu). Free column shows ₪0 in Hebrew.
 - **Tagline:** HE "Cuey — האפליקציה להפעלת התוכן באירוע, בראש שקט" · EN "Cuey. The app that runs your event's screen — with peace of mind." Used in the landing hero, meta/OG descriptions, the share images (`docs/og-{en,he}.jpg`, linked with `?v=2` so WhatsApp/Facebook refresh) and the promo end card.
+
+## 29. Email branding (2026-10-27)
+- Assets: `docs/email/icon.png` (app icon, signature) and `docs/email/logo.png` (wordmark for the email header), served from https://cuey.live/email/.
+- **Gmail signature** of hello@cuey.live ("Cuey", default for new mail and replies): icon · Avi Berger · Founder · Cuey · tagline · cuey.live | hello@cuey.live. Source: `ai/email/signature.html`.
+- **Sign-in code email** (Supabase Auth templates *Magic link or OTP* and *Confirm sign up*, subject "Your Cuey code: {{ .Token }}"): dark header with the logo, code in a dark box with lime digits, EN + HE text, footer with cuey.live / support@ / Privacy. Source: `ai/email/code.html` — paste into both templates when changing it.
