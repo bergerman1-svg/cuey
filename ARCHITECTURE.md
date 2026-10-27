@@ -1,6 +1,6 @@
 # Cuey — Architecture & Status
 
-_Last updated: 2026-10-28 · app v0.38.2_
+_Last updated: 2026-10-28 · app v0.38.3_
 
 Cuey is a free, simple playback app for live events run by non-technical people
 (teachers, lecturers, producers): drop videos/slides into a cue list, press **GO**,
@@ -372,3 +372,8 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - Table `public.marketing_consent(user_id pk → auth.users, consent, text_version, lang, source, updated_at)`, RLS: a user can read / insert / update only their own row (tested). Migration `marketing_consent`.
 - Sign-in dialog: an **unticked** checkbox "Send me tips and Cuey news by email (optional — stop any time)". Saved only when ticked (`source:'signin'`), so signing in on another computer never switches an earlier yes to no. Account panel: the same choice as a checkbox the person can change any time (`source:'account'`). Text version `MK_VER='mk-2026-10-27'` is stored with every change, as proof of what the person agreed to.
 - Only rows with `consent=true` may get marketing mail; every such mail needs an unsubscribe link (privacy policy §…). Service emails (sign-in codes) don't depend on it.
+
+## 33. Continue with Google (code ready in v0.38.3, switched off)
+- Button "Continue with Google" at the top of the sign-in dialog, shown only when `GOOGLE_ON` is true, on https, and not in the desktop app (desktop keeps the email code until a deep-link flow exists).
+- Flow: opens `SB_URL/auth/v1/authorize?provider=google&redirect_to=<this page>` in a small window named `cueyGoogle` (so the open show is never lost). Google → Supabase → back to cuey.live/app/#access_token=… in that window, which posts the tokens to the main window (`postMessage`, same origin) and closes. The main window saves the session, reads the user (`/auth/v1/user`), applies a pending marketing tick (`cuey.mk.pending` → `source:'google'`), checks the plan. If pop-ups are blocked it falls back to a full-page redirect (the page then finishes the sign-in itself).
+- To switch on: Google Cloud project (OAuth consent screen: Cuey, hello@cuey.live, cuey.live, privacy/terms links; scopes email/profile/openid only — no Google review needed) → OAuth client "Web": origin `https://cuey.live`, redirect `https://lgemvnntlgasxhrpsdww.supabase.co/auth/v1/callback` → Supabase Auth ▸ Providers ▸ Google: client ID + secret → Supabase URL configuration: Site URL `https://cuey.live/app/`, redirect allow-list `https://cuey.live/app/**` → set `GOOGLE_ON=true`, release.
