@@ -1,6 +1,6 @@
 # Cuey — Architecture & Status
 
-_Last updated: 2026-10-27 · app v0.37.3_
+_Last updated: 2026-10-27 · app v0.38.0_
 
 Cuey is a free, simple playback app for live events run by non-technical people
 (teachers, lecturers, producers): drop videos/slides into a cue list, press **GO**,
@@ -363,3 +363,7 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - **Landing hero (EN/HE):** the tagline is now a calm subtitle (smaller, muted, balanced lines) under the headline instead of a second giant headline; headlines use `text-wrap:balance`; Hebrew "GO!" is isolated LTR so it reads "ו..GO!".
 - **Motion (one signature moment):** headline words come in one after another, then **GO! is "pressed"** (scale + lime glow + a thin ring). Plus: sticky glass nav after scrolling, nav underline on hover, buttons press in on click, a soft lime light follows the pointer over cards, section titles get a lime rule that draws in. All off with `prefers-reduced-motion`. Code: the `v2 (2026-10-27)` CSS block + `v2 motion` script at the end of both landing pages. `html,body{overflow-x:clip}` (not hidden) so the sticky nav works.
 - **App splash (browser only):** `#cuSplash` right after `<body>` in `app/cuey.html` — black screen, the real logo mark (C and triangle cut from logo-mark.png, inline PNGs) — the C is revealed by a conic mask sweep (`@property --csA`), the orange play triangle pops in, "cuey" fades in, gone after ~2 s. Once per tab (`sessionStorage cuey.splash`), never in Electron, skipped with `?nosplash`, `pointer-events:none` so it never blocks a click or GO.
+
+## 31. Site language → app language + first-run tour (v0.38.0)
+- **Language hand-off:** every app link on the Hebrew site is `../app/?lang=he`, on the English site `app/?lang=en`. The app reads `?lang=` on start, sets and remembers it (`cuey.lang`), then removes the parameter from the address bar. Without the parameter: saved choice, else the browser language (as before).
+- **First-run tour** (`cuTour()` at the end of `app/cuey.html`): 4 steps — + Add (incl. AI Builder) → cue list → Open Output → GO. A light box moves from step to step, a small card with dots, Next / Skip, keys Enter/→ next, ← back, Esc skip. Shown once (`cuey.tour`), ~2.3 s after start (after the splash), not when a dialog is open, never under automation (`navigator.webdriver`) or with `?notour`. Again any time: Help ▸ Quick tour (also in the native desktop menu, command `tour`).
