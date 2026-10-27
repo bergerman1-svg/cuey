@@ -1,6 +1,6 @@
 # Cuey — Architecture & Status
 
-_Last updated: 2026-10-28 · app v0.40.0_
+_Last updated: 2026-10-28 · app v0.40.1_
 
 Cuey is a free, simple playback app for live events run by non-technical people
 (teachers, lecturers, producers): drop videos/slides into a cue list, press **GO**,
@@ -398,3 +398,6 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - Cancel any time from the account; a plan never stops in the middle of an event (Output open). Beta: Studio free for signed-in users, AI Builder open to all.
 - Site: three plan cards (Studio highlighted "Most popular"), Monthly/Yearly switch, education strip, the full comparison table folded under "Full comparison". App strings (Studio dialog, account, profile menu, badge note) say ₪19/$5 a month.
 - To do when payments go live: Pro AI cap → 100 builds a month in `build-event` (today 50/day); provider = Merchant of Record (FastSpring/Paddle — fees to check and add to cuey-costs.md); 3-day reminder before a yearly renewal.
+
+## 37. Drop a whole folder (v0.40.1)
+- `dropFiles(dataTransfer, group)` (used by the cue list, the drop zone and slide-show drop rows): if a folder is dropped, every file inside — sub-folders too — is added in natural name order (1, 2, 10; folder path first), hidden files (.DS_Store…) skipped; plain files go straight to `addFiles` as before. Uses `webkitGetAsEntry` (Chrome, Edge, Safari, Firefox, Electron). Hint text: "Drop videos, images or a whole folder here".
