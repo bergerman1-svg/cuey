@@ -1,6 +1,6 @@
 # Cuey — Architecture & Status
 
-_Last updated: 2026-10-27 · app v0.37.0_
+_Last updated: 2026-10-27 · app v0.37.1_
 
 Cuey is a free, simple playback app for live events run by non-technical people
 (teachers, lecturers, producers): drop videos/slides into a cue list, press **GO**,
@@ -346,4 +346,5 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
   - Mail settings: Custom MX → `@` `smtp.google.com.` priority 1.
 - Auth codes keep going out through **Resend** (`noreply@cuey.live`) — unaffected by the MX change.
 - Every recurring cost goes into the project doc `cuey-costs.md`.
-- **Next (Phase A):** point cuey.live at the site (Cloudflare Pages recommended), Google Cloud OAuth for "Continue with Google", marketing-consent checkbox. Payments: Lemon Squeezy looks to be in maintenance — pick another provider first.
+- **Site on cuey.live (v0.37.1, 2026-10-27):** GitHub Pages custom domain (repo Settings ▸ Pages ▸ Custom domain = `cuey.live`, Enforce HTTPS on). Namecheap: four A records `@` → 185.199.108.153 / .109.153 / .110.153 / .111.153 and CNAME `www` → `bergerman1-svg.github.io.`. The site now sits at the domain root (no `/cuey/` prefix); old github.io links redirect by themselves. Every hard-coded link in the app, landing pages, desktop menu and share-screen link points to `https://cuey.live/`. No CNAME file needed (Pages deploys from the Website workflow).
+- **Next (Phase A):** Google Cloud OAuth for "Continue with Google", marketing-consent checkbox. Payments: Lemon Squeezy looks to be in maintenance — pick another provider first.
