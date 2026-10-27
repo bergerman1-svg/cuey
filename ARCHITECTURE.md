@@ -340,7 +340,7 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - Open: narration for the English version (ElevenLabs or Avi's voice).
 
 ## 27. Email & domain — Google Workspace (2026-10-27)
-- **Google Workspace Business Starter** on cuey.live (Avi's decision — do it properly). Main user **hello@cuey.live**. Plan: aliases support@, privacy@, sales@ on the same inbox; Google DKIM later.
+- **Google Workspace Business Starter** on cuey.live (Avi's decision — do it properly). Main user **hello@cuey.live**. Aliases **support@, privacy@, sales@** (same inbox, free) added 2026-10-27; Google DKIM on.
 - **Namecheap DNS now:**
   - Host records: CNAME `rsend`, CNAME `send` (Resend), TXT `resend._domainkey` (Resend DKIM), TXT `_dmarc` `v=DMARC1; p=none;`, TXT `@` `google-site-verification=…`, TXT `@` `v=spf1 include:_spf.google.com ~all`.
   - Mail settings: Custom MX → `@` `smtp.google.com.` priority 1.
