@@ -1,6 +1,6 @@
 # Cuey — Architecture & Status
 
-_Last updated: 2026-10-22 · app v0.17.5_
+_Last updated: 2026-10-27 · app v0.37.0_
 
 Cuey is a free, simple playback app for live events run by non-technical people
 (teachers, lecturers, producers): drop videos/slides into a cue list, press **GO**,
@@ -299,15 +299,51 @@ Direct "cue list + GO" tools: Mitti (closest; Mac only, paid, for technicians), 
 - **Programme picture** — uploading a PNG/JPG (or a PDF, whose page 1 is rendered) sends a ≤1400px JPEG with the text (`body.image`). The skill then takes the programme's own design language: sampled colours, serif/sans (`style.font` overrides the theme font), frames/ornaments → looks, mood → theme and loops. `style.from='programme'`.
 - Lower thirds stay `box` cards at y .83 regardless of theme.
 
-## 21. The Cuey show-design skill — v0.33.0
-"Build my event" now designs, not just lists. Two halves that must stay in sync:
-- **The skill (AI side)** — `ai/build-event.ts` (deployed as the Supabase function `build-event`): a design playbook — what Cuey can render, 6 themes (gala, memorial, conference, school, wedding, party), 3 looks (center, editorial, frame), loop-search rules, writing rules (never invent facts), a show-shaped running order, a `kicker` on every cue.
-- **The engine (app side)** — `BE_THEMES` in `app/cuey.html`: font (serif = Playfair Display / Frank Ruhl Libre), caps kickers, entrance motion (`anim`: rise / `slow` / `zoom`, CSS on `img.ov`), vignette, accent glow, default look per cue kind. `drawCardLayer` draws looks, kicker, accent rule/bar, frame. Saved text fields: look, font, caps, anim, glow, br.
-- **Programme picture** — PNG/JPG (or page 1 of a PDF) goes as a ≤1400px JPEG with the text (`body.image`); the skill takes the programme's design language (colours, serif/sans → `style.font`, frames → looks, mood → theme/loops). `style.from='programme'`.
-
 ## 22. Brand kit from the programme — v0.34.0
 With a programme picture, the skill also returns `style.brand` {paper, light, motif (polygons|waves|bokeh|lines|blobs|none), band, colors[], bar, tab, title, ink, logo:{x,y,w,h}} and per-cue `tab`.
 - `brLogoCut` crops the logo out of the picture (paper colour → transparent); "Replace logo" swaps in a sharp file.
 - `brLoop` paints the motif (`brPaint`, periodic in BR_T = 10 s → seamless) with the logo, records it once with MediaRecorder (`rec.start()` without a timeslice, so the webm has a real duration) → `cuey-brand-*.webm`, kept with `keepGen`, used as the moving background of every cue.
 - Text: `T.look='brand'` → `drawBrandLayer`: section bar + date tab, title/ink colours, no shadows; `kind:'low'` = white card lower third with a tab-colour edge; agenda lines "time · item" become two columns.
 - Not a Studio cue (no Pixabay) — it is our own generated file.
+
+## 23. AI Builder — v0.34.1 → v0.37.0
+- **Name:** "Build my event" → **AI Builder** (app, menus, landing pages EN/HE, new AI Builder section on the site). Marked **Pro · Beta** — open to every signed-in user during the beta.
+- **Two kinds of input** (`ai/build-event.ts`, deployed as Supabase function `build-event`, now v9):
+  1. **Programme** (text / PDF / Word / PNG / JPG) → the full show-shaped running order, in the programme's design language (§21–22).
+  2. **Prompt** ("a memorial ceremony screen with a candle and a moment of silence") → builds **exactly** the slides asked for, no more. Minimum length is 4 characters (was 20).
+- **Text rules:** the user's own words are kept as written. Original text (a short line, a dedication) is written **only when asked**, and then the cue gets the note "Check this text before showing it". Never copies an existing poem/song/prayer — a named one becomes a slide with its title and the note "Paste the text here".
+- **Per-cue moving background:** the skill may return `bg` (2–3 library search words) per cue; `beApply` fetches each once (`perBg` cache, `imgFor`); `beFetchLib` prefers loops ≥ 8 s, else any result. Falls back to the show's `style.library`.
+- **No auto-advance:** the `hold` field was removed from the skill and the app (Avi, v0.34.2) — every AI cue waits for GO.
+- **Models:** `[BUILD_MODEL env, claude-sonnet-5-5, claude-haiku-5-5, claude-opus-5-5]`, first that answers wins. Daily limit 5 free / 50 Pro in `public.ai_builds`.
+- **Cue names:** `cardName` = title || kicker || body; an agenda cue is named by its bar label.
+- **Learning sessions:** no model training — improve the skill, the engine and a fixed test set. Procedure in the project doc `cuey-ai-design-track.md` and the `cuey-ai-training` skill (trigger: "אימון מודל ai" / "סשן למידה"). Harness `tests/ai_render.py`; real programmes live in `tests/golden/` (gitignored, never public).
+
+## 24. Desktop & editor fixes — v0.34.4 → v0.36.0
+- **Save vs Save As (v0.36.0):** Save writes back to the open file; Save As picks a new one. Desktop uses native file IPC (`cueyNative.saveShow / openShow / readShow`). The header shows the show name (`#showName`) with a dot when unsaved (`showFp` / `markSaved` / `isDirty`, `setShowName`, `updateShowTitle`).
+- **Ask before closing (v0.35.0):** desktop `will-prevent-unload` → native Save / Don't Save / Cancel (`closeNow`); browser uses `beforeunload`.
+- **Mac menu (v0.36.0):** one menu bar only — in-window Show/Cue/Output/Help menus are hidden on Mac; the native menu gains Open Recent (`setRecent`, rebuilt by `menuTemplate()`), Add Cue From, Close Output. Windows keeps the in-window menus.
+- **Edit menu (v0.35.1):** `{role:'editMenu'}` so ⌘V/⌘C/⌘X/⌘A work on Mac (pasting a YouTube link did nothing before).
+- **Free music (v0.35.0):** desktop watches the Downloads folder (`watchDownloads` / `onDownloaded` / `readDownload`) and adds the downloaded song as a cue by itself (once — `dlSeen`); browser = one file pick.
+- **Audio cues** fill the seek bar in yellow (`tlUpdate` callers use arrow functions).
+- **Library loop tiles (v0.34.4):** still picture again, video on hover; the badge class `.pv` clashed with the PROGRAM panel → renamed `.lpv`.
+- **Site:** "Start free" opens a chooser — Get Cuey for desktop / Continue in the browser.
+- **Still to confirm by Avi on a real Mac:** YouTube paste, menu, Save/Save As, sign-in staying after restart.
+
+## 25. Privacy & Terms — v0.36.2
+- Pages: `docs/privacy.html`, `docs/terms.html`, `docs/he/privacy.html`, `docs/he/terms.html`. Operator "Avi Berger Productions", contact privacy@cuey.live. Linked from the site footer, the sign-in dialog and Help ▸ About (`legalLinks()` / `legalUrl()`).
+- Retention (pg_cron): `cuey-pixabay-cache-24h` ('17 * * * *') deletes `pixabay_cache` rows older than 24 h; `cuey-ai-builds-12m` ('23 3 * * *') deletes `ai_builds` rows older than 12 months.
+- To do: lawyer review before payments; marketing-consent checkbox at sign-in.
+
+## 26. Promo videos
+- Source in the session scratchpad `promo/` (`promo.html`, `render.py`, `capture_ai.py`), 66 s, music cut from the track. Outputs: `docs/promo-{en,he}-{h,v}.mp4/jpg` and the AI Builder clip `docs/ai-{en,he}.mp4/jpg`.
+- AI Builder scene: a made-up programme → designed, breathing slides → they land as cues in the **real** Cuey (real screenshots) → GO. Captions: "AI Builder" / turn the programme into ready slides in one click / they're already waiting as cues / you just press GO.
+- Open: narration for the English version (ElevenLabs or Avi's voice).
+
+## 27. Email & domain — Google Workspace (2026-10-27)
+- **Google Workspace Business Starter** on cuey.live (Avi's decision — do it properly). Main user **hello@cuey.live**. Plan: aliases support@, privacy@, sales@ on the same inbox; Google DKIM later.
+- **Namecheap DNS now:**
+  - Host records: CNAME `rsend`, CNAME `send` (Resend), TXT `resend._domainkey` (Resend DKIM), TXT `_dmarc` `v=DMARC1; p=none;`, TXT `@` `google-site-verification=…`, TXT `@` `v=spf1 include:_spf.google.com ~all`.
+  - Mail settings: Custom MX → `@` `smtp.google.com.` priority 1.
+- Auth codes keep going out through **Resend** (`noreply@cuey.live`) — unaffected by the MX change.
+- Every recurring cost goes into the project doc `cuey-costs.md`.
+- **Next (Phase A):** point cuey.live at the site (Cloudflare Pages recommended), Google Cloud OAuth for "Continue with Google", marketing-consent checkbox. Payments: Lemon Squeezy looks to be in maintenance — pick another provider first.
