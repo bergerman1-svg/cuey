@@ -11,16 +11,20 @@ const MODELS = [Deno.env.get("BUILD_MODEL"), "claude-sonnet-5-5", "claude-haiku-
 const FREE_PER_DAY = 5, PRO_PER_DAY = 50, MAX_CHARS = 24000;
 
 const SYSTEM = `You are Cuey's show designer — the creative director of the screens at a live event (school and memorial ceremonies, conferences, company events, galas, weddings, parties, small venues).
-The user gives you the event programme. You design WHAT IS ON THE SCREEN, moment by moment, the way a top event-graphics studio would — and Cuey renders your design with its own engine.
+The user gives you EITHER the event programme OR a short request describing the slides they want. You design WHAT IS ON THE SCREEN, moment by moment, the way a top event-graphics studio would — and Cuey renders your design with its own engine.
 ALWAYS answer by calling the tool build_show exactly once, with no other text.
 
 # THE CUEY SHOW-DESIGN SKILL
+
+## Two kinds of input — decide first
+- A PROGRAMME (a schedule, a list of times / speakers / parts, or a picture of one): build the whole show as described under "Running order".
+- A REQUEST (the user describes the slides they want, e.g. "a dark breathing slide with candles saying X, a Yizkor slide, an Israeli flag for Hatikva", or "one slide: …"): build EXACTLY the slides they asked for, in their order, with their wording — nothing extra (no walk-in, agenda or closing unless they asked). One slide asked = one cue. Fill in only what a designer would: a fitting kicker, the theme, colours, and a moving background per slide.
 
 ## What Cuey can render (use only these)
 Every cue is a full-screen card: a calm MOVING background loop from a free library (or a solid colour), a dark vignette, and a text block with:
 - kicker: a tiny accent-coloured label above the title (tracked out; ALL CAPS in themes that use caps)
 - title: big
-- lines: up to 2 short lines (an 'agenda' cue: up to 6, one per item)
+- lines: up to 2 short lines (an 'agenda' or a reading/'text' cue: up to 6)
 - a thin accent rule under the title
 Looks (per cue, optional — the theme picks good defaults):
 - center: centred, symmetric — openings, big moments
@@ -41,11 +45,15 @@ Motion: the text enters by itself (rise / slow blur-in / pop) according to the t
 English search words for the free video library, 2–3 words, abstract only — never people, faces, text or logos.
 - library: calm, slow, dark enough for white text, for the whole evening ("dark blue particles", "gold bokeh lights", "slow smoke dark", "abstract waves blue", "soft light leaks").
 - hero: a livelier loop for the walk-in and the opening ("light rays stage", "golden particles", "neon tunnel", "fireworks night" for celebrations only).
+- Per slide (cue.bg): when a slide should have its own moving background — the user asked for one ("candles", "a waving flag", "fireworks"), or it clearly fits that moment — give 2–3 ENGLISH words for it, e.g. "candles dark", "israel flag waving", "fireworks night". Otherwise leave bg empty and the slide uses style.library.
 - Match the theme: memorial = "candle light dark" / "soft clouds night"; gala = "gold particles"; conference = "network lines blue" / "digital particles"; school = "colorful bokeh"; wedding = "soft bokeh lights"; party = "neon lights".
 
 ## Writing for the screen
 - Same language as the programme (Hebrew stays Hebrew, kickers too; Hebrew has no caps — that is fine).
 - NEVER invent names, roles, dates, times, places, quotes or facts. Creativity goes into structure, labels, rhythm and design — not into facts.
+- Texts the user gives you go on the slide as they are.
+- Only if the user ASKS you to write a text (a short reading, a greeting, a dedication): write a short ORIGINAL text (up to 6 short lines) in the cue's lines, and set note to "Check this text before showing it" (in the user's language: "בדקו את הטקסט לפני ההקרנה"). Never reproduce an existing poem, song, prayer or reading word for word unless the user pasted it — if they name one (e.g. a known memorial poem), make the slide with its title and set note to "Paste the text here" ("הדביקו כאן את הטקסט").
+- Keep the user's spelling of names and Hebrew-calendar years (e.g. תשפ״ז).
 - Titles: at most 6 words, strong, no full stops. Lines: short.
 - Every cue gets a kicker that gives context: WELCOME / ברוכים הבאים, NOW ON STAGE / עכשיו על הבמה, COMING UP / בהמשך, PART TWO / חלק שני, IN MEMORY / לזכרם, the time from the programme ("19:45"), TONIGHT / הערב, THANK YOU / תודה.
 
@@ -109,7 +117,8 @@ const TOOL = {
             look: { type: "string", enum: ["center", "editorial", "frame"] },
             title: { type: "string" },
             lines: { type: "string", description: "short lines separated by \\n" },
-            note: { type: "string", description: "tip for the operator, e.g. which video file to add" }
+            note: { type: "string", description: "tip for the operator, e.g. which video file to add" },
+            bg: { type: "string", description: "2-3 English words for this slide's own moving background, or empty" }
           },
           required: ["kind", "title"]
         }
@@ -126,7 +135,7 @@ async function ask(key: string, model: string, text: string, image: any) {
     body: JSON.stringify({ model, max_tokens: 8000, system: SYSTEM, tools: [TOOL], tool_choice: { type: "auto" },
       messages: [{ role: "user", content: [
         ...(image ? [{ type: "image", source: { type: "base64", media_type: image.media_type, data: image.data } }] : []),
-        { type: "text", text: (image ? "Attached: a picture of the event programme — read it and build on its design language.\n\n" : "") + (text ? `Event programme (text):\n\n${text}\n\n` : "") + "Call build_show now." }] }] }),
+        { type: "text", text: (image ? "Attached: a picture of the event programme — read it and build on its design language.\n\n" : "") + (text ? `The user's input (a programme, or a request describing slides):\n\n${text}\n\n` : "") + "Call build_show now." }] }] }),
   });
 }
 function planOf(d: any) {
@@ -150,7 +159,7 @@ Deno.serve(async (req) => {
   let body: any; try { body = await req.json(); } catch { return json({ error: "bad json" }, 400); }
   const text = String(body?.text || "").trim().slice(0, MAX_CHARS);
   const im = body?.image, image = im && /^image\/(jpeg|png|webp)$/.test(im.media_type) && typeof im.data === "string" && im.data.length < 5_000_000 ? { media_type: im.media_type, data: im.data } : null;
-  if (text.length < 20 && !image) return json({ error: "too short" }, 400);
+  if (text.length < 4 && !image) return json({ error: "too short" }, 400);
 
   const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
   const [{ count }, { data: ents }] = await Promise.all([
