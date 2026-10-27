@@ -153,7 +153,7 @@ What is **fake** in the mockup: QR, code, link `cuey.app/s/4k7p`, "1 screen conn
 
 | | Free | Cuey Studio | Pro |
 |---|---|---|---|
-| Price | 0, forever | **$8 one-time** per account (chosen over monthly) | Subscription (price set once there is something to sell) |
+| Price | 0, forever | **$12 / ₪39 one-time** per account (was $8; chosen over monthly — monthly/annual still under discussion) | Subscription (price set once there is something to sell) |
 | Running a show | Everything — no cue-count limits (cues, GO, dissolve, audio, text, IN/OUT, basic share screen) | Same | Same |
 | Screen badge | "Powered by Cuey" in the corner (Output, shared screen) | None | None, or the venue's logo |
 | Studio tools | — | **Export MP4** + **Slide show** (replaced AUTO in v0.20.0 — groups of cues that run and loop by themselves; free to build and preview, Studio to run on the output) (free during beta, marked STUDIO in the app — v0.17.2) | Included |
@@ -173,7 +173,7 @@ Licensing mechanics (to build): Supabase accounts → after purchase the webhook
 | 1 ✅ | Single-file app, Electron installers, CI releases, landing page (EN + HE, demo video), PWA, Hebrew UI, logo, share screen (WebRTC), badge | **Done** (v0.17.1) |
 | 1a ✅ | Cuey Studio dialog (Export MP4, AUTO), pricing section EN+HE, "Cuey at real events" gallery, Hebrew home page, slider/LTR fixes, site motion | **Done** (v0.17.5) |
 | 1b | Apple Developer signing + notarization (removes "damaged" dialog) | Awaiting decision (~$99/yr) |
-| 1c | Accounts (Supabase) + sign-in button ✅ v0.18.0; Lemon Squeezy checkout + webhook for the $8 Cuey Studio purchase | In progress |
+| 1c | Accounts (Supabase) + sign-in button ✅ v0.18.0; Lemon Squeezy checkout + webhook for the Cuey Studio purchase ($12 / ₪39) — Lemon Squeezy looks to be in maintenance, pick another provider | In progress |
 | 2 | **Phone remote + screen link**: a screen opens `cuey.app/s/<code>` in any browser; the phone sends GO/back/black over WebSocket/WebRTC; media cached on the screen before "Go live" | Prototype only (§5) |
 | 3 | Cloud accounts & show sync; "Go live" = offline bundle on the screen device | Not started |
 | 4 | Pricing: free tier forever; paid = multi-screen, cloud storage, team | Later |
@@ -348,3 +348,7 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - Every recurring cost goes into the project doc `cuey-costs.md`.
 - **Site on cuey.live (v0.37.1, 2026-10-27):** GitHub Pages custom domain (repo Settings ▸ Pages ▸ Custom domain = `cuey.live`, Enforce HTTPS on). Namecheap: four A records `@` → 185.199.108.153 / .109.153 / .110.153 / .111.153 and CNAME `www` → `bergerman1-svg.github.io.`. The site now sits at the domain root (no `/cuey/` prefix); old github.io links redirect by themselves. Every hard-coded link in the app, landing pages, desktop menu and share-screen link points to `https://cuey.live/`. No CNAME file needed (Pages deploys from the Website workflow).
 - **Next (Phase A):** Google Cloud OAuth for "Continue with Google", marketing-consent checkbox. Payments: Lemon Squeezy looks to be in maintenance — pick another provider first.
+
+## 28. Price & tagline (2026-10-27)
+- **Studio price:** $12 once on the English site and app; **₪39 once** on the Hebrew site and in the Hebrew app (plan table, Powered-by card, Studio dialogs, account menu). Free column shows ₪0 in Hebrew.
+- **Tagline:** HE "Cuey — האפליקציה להפעלת התוכן באירוע, בראש שקט" · EN "Cuey. The app that runs your event's screen — with peace of mind." Used in the landing hero, meta/OG descriptions, the share images (`docs/og-{en,he}.jpg`, linked with `?v=2` so WhatsApp/Facebook refresh) and the promo end card.
