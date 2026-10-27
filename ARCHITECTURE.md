@@ -352,7 +352,7 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 
 ## 28. Price & tagline (2026-10-27)
 - **Studio price:** $12 once on the English site and app; **₪39 once** on the Hebrew site and in the Hebrew app (plan table, Powered-by card, Studio dialogs, account menu). Free column shows ₪0 in Hebrew.
-- **Tagline:** HE "Cuey — האפליקציה להפעלת התוכן באירוע, בראש שקט" · EN "Cuey. The app that runs your event's screen — with peace of mind." Used in the landing hero, meta/OG descriptions, the share images (`docs/og-{en,he}.jpg`, linked with `?v=2` so WhatsApp/Facebook refresh) and the promo end card.
+- **Tagline:** HE "קיואי — האפליקציה להפעלת התוכן באירוע בראש שקט" (Cuey written in Hebrew so people know how to say it; no comma) · EN "Cuey. The app that runs your event's screen — with peace of mind." Used in the landing hero, meta/OG descriptions, the share images (`docs/og-{en,he}.jpg`, linked with `?v=2` so WhatsApp/Facebook refresh) and the promo end card.
 
 ## 29. Email branding (2026-10-27)
 - Assets: `docs/email/icon.png` (app icon, signature) and `docs/email/logo.png` (wordmark for the email header), served from https://cuey.live/email/.
