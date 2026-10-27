@@ -1,6 +1,6 @@
 # Cuey — Architecture & Status
 
-_Last updated: 2026-10-28 · app v0.39.0_
+_Last updated: 2026-10-28 · app v0.39.1_
 
 Cuey is a free, simple playback app for live events run by non-technical people
 (teachers, lecturers, producers): drop videos/slides into a cue list, press **GO**,
@@ -379,3 +379,8 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - To switch on: Google Cloud project (OAuth consent screen: Cuey, hello@cuey.live, cuey.live, privacy/terms links; scopes email/profile/openid only — no Google review needed) → OAuth client "Web": origin `https://cuey.live`, redirect `https://lgemvnntlgasxhrpsdww.supabase.co/auth/v1/callback` → Supabase Auth ▸ Providers ▸ Google: client ID + secret → Supabase URL configuration: Site URL `https://cuey.live/app/`, redirect allow-list `https://cuey.live/app/**` → set `GOOGLE_ON=true`, release.
 - **Set up 2026-10-28:** Google Cloud project `cuey-512922` (org cuey.live, owner hello@cuey.live), Google Auth Platform: app "Cuey", External, **In production**, no logo (a logo would need Google verification), home/privacy/terms links on cuey.live, authorized domains cuey.live + lgemvnntlgasxhrpsdww.supabase.co. OAuth client "Cuey web" (origin https://cuey.live, redirect …supabase.co/auth/v1/callback). Supabase: Google provider on (secret pasted by Avi), Site URL `https://cuey.live/app/`, redirect allow-list `https://cuey.live/app/**`. `GOOGLE_ON=true`.
 - Google's screen says "continue to lgemvnntlgasxhrpsdww.supabase.co". To show cuey.live there: Supabase custom domain ($10/month, in cuey-costs.md) — later.
+- **v0.39.1 — Google's own button (free "cuey.live" on Google's screen):** the dialog loads Google Identity Services (`accounts.google.com/gsi/client`) and renders Google's official "Continue with Google" button (`renderButton`, dark theme, Hebrew/English). It runs on cuey.live, so Google's window says "continue to cuey.live". On success the Google ID token is exchanged at Supabase: `POST /auth/v1/token?grant_type=id_token {provider:'google', id_token, nonce}` (raw nonce to Supabase, its SHA-256 to Google). If the script can't load, the earlier pop-up flow (via supabase.co) is the fallback. No Supabase custom domain needed ($35/month avoided).
+
+## 34. Usage stats on (v0.39.1)
+- GoatCounter site **cuey** (https://cuey.goatcounter.com, Avi's account). `STATS_CODE='cuey'` in the app, `CODE='cuey'` on both landing pages. Events as in §9.
+- Off switch for people: profile menu ▸ Anonymous usage stats ▸ On/Off (`cuey.nostats`). Privacy policy §5 (EN/HE) updated 28.10.2026: what is counted, never files/names/content, how to switch off.
