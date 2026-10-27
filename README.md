@@ -5,8 +5,8 @@
 <p align="center"><b>Video &amp; slides for live events. One button. GO.</b><br>
 Free · Mac &amp; Windows · No PowerPoint, no VJ software, no crew.</p>
 <p align="center">
-  <a href="https://bergerman1-svg.github.io/cuey/app/">▶ Open in browser</a> ·
-  <a href="https://bergerman1-svg.github.io/cuey/">Website & direct download</a>
+  <a href="https://cuey.live/app/">▶ Open in browser</a> ·
+  <a href="https://cuey.live/">Website & direct download</a>
 </p>
 
 ![Cuey operator screen](docs/screenshot.png)

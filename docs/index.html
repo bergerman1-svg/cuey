@@ -8,15 +8,15 @@
 <meta name="description" content="Running an event, a conference or a show? Just drop in all your slides and videos and press GO. Cuey — run your event’s content with peace of mind. Try it free in your browser.">
 <meta property="og:title" content="Cuey — Drop in your slides and videos… and GO!">
 <meta property="og:description" content="Running an event, a conference or a show? Just drop in your slides and videos… and GO! Run your event with peace of mind — try it free.">
-<meta property="og:image" content="https://bergerman1-svg.github.io/cuey/og-en.jpg">
+<meta property="og:image" content="https://cuey.live/og-en.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Cuey — Present it. One button. GO.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://bergerman1-svg.github.io/cuey/">
+<meta property="og:url" content="https://cuey.live/">
 <meta property="og:site_name" content="Cuey">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://bergerman1-svg.github.io/cuey/og-en.jpg">
+<meta name="twitter:image" content="https://cuey.live/og-en.jpg">
 <link rel="icon" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
@@ -349,7 +349,7 @@ html.m .mbox .pcta .btn{width:100%}
   };
   document.getElementById('scrim').onclick=()=>{document.getElementById('mobSheet').classList.remove('open');document.getElementById('scrim').classList.remove('on')};
   // phones: Cuey runs on a computer — send yourself the link (WhatsApp / email); phone app coming soon
-  const dl='https://bergerman1-svg.github.io/cuey/',msg='Cuey for desktop — open this on the computer that connects to the screen: ';
+  const dl='https://cuey.live/',msg='Cuey for desktop — open this on the computer that connects to the screen: ';
   document.querySelectorAll('[data-wa]').forEach(a=>{a.href='https://wa.me/?text='+encodeURIComponent(msg+dl);a.target='_blank';a.rel='noopener'});
   document.querySelectorAll('[data-mail]').forEach(a=>{a.href='mailto:?subject='+encodeURIComponent('Cuey for desktop')+'&body='+encodeURIComponent(msg+dl)});
   if(mobile)document.querySelectorAll('a[href$="app/"]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();document.getElementById('mobSheet').classList.add('open');document.getElementById('scrim').classList.add('on')}));

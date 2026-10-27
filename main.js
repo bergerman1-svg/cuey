@@ -165,7 +165,7 @@ const menuTemplate = () => [
   ]},
   { role: 'viewMenu' },
   { role: 'windowMenu' },
-  { role: 'help', submenu: [{ label: 'Keyboard Shortcuts', click: () => win && win.webContents.send('menu', 'keys') }, { label: 'About Cuey', click: () => win && win.webContents.send('menu', 'about') }, { type: 'separator' }, { label: 'Cuey Website', click: () => shell.openExternal('https://bergerman1-svg.github.io/cuey/') }] }
+  { role: 'help', submenu: [{ label: 'Keyboard Shortcuts', click: () => win && win.webContents.send('menu', 'keys') }, { label: 'About Cuey', click: () => win && win.webContents.send('menu', 'about') }, { type: 'separator' }, { label: 'Cuey Website', click: () => shell.openExternal('https://cuey.live/') }] }
 ];
 
 app.whenReady().then(() => {

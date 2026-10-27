@@ -1,7 +1,7 @@
 {
   "name": "cuey",
   "productName": "Cuey",
-  "version": "0.37.0",
+  "version": "0.37.1",
   "description": "Simple video & slide playback for live events. One button. GO.",
   "author": "Avi Berger Productions",
   "license": "MIT",
@@ -76,5 +76,5 @@
     }
   },
   "repository": "https://github.com/bergerman1-svg/cuey",
-  "homepage": "https://bergerman1-svg.github.io/cuey"
+  "homepage": "https://cuey.live"
 }

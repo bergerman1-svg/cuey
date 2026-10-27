@@ -235,7 +235,7 @@ $('#goBtn').onclick=()=>{setTimeout(pubState,0);if(live+1<cues.length){live++;if
 $('#backBtn').onclick=()=>{if(live>0)live--;renderRemote();pubState()};
 $('#blkBtn').onclick=()=>{black=!black;$('#pvBlk').classList.toggle('on',black);$('#blkBtn').classList.toggle('on',black);pubState()};
 const CODE=(()=>{let c=null;try{c=sessionStorage.getItem('cuey.code')}catch(e){}if(!c){const A='ABCDEFGHJKMNPQRSTUVWXYZ23456789';c='';for(let i=0;i<4;i++)c+=A[Math.floor(Math.random()*A.length)];try{sessionStorage.setItem('cuey.code',c)}catch(e){}}return c})();
-const LINK='https://bergerman1-svg.github.io/cuey/s/?c='+CODE,MSG='הלינק להצגה על המסך: '+LINK+'\n(פותחים בדפדפן במחשב שמחובר למקרן — ואני שולט מהטלפון)';
+const LINK='https://cuey.live/s/?c='+CODE,MSG='הלינק להצגה על המסך: '+LINK+'\n(פותחים בדפדפן במחשב שמחובר למקרן — ואני שולט מהטלפון)';
 $('#codeTxt').textContent='CUEY-'+CODE;$('#linkTxt').textContent=LINK.replace('https://','');
 /* ---- live link to the screen (ntfy.sh relay over HTTPS/WSS — mockup only) ---- */
 const NT='https://ntfy.sh/cuey-v1-'+CODE;let ntReady=false;
