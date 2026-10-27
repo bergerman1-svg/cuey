@@ -1,6 +1,6 @@
 # Cuey — Architecture & Status
 
-_Last updated: 2026-10-27 · app v0.38.0_
+_Last updated: 2026-10-28 · app v0.38.2_
 
 Cuey is a free, simple playback app for live events run by non-technical people
 (teachers, lecturers, producers): drop videos/slides into a cue list, press **GO**,
@@ -367,3 +367,8 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 ## 31. Site language → app language + first-run tour (v0.38.0)
 - **Language hand-off:** every app link on the Hebrew site is `../app/?lang=he`, on the English site `app/?lang=en`. The app reads `?lang=` on start, sets and remembers it (`cuey.lang`), then removes the parameter from the address bar. Without the parameter: saved choice, else the browser language (as before).
 - **First-run tour v2** (`cuTour()` at the end of `app/cuey.html`, v0.38.1): a white pointing hand glides between features and taps them (ripple); step 2 shows the hand dragging a file chip into the cue list; GO lights up on the last step. Calm card with a progress bar, "1 of 4", Next / Skip tour. Clicking the highlighted area also goes on. Keys: Enter/Space next, arrows back/forward (RTL-aware), Esc skip. Shown on every start until it is finished or skipped (`cuey.tour='done'`), ~2.3 s after start, never under automation (`navigator.webdriver`) or with `?notour`. Again any time: Help ▸ Quick tour (also in the native desktop menu, command `tour`).
+
+## 32. Marketing opt-in (v0.38.2, 2026-10-28)
+- Table `public.marketing_consent(user_id pk → auth.users, consent, text_version, lang, source, updated_at)`, RLS: a user can read / insert / update only their own row (tested). Migration `marketing_consent`.
+- Sign-in dialog: an **unticked** checkbox "Send me tips and Cuey news by email (optional — stop any time)". Saved only when ticked (`source:'signin'`), so signing in on another computer never switches an earlier yes to no. Account panel: the same choice as a checkbox the person can change any time (`source:'account'`). Text version `MK_VER='mk-2026-10-27'` is stored with every change, as proof of what the person agreed to.
+- Only rows with `consent=true` may get marketing mail; every such mail needs an unsubscribe link (privacy policy §…). Service emails (sign-in codes) don't depend on it.
