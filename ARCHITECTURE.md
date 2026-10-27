@@ -1,6 +1,6 @@
 # Cuey — Architecture & Status
 
-_Last updated: 2026-10-28 · app v0.39.1_
+_Last updated: 2026-10-28 · app v0.39.2_
 
 Cuey is a free, simple playback app for live events run by non-technical people
 (teachers, lecturers, producers): drop videos/slides into a cue list, press **GO**,
@@ -384,3 +384,6 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 ## 34. Usage stats on (v0.39.1)
 - GoatCounter site **cuey** (https://cuey.goatcounter.com, Avi's account). `STATS_CODE='cuey'` in the app, `CODE='cuey'` on both landing pages. Events as in §9.
 - Off switch for people: profile menu ▸ Anonymous usage stats ▸ On/Off (`cuey.nostats`). Privacy policy §5 (EN/HE) updated 28.10.2026: what is counted, never files/names/content, how to switch off.
+
+## 35. Help ▸ Contact support (v0.39.2)
+- Help menu item "Contact support" (EN/HE) → the person's own mail app, to support@cuey.live, subject "Cuey support vX", a short body template (what happened / what I expected) and a footer with version, browser/desktop/PWA, platform, language and the signed-in email. Native desktop Help menu: "Contact Support" (mailto with the version). Desktop: `setWindowOpenHandler` now also passes `mailto:` to the system.

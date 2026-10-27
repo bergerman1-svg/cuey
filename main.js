@@ -82,7 +82,7 @@ function createWindow() {
   // Put it on the second display (if there is one) as a frameless fullscreen window.
   win.webContents.setWindowOpenHandler(({ frameName, url }) => {
     if (frameName !== 'cuey_output') {
-      if (/^https?:\/\//.test(url)) shell.openExternal(url);
+      if (/^(https?:\/\/|mailto:)/.test(url)) shell.openExternal(url);
       return { action: 'deny' };
     }
     const displays = screen.getAllDisplays();
@@ -165,7 +165,7 @@ const menuTemplate = () => [
   ]},
   { role: 'viewMenu' },
   { role: 'windowMenu' },
-  { role: 'help', submenu: [{ label: 'Keyboard Shortcuts', click: () => win && win.webContents.send('menu', 'keys') }, { label: 'Quick Tour', click: () => win && win.webContents.send('menu', 'tour') }, { label: 'About Cuey', click: () => win && win.webContents.send('menu', 'about') }, { type: 'separator' }, { label: 'Cuey Website', click: () => shell.openExternal('https://cuey.live/') }] }
+  { role: 'help', submenu: [{ label: 'Keyboard Shortcuts', click: () => win && win.webContents.send('menu', 'keys') }, { label: 'Quick Tour', click: () => win && win.webContents.send('menu', 'tour') }, { label: 'Contact Support', click: () => shell.openExternal('mailto:support@cuey.live?subject=' + encodeURIComponent('Cuey support ' + app.getVersion())) }, { label: 'About Cuey', click: () => win && win.webContents.send('menu', 'about') }, { type: 'separator' }, { label: 'Cuey Website', click: () => shell.openExternal('https://cuey.live/') }] }
 ];
 
 app.whenReady().then(() => {
