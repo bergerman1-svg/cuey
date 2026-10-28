@@ -89,6 +89,27 @@ kbd{font-family:'JetBrains Mono',monospace;font-size:13px;background:#1C1C23;bor
 .gal figure{margin:0;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#000}
 .gal img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
 .gal figcaption{padding:10px 14px;color:var(--mut);font-size:14px}
+.car{position:relative;max-width:980px;margin:0 auto}
+.car .stage{position:relative;aspect-ratio:16/9;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#000;box-shadow:0 30px 70px -40px #000}
+.car figure{position:absolute;inset:0;margin:0;opacity:0;transition:opacity .8s ease;pointer-events:none}
+.car figure.on{opacity:1;pointer-events:auto}
+.car img{display:block;width:100%;height:100%;object-fit:cover}
+.car .tag{position:absolute;top:14px;inset-inline-start:14px;z-index:2;font:600 12px/1 ui-monospace,monospace;letter-spacing:.12em;padding:6px 10px;border-radius:999px;border:2px solid var(--go);color:var(--go);background:rgba(10,10,12,.7)}
+.car .tag i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ff3b30;margin-inline-end:7px;vertical-align:1px;animation:carlive 1.6s infinite}
+@keyframes carlive{50%{opacity:.25}}
+.car .cap{min-height:3.2em;margin:14px 4px 0;color:var(--mut);font-size:15px;line-height:1.55;text-align:center}
+.car .bar{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px}
+.car .bk{height:46px;padding:0 18px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--txt);font:600 14px inherit;cursor:pointer}
+.car .bk:hover{border-color:#3a3a44}
+.car .go{direction:ltr;height:54px;min-width:150px;padding:0 26px;border:0;border-radius:14px;background:var(--go);color:#0A0A0C;font:800 22px/1 Poppins,sans-serif;letter-spacing:.04em;cursor:pointer;transition:transform .12s,box-shadow .3s}
+.car .go:hover{box-shadow:0 0 34px -4px rgba(200,255,0,.6)}
+.car .go:active{transform:scale(.96)}
+.car .n{font:500 13px ui-monospace,monospace;color:var(--mut);min-width:64px;text-align:center;direction:ltr}
+.car .dots{display:flex;gap:8px;justify-content:center;margin-top:12px}
+.car .dots button{width:10px;height:10px;padding:0;border-radius:50%;border:0;background:#3a3a44;cursor:pointer}
+.car .dots button.on{background:var(--go)}
+@media (max-width:600px){.car .go{min-width:120px;height:50px;font-size:20px}.car .bk{height:44px;padding:0 14px}.car .cap{font-size:14px;min-height:6.4em}}
+@media (prefers-reduced-motion:reduce){.car figure{transition:none}.car .tag i{animation:none}}
 footer .legal{margin-top:10px;font-size:13px}footer .legal a{color:var(--mut)}footer{padding:40px 0 60px;color:var(--mut);font-size:14px;text-align:center;border-top:1px solid var(--line)}
 footer a{color:var(--mut);text-decoration:none;margin:0 10px}
 /* mobile sheet */
@@ -339,11 +360,8 @@ details.cmp .ptable{margin-top:12px}
 
   <section id="gallery">
     <h2>Cuey at real events</h2>
-    <p class="lead">Not a mockup — this is Cuey running the opening of a conference: three LED screens in the hall, one laptop, one GO.</p>
-    <div class="gal">
-      <figure><img src="gallery/event-01.jpg" alt="Cuey running a three-screen conference opening" loading="lazy"><figcaption>Conference opening · 3 LED screens · PROGRAM on the operator laptop shows exactly what the hall sees</figcaption></figure>
-      <figure><img src="gallery/event-02.jpg" alt="Cuey at the control position next to a lighting console" loading="lazy"><figcaption>Control position · Cuey on the laptop next to the lighting console — the screen at the back shows the same cue</figcaption></figure>
-    </div>
+    <p class="lead">Not a mockup — real events: conference openings on LED screens, playback next to the sound console. One laptop, one GO.</p>
+    <div class="car" id="car" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Photos from real events"><div class="stage"><span class="tag"><i></i>LIVE · real event</span><figure class="on" data-cap="Conference opening · 3 LED screens · PROGRAM on the operator laptop shows exactly what the hall sees"><img src="gallery/event-01.jpg" alt="Cuey running a three-screen conference opening" loading="eager"></figure><figure data-cap="Control position · Cuey on the laptop next to the lighting console — the screen at the back shows the same cue"><img src="gallery/event-02.jpg" alt="Cuey at the control position next to a lighting console" loading="lazy"></figure><figure data-cap="Professional conference · Cuey on Windows · Output LIVE on the hall screens, a walk-in loop, speaker names waiting for GO (client content blurred)"><img src="gallery/event-03.jpg" alt="Cuey on Windows at a professional conference" loading="lazy"></figure><figure data-cap="Live-event playback · Cuey runs the music cues next to the sound console — cue after cue, one GO"><img src="gallery/event-04.jpg" alt="Cuey running playback next to the sound console" loading="lazy"></figure></div><p class="cap" aria-live="polite"></p><div class="bar"><button type="button" class="bk">◀ Back</button><button type="button" class="go">GO ▶</button><span class="n"></span></div><div class="dots"></div></div>
     <p class="free">Ran an event with Cuey? Send a photo and we'll add it here.</p>
   </section>
   <section id="love">
@@ -500,6 +518,20 @@ sw.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)r
 sw.querySelectorAll('button').forEach(function(x){var on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-selected',on)});
 document.querySelectorAll('#pricing .pr b[data-m]').forEach(function(p){p.style.opacity=0;setTimeout(function(){p.textContent=y?p.dataset.y:p.dataset.m;p.style.opacity=1},150)});
 document.querySelectorAll('#pricing .yr[data-y]').forEach(function(r){r.textContent=y?r.dataset.y:''})})})();
+</script>
+<script>
+/* real-events carousel: GO advances like in Cuey (dissolve), Back goes back; it plays by itself while on screen, and waits 20 s after someone presses */
+(function(){var c=document.getElementById('car');if(!c)return;var f=c.querySelectorAll('figure'),cap=c.querySelector('.cap'),n=c.querySelector('.n'),dots=c.querySelector('.dots'),i=0,held=0,vis=false,rtl=document.documentElement.dir==='rtl';
+[].forEach.call(f,function(_,k){var b=document.createElement('button');b.type='button';b.setAttribute('aria-label',String(k+1));b.onclick=function(){hold();show(k)};dots.appendChild(b)});
+function pad(x){return (x<10?'0':'')+x}
+function show(k){i=(k+f.length)%f.length;[].forEach.call(f,function(el,j){el.classList.toggle('on',j===i)});cap.textContent=f[i].getAttribute('data-cap');n.textContent=pad(i+1)+' / '+pad(f.length);[].forEach.call(dots.children,function(d,j){d.classList.toggle('on',j===i)})}
+function hold(){held=Date.now()}
+c.querySelector('.go').onclick=function(){hold();show(i+1)};c.querySelector('.bk').onclick=function(){hold();show(i-1)};
+c.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowLeft'){hold();show(i+((e.key==='ArrowRight')!==rtl?1:-1));e.preventDefault()}});
+var x0=null;c.addEventListener('touchstart',function(e){x0=e.touches[0].clientX},{passive:true});
+c.addEventListener('touchend',function(e){if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>40){hold();show(i+((dx<0)!==rtl?1:-1))}},{passive:true});
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){vis=es[0].isIntersecting},{threshold:.4}).observe(c);else vis=true;
+show(0);setInterval(function(){if(vis&&!document.hidden&&Date.now()-held>20000)show(i+1)},5500)})();
 </script>
 </body>
 </html>

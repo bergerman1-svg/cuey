@@ -66,13 +66,19 @@ const myId=Math.random().toString(36).slice(2,10);let pc=null,rtcOn=false,helloT
 const rtc=document.getElementById('rtc'),snd=document.getElementById('snd');
 function post(o){return fetch('https://ntfy.sh/cuey-v1-'+code,{method:'POST',body:JSON.stringify(o)}).catch(()=>{})}
 async function body(d){if(d.attachment&&d.attachment.url){try{return await (await fetch(d.attachment.url)).text()}catch(e){return ''}}return d.message||''}
-function hello(){if(!rtcOn)post({t:'hello',id:myId})}
+/* every hello carries a fresh nonce; only an offer that answers the latest hello is taken (an old offer replayed after a reconnect is ignored) */
+let helloN='',lastMsg='',offerT=0;
+function hello(){if(rtcOn)return;helloN=Math.random().toString(36).slice(2,12);post({t:'hello',id:myId,n:helloN})}
+function rtcLive(){return !!(pc&&pc.connectionState==='connected')}
 function waitIce(p){return new Promise(r=>{if(p.iceGatheringState==='complete')return r();const f=()=>{if(p.iceGatheringState==='complete'){p.removeEventListener('icegatheringstatechange',f);r()}};p.addEventListener('icegatheringstatechange',f);setTimeout(r,2500)})}
 async function onOffer(m){
+  if(m.n!==undefined&&m.n!==helloN)return;
+  if(rtcLive())return;
   if(pc){try{pc.close()}catch(e){}}
+  clearTimeout(offerT);offerT=setTimeout(()=>{if(!rtcLive()){try{pc&&pc.close()}catch(e){}rtcOn=false;hello()}},12000);
   pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
   pc.ontrack=e=>{rtc.srcObject=e.streams[0];rtc.style.display='block';snd.style.display='block';rtcOn=true;document.getElementById('wait').classList.add('off');rtc.play().catch(()=>{})};
-  pc.onconnectionstatechange=()=>{const c=pc.connectionState;setSt(c==='connected'?'ok':'warn',c);if(['failed','disconnected','closed'].includes(c)){rtcOn=false;rtc.style.display='none';snd.style.display='none';document.getElementById('wait').classList.remove('off');msg.textContent='Lost the link for a moment — reconnecting…';document.getElementById('tip').textContent='Tip: both devices on the same Wi‑Fi works best.';setTimeout(hello,1500)}};
+  const me=pc;pc.onconnectionstatechange=()=>{if(pc!==me)return;const c=me.connectionState;setSt(c==='connected'?'ok':'warn',c);if(['failed','disconnected','closed'].includes(c)){rtcOn=false;rtc.style.display='none';snd.style.display='none';document.getElementById('wait').classList.remove('off');msg.textContent='Lost the link for a moment — reconnecting…';document.getElementById('tip').textContent='Tip: both devices on the same Wi‑Fi works best.';setTimeout(hello,1500)}};
   await pc.setRemoteDescription({type:'offer',sdp:m.sdp});const ans=await pc.createAnswer();await pc.setLocalDescription(ans);await waitIce(pc);
   post({t:'answer',id:myId,sdp:pc.localDescription.sdp});
 }
@@ -108,9 +114,9 @@ function handle(d){
   if(s.live>=0)document.getElementById('wait').classList.add('off');else{document.getElementById('wait').classList.remove('off');msg.textContent='Ready — press GO.'}
   if(s.live!==live||shown!==s.live){live=s.live;if(live>=0&&cues[live])show(live,s.trans||'dissolve')}
   setBlack(s.black)}
-function connect(){const ws=new WebSocket('wss://ntfy.sh/cuey-v1-'+code+'/ws?since=6h');
+function connect(){const ws=new WebSocket('wss://ntfy.sh/cuey-v1-'+code+'/ws?since='+(lastMsg||'6h'));
   ws.onopen=()=>{setSt('ok','connected');if(live<0)msg.textContent='Ready — waiting for the show to start…';hello()};
-  ws.onmessage=async e=>{let d;try{d=JSON.parse(e.data)}catch(x){return}if(d.event!=='message')return;let m=null;try{m=JSON.parse(await body(d))}catch(x){}
+  ws.onmessage=async e=>{let d;try{d=JSON.parse(e.data)}catch(x){return}if(d.event!=='message')return;if(d.id)lastMsg=d.id;let m=null;try{m=JSON.parse(await body(d))}catch(x){}
     if(m&&m.t==='offer'&&m.to===myId){onOffer(m);return}
     if(m&&m.t==='bye'&&m.host){if(pc){try{pc.close()}catch(x){}}webOff();return}
     if(m&&m.t==='web'){onWeb(m);return}
