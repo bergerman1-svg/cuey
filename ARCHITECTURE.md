@@ -1,6 +1,6 @@
 # Cuey — Architecture & Status
 
-_Last updated: 2026-10-28 · app v0.40.1_
+_Last updated: 2026-10-28 · app v0.41.0_
 
 Cuey is a free, simple playback app for live events run by non-technical people
 (teachers, lecturers, producers): drop videos/slides into a cue list, press **GO**,
@@ -401,3 +401,9 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 
 ## 37. Drop a whole folder (v0.40.1)
 - `dropFiles(dataTransfer, group)` (used by the cue list, the drop zone and slide-show drop rows): if a folder is dropped, every file inside — sub-folders too — is added in natural name order (1, 2, 10; folder path first), hidden files (.DS_Store…) skipped; plain files go straight to `addFiles` as before. Uses `webkitGetAsEntry` (Chrome, Edge, Safari, Firefox, Electron). Hint text: "Drop videos, images or a whole folder here".
+
+## 38. PowerPoint → slide cues in the desktop app (Studio, v0.41.0)
+- Drop a .pptx in Cuey for desktop with Studio: `cueyNative.pptxToPdf(name, bytes)` → main.js `pptx-to-pdf` writes it to a temp folder (fallback: hidden `~/Documents/.cuey-convert`, for sandboxed Mac apps), converts it to PDF with what is already on the computer — **Mac:** Keynote (AppleScript `export … as PDF`), then Microsoft PowerPoint (AppleScript `save … as save as PDF`); **Windows:** PowerPoint (PowerShell COM, `SaveAs(…, 32)`); **anywhere:** LibreOffice `--headless --convert-to pdf` — then deletes the temp files. Nothing is uploaded.
+- The PDF goes through the normal PDF import (`importPdf(file, group, baseName)`, now returns the slide files). Videos inside the deck are placed **right after the slide they were on** (read from `ppt/slides/_rels/slideN.xml.rels`).
+- Free plan / browser / no converter answered: as before (videos only + "save as PDF" steps), plus one line: "With Studio in Cuey for desktop, the slides come in by themselves" / "none of Keynote, PowerPoint, LibreOffice answered".
+- Mac first time: macOS asks "Cuey wants to control Keynote" (Automation) — the person must allow it. Tested here: LibreOffice path + the app flow (order slide 1, slide 2, its video, slide 3). Keynote / PowerPoint paths need a real Mac / Windows check.

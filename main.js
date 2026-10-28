@@ -52,6 +52,65 @@ ipcMain.handle('show-open', async () => {
   const f = r.filePaths[0];
   return { path: f, name: path.basename(f), text: await fs.promises.readFile(f, 'utf8') };
 });
+// PowerPoint → PDF with what is already on the computer (Keynote / PowerPoint on Mac, PowerPoint on Windows, LibreOffice anywhere).
+// The app then turns the PDF into slide cues exactly like a dropped PDF. Nothing is uploaded anywhere.
+const { execFile } = require('child_process');
+const os = require('os');
+const run = (cmd, args, ms = 180000) => new Promise((res) => execFile(cmd, args, { timeout: ms, windowsHide: true }, (err, out, er) => res({ ok: !err, out: String(out || ''), err: String(er || (err && err.message) || '') })));
+const asq = (s) => s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+async function pptxToPdf(inp, outPdf) {
+  const tried = [];
+  if (process.platform === 'darwin') {
+    const k = await run('osascript', ['-e', `tell application "Keynote"
+  set d to open (POSIX file "${asq(inp)}")
+  export d to (POSIX file "${asq(outPdf)}") as PDF with properties {PDF image quality:Best}
+  close d saving no
+end tell`]);
+    tried.push('Keynote: ' + (k.ok ? 'ok' : k.err.slice(0, 160)));
+    if (k.ok && fs.existsSync(outPdf)) return { via: 'Keynote', tried };
+    const pp = await run('osascript', ['-e', `tell application "Microsoft PowerPoint"
+  open (POSIX file "${asq(inp)}")
+  set p to active presentation
+  save p in (POSIX file "${asq(outPdf)}") as save as PDF
+  close p saving no
+end tell`]);
+    tried.push('PowerPoint: ' + (pp.ok ? 'ok' : pp.err.slice(0, 160)));
+    if (pp.ok && fs.existsSync(outPdf)) return { via: 'PowerPoint', tried };
+  }
+  if (process.platform === 'win32') {
+    const ps = `$ErrorActionPreference='Stop';$pp=New-Object -ComObject PowerPoint.Application;$p=$pp.Presentations.Open('${inp.replace(/'/g, "''")}',$true,$false,$false);$p.SaveAs('${outPdf.replace(/'/g, "''")}',32);$p.Close();if($pp.Presentations.Count -eq 0){$pp.Quit()}`;
+    const w = await run('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', ps]);
+    tried.push('PowerPoint: ' + (w.ok ? 'ok' : w.err.slice(0, 160)));
+    if (w.ok && fs.existsSync(outPdf)) return { via: 'PowerPoint', tried };
+  }
+  const soffice = process.platform === 'darwin' ? ['/Applications/LibreOffice.app/Contents/MacOS/soffice'] : process.platform === 'win32' ? ['C:\\Program Files\\LibreOffice\\program\\soffice.exe', 'C:\\Program Files (x86)\\LibreOffice\\program\\soffice.exe'] : ['soffice', 'libreoffice'];
+  for (const so of soffice) {
+    if (path.isAbsolute(so) && !fs.existsSync(so)) continue;
+    const l = await run(so, ['--headless', '--convert-to', 'pdf', '--outdir', path.dirname(outPdf), inp]);
+    const made = path.join(path.dirname(outPdf), path.basename(inp).replace(/\.pptx$/i, '.pdf'));
+    tried.push('LibreOffice: ' + (l.ok ? 'ok' : l.err.slice(0, 160)));
+    if (l.ok && fs.existsSync(made)) { if (made !== outPdf) fs.renameSync(made, outPdf); return { via: 'LibreOffice', tried }; }
+  }
+  return { via: null, tried };
+}
+ipcMain.handle('pptx-to-pdf', async (_e, o) => {
+  if (!o || !/\.pptx$/i.test(o.name || '') || !o.data) return { error: 'bad input' };
+  // try the temp folder first; Mac apps are sandboxed, so if Keynote/PowerPoint can't reach it, retry in a hidden folder in Documents (removed right after)
+  const bases = [path.join(os.tmpdir(), 'cuey-convert'), path.join(os.homedir(), 'Documents', '.cuey-convert')];
+  let last = null;
+  for (const base of bases) {
+    const dir = path.join(base, String(Date.now()));
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+      const inp = path.join(dir, 'slides.pptx'), out = path.join(dir, 'slides.pdf');
+      fs.writeFileSync(inp, Buffer.from(o.data));
+      const r = await pptxToPdf(inp, out); last = r;
+      if (r.via) { const pdf = fs.readFileSync(out); fs.rmSync(dir, { recursive: true, force: true }); return { pdf, via: r.via }; }
+      fs.rmSync(dir, { recursive: true, force: true });
+    } catch (e) { last = { tried: [String(e && e.message || e)] }; try { fs.rmSync(dir, { recursive: true, force: true }) } catch (_) {} }
+  }
+  return { error: 'no converter', tried: last && last.tried };
+});
 ipcMain.handle('show-read', async (_e, f) => { if (!isShow(f)) return null; try { return await fs.promises.readFile(f, 'utf8'); } catch (e) { return null; } });
 let recentNames = [];
 ipcMain.on('recent', (_e, names) => { recentNames = Array.isArray(names) ? names.slice(0, 8).map(String) : []; Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate())); });

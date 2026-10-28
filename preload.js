@@ -12,5 +12,6 @@ contextBridge.exposeInMainWorld('cueyNative', {
   saveShow: (o) => ipcRenderer.invoke('show-save', o),
   openShow: () => ipcRenderer.invoke('show-open'),
   readShow: (p) => ipcRenderer.invoke('show-read', p),
+  pptxToPdf: (name, data) => ipcRenderer.invoke('pptx-to-pdf', { name, data }),
   setRecent: (names) => ipcRenderer.send('recent', names)
 });
