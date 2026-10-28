@@ -407,3 +407,8 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - The PDF goes through the normal PDF import (`importPdf(file, group, baseName)`, now returns the slide files). Videos inside the deck are placed **right after the slide they were on** (read from `ppt/slides/_rels/slideN.xml.rels`).
 - Free plan / browser / no converter answered: as before (videos only + "save as PDF" steps), plus one line: "With Studio in Cuey for desktop, the slides come in by themselves" / "none of Keynote, PowerPoint, LibreOffice answered".
 - Mac first time: macOS asks "Cuey wants to control Keynote" (Automation) — the person must allow it. Tested here: LibreOffice path + the app flow (order slide 1, slide 2, its video, slide 3). Keynote / PowerPoint paths need a real Mac / Windows check.
+
+## 39. Pilot participants (2026-10-28, Avi's decision)
+- Everyone who signs up during the beta/pilot — except Avi's own accounts (bergerman1@gmail.com, hello@cuey.live) — is a **pilot participant**: table `public.pilot_members(user_id, email, joined_at, source, offer, offer_sent_at, notes)`; RLS: a user can read only their own row; no client writes. Migration `pilot_members`.
+- Existing users were added (2 on 28.10.2026). New sign-ups are added automatically by the trigger `on_auth_user_pilot` (function `add_pilot_member`, security definer) **while** `app_settings.pilot_open = true`.
+- Later, when payments go live: set `pilot_open=false`, end the free beta Studio, and send each pilot member a thank-you offer (record it in `offer` / `offer_sent_at`), e.g. a free month of Pro or a pilot discount.
