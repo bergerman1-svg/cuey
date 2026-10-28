@@ -13,5 +13,8 @@ contextBridge.exposeInMainWorld('cueyNative', {
   openShow: () => ipcRenderer.invoke('show-open'),
   readShow: (p) => ipcRenderer.invoke('show-read', p),
   pptxToPdf: (name, data) => ipcRenderer.invoke('pptx-to-pdf', { name, data }),
+  // Continue with Google: opens the browser, resolves with the session (or {error})
+  googleSignIn: (lang) => ipcRenderer.invoke('google-signin', { lang }),
+  googleCancel: () => ipcRenderer.invoke('google-cancel'),
   setRecent: (names) => ipcRenderer.send('recent', names)
 });

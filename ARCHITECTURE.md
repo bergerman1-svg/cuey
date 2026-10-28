@@ -432,3 +432,18 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - Site check (desktop + phone, HE/EN, privacy, terms, screen page, app): no page errors, no missing files, no sideways scroll, all local links exist, prices and yearly switch OK. (The test browser can't play H.264, so the promo was checked with ffprobe: 71 s, all 4.)
 - Supabase: no performance warnings; security notes are expected (3 service-only tables with RLS and no policies = closed to the public; leaked-password check is irrelevant — Cuey has no passwords). No 4xx/5xx in 24 h apart from one direct `/auth/v1/callback` hit without state from a cloud IP (not our flow — Google sign-in uses ID tokens).
 - DB: 3 users, both non-owner users are pilot members, cron jobs all succeeded.
+
+## 43. Landing page copy + claims check (2026-10-29, Avi's choices)
+- HE/EN: "להפעיל תוכן באירוע מעולם לא היה פשוט יותר." / "Running your event's content has never been easier." (was "The screen is the easy part…").
+- Footer: "לא צריך להיות טכנאי כדי להיראות מקצועי." / "You don't need to be a technician to look professional." (was "…got handed the clicker").
+- The Canva / CapCut / YouTube line under the hero: no bold (brand names and the last line in normal weight).
+- Claims checked against the app and fixed: Share screen works in the desktop app too (was "in the browser version"); PowerPoint in desktop + Studio becomes a cue per slide (was "pulls out its videos"); step 1 lists pictures, music, PDF, PowerPoint and folders; Studio card + table row "PowerPoint → a cue for every slide (desktop)", Free = videos only.
+- Known gap, left for Phase B: the site says Pro = up to 100 AI builds a month; `build-event` still allows 5 a day (everyone in the beta) / 50 a day (Pro). Change together with payments.
+
+## 44. Continue with Google in the desktop app (v0.42.0)
+- Google only signs in on a real web address, so in the desktop app the button calls `cueyNative.googleSignIn(lang)`.
+- `main.js` (`google-signin`): starts a one-time server on 127.0.0.1 (random port), makes a 48-hex random state, opens `https://cuey.live/app/desktop-signin.html?port&state&lang` in the normal browser; 5-minute timeout; a second click cancels.
+- `docs/app/desktop-signin.html` (not copied by CI — it lives in docs/app directly): Google's own button (GIS, "continue to cuey.live") → ID token exchanged at Supabase with a nonce → `location.replace('http://127.0.0.1:PORT/cb#state&tokens')`. Fallback: Supabase authorize redirect back to the same page (allowed by `https://cuey.live/app/**`).
+- The local `/cb` page posts the fragment to `/done`; main checks the state with `timingSafeEqual`, returns the session to the app, brings the window to the front. Wrong state → 400. Tokens never go into a query string or leave the computer.
+- App: `gDesk()` shows the button in the desktop app; label changes to "Finish in your browser… (click to cancel)"; on success the usual `gFinish` (marketing opt-in, plan check).
+- Test: `tests/desktop_google_e2e.py` (main.js under Node with a stand-in electron module, the real sign-in page, the real app) — 14 checks.

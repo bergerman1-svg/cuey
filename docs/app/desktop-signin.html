@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<title>Cuey — sign in</title>
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--bg:#0A0A0C;--panel:#131317;--line:#26262e;--txt:#F2F2F5;--mut:#9A9AA8;--go:#C8FF00}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.55 Poppins,Heebo,system-ui,-apple-system,"Segoe UI",sans-serif}
+main{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+.card{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:32px 24px;text-align:center}
+.logo{width:150px;height:auto;margin:0 auto 18px;display:block}
+h1{font-size:21px;margin:0 0 6px}
+p{color:var(--mut);margin:0 0 22px;font-size:15px}
+#gsi{display:flex;justify-content:center;min-height:44px}
+.gbtn{display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:320px;height:44px;border-radius:6px;border:1px solid #3a3a44;background:#1d1d24;color:var(--txt);font:600 15px inherit;cursor:pointer}
+.gbtn:hover{border-color:var(--go)}
+#msg{margin-top:18px;min-height:1.5em;font-size:14px;color:var(--mut)}
+#msg.err{color:#ff8a7a}
+.small{margin-top:22px;font-size:12.5px;color:#6e6e7a}
+</style>
+</head>
+<body>
+<main><div class="card">
+  <img class="logo" src="../demo/logo-full.png" alt="Cuey">
+  <h1 id="h"></h1>
+  <p id="sub"></p>
+  <div id="gsi"></div>
+  <button class="gbtn" id="alt" hidden><svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg><span id="altT"></span></button>
+  <div id="msg"></div>
+  <div class="small" id="small"></div>
+</div></main>
+<script>
+(function(){
+const SB_URL='https://lgemvnntlgasxhrpsdww.supabase.co',SB_KEY='sb_publishable_h4rKk5eB9He62to_-CnpJg_Y0KwJmby';
+const G_CLIENT='308994915508-n9o96vd2q6h6gv7ofmulh01i0rv412rj.apps.googleusercontent.com';
+const q=new URLSearchParams(location.search);
+const port=+(q.get('port')||0), state=q.get('state')||'', HE=q.get('lang')==='he';
+const T=HE?{h:'התחברות ל-Cuey למחשב',sub:'מתחברים כאן עם Google — ו-Cuey במחשב שלכם יתחבר לבד.',alt:'המשך עם Google',small:'החיבור עובר ישירות ל-Cuey במחשב הזה בלבד.',bad:'הקישור הזה לא תקין. חזרו ל-Cuey ולחצו שוב על "המשך עם Google".',fail:'ההתחברות לא הצליחה — נסו שוב.',going:'מתחבר…'}
+              :{h:'Sign in to Cuey for desktop',sub:'Sign in here with Google — Cuey on your computer signs in by itself.',alt:'Continue with Google',small:'The sign-in goes straight to Cuey on this computer only.',bad:'This link isn’t valid. Go back to Cuey and press “Continue with Google” again.',fail:'Sign-in didn’t work — please try again.',going:'Signing in…'};
+document.documentElement.lang=HE?'he':'en';document.documentElement.dir=HE?'rtl':'ltr';
+const $=id=>document.getElementById(id);
+$('h').textContent=T.h;$('sub').textContent=T.sub;$('altT').textContent=T.alt;$('small').textContent=T.small;
+const msg=(t,err)=>{$('msg').textContent=t;$('msg').className=err?'err':''};
+const valid=port>=1024&&port<=65535&&/^[0-9a-f]{48}$/.test(state);
+if(!valid){msg(T.bad,true);return}
+function back(j){
+  if(!j||!j.access_token||!j.refresh_token){msg(T.fail,true);return}
+  msg(T.going);
+  const h=new URLSearchParams({state,access_token:j.access_token,refresh_token:j.refresh_token,expires_in:String(j.expires_in||3600)});
+  location.replace('http://127.0.0.1:'+port+'/cb#'+h.toString());
+}
+/* came back from the fallback (Supabase → Google → here with the session in the address) */
+const hp=new URLSearchParams(location.hash.slice(1));
+if(hp.get('access_token')){history.replaceState(null,'',location.pathname+location.search);back({access_token:hp.get('access_token'),refresh_token:hp.get('refresh_token'),expires_in:+hp.get('expires_in')||3600});return}
+if(hp.get('error')){msg(T.fail,true)}
+/* fallback: the normal Google redirect through Supabase, back to this same page */
+$('alt').onclick=()=>{location.href=SB_URL+'/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(location.origin+location.pathname+location.search)};
+/* preferred: Google's own button (shows "continue to cuey.live"), ID token exchanged at Supabase with a nonce */
+let nonce='';
+async function sha256hex(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+async function cred(r){msg(T.going);
+  try{const res=await fetch(SB_URL+'/auth/v1/token?grant_type=id_token',{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({provider:'google',id_token:r.credential,nonce})});
+    const j=await res.json();if(!res.ok)throw 0;back(j)}catch(e){msg(T.fail,true);render()}}
+async function render(){
+  nonce=[...crypto.getRandomValues(new Uint8Array(16))].map(x=>x.toString(16).padStart(2,'0')).join('');
+  google.accounts.id.initialize({client_id:G_CLIENT,callback:cred,nonce:await sha256hex(nonce),ux_mode:'popup',auto_select:false,itp_support:true});
+  const box=$('gsi');box.innerHTML='';
+  google.accounts.id.renderButton(box,{type:'standard',theme:'filled_black',size:'large',text:'continue_with',shape:'rectangular',logo_alignment:'center',width:320,locale:HE?'iw':'en'});
+}
+const sc=document.createElement('script');sc.src='https://accounts.google.com/gsi/client';sc.async=true;
+sc.onload=()=>{try{render()}catch(e){$('alt').hidden=false}};
+sc.onerror=()=>{$('alt').hidden=false};
+document.head.appendChild(sc);
+setTimeout(()=>{if(!$('gsi').children.length)$('alt').hidden=false},5000);
+})();
+</script>
+</body>
+</html>

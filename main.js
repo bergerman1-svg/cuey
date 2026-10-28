@@ -116,6 +116,54 @@ let recentNames = [];
 ipcMain.on('recent', (_e, names) => { recentNames = Array.isArray(names) ? names.slice(0, 8).map(String) : []; Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate())); });
 ipcMain.handle('read-download', async (_e, id) => { const f = dlOk.get(String(id)); if (!f) return null; dlOk.delete(String(id)); try { return await fs.promises.readFile(f); } catch (e) { return null; } });
 
+// Continue with Google in the desktop app: Google only signs in on a real web address, so the button opens
+// cuey.live/app/desktop-signin.html in the normal browser; after sign-in that page sends the session back to a
+// one-time server on this computer (127.0.0.1, random port, random state that must match). Nothing leaves the computer.
+const http = require('http');
+const crypto = require('crypto');
+let gWait = null;
+const SIGNIN_PAGE = process.env.CUEY_SIGNIN_PAGE || 'https://cuey.live/app/desktop-signin.html';
+const doneHtml = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cuey</title>
+<body style="margin:0;background:#0A0A0C;color:#F2F2F5;font:18px/1.5 system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;text-align:center">
+<div><div style="font:800 34px system-ui;color:#C8FF00">Cuey</div><p id="m">…</p></div>
+<script>const h=location.hash.slice(1);history.replaceState(null,'','/cb');
+fetch('/done',{method:'POST',headers:{'Content-Type':'text/plain'},body:h}).then(r=>r.ok?r.text():Promise.reject()).then(()=>{document.getElementById('m').innerHTML='Signed in — you can go back to Cuey and close this tab.<br><span dir="rtl">התחברתם — אפשר לחזור ל-Cuey ולסגור את הלשונית.</span>'}).catch(()=>{document.getElementById('m').textContent='Something went wrong — try again from Cuey. · משהו השתבש — נסו שוב מתוך Cuey.'})</script></body>`;
+ipcMain.handle('google-signin', async (_e, o) => {
+  if (gWait) { try { gWait.cancel(); } catch (_) {} }
+  const lang = o && o.lang === 'he' ? 'he' : 'en';
+  const state = crypto.randomBytes(24).toString('hex');
+  return await new Promise((resolve) => {
+    let done = false;
+    const srv = http.createServer((req, res) => {
+      const u = new URL(req.url, 'http://127.0.0.1');
+      if (req.method === 'GET' && u.pathname === '/cb') { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' }); return res.end(doneHtml); }
+      if (req.method === 'POST' && u.pathname === '/done') {
+        let b = ''; req.on('data', (c) => { b += c; if (b.length > 20000) req.destroy(); });
+        req.on('end', () => {
+          const q = new URLSearchParams(b);
+          const st = q.get('state') || '';
+          const ok = st.length === state.length && crypto.timingSafeEqual(Buffer.from(st), Buffer.from(state)) && q.get('access_token') && q.get('refresh_token');
+          if (!ok) { res.writeHead(400); return res.end('no'); }
+          res.writeHead(200, { 'Content-Type': 'text/plain' }); res.end('ok');
+          finish({ access_token: q.get('access_token'), refresh_token: q.get('refresh_token'), expires_in: +q.get('expires_in') || 3600 });
+          if (win) { if (win.isMinimized()) win.restore(); win.show(); win.focus(); app.focus && app.focus({ steal: true }); }
+        });
+        return;
+      }
+      res.writeHead(404); res.end();
+    });
+    const timer = setTimeout(() => finish({ error: 'timeout' }), 5 * 60 * 1000);
+    function finish(r) { if (done) return; done = true; clearTimeout(timer); gWait = null; setTimeout(() => { try { srv.close(); } catch (_) {} }, 1500); resolve(r); }
+    gWait = { cancel: () => finish({ error: 'cancelled' }) };
+    srv.on('error', () => finish({ error: 'server' }));
+    srv.listen(0, '127.0.0.1', () => {
+      const port = srv.address().port;
+      shell.openExternal(`${SIGNIN_PAGE}?port=${port}&state=${state}&lang=${lang}`);
+    });
+  });
+});
+ipcMain.handle('google-cancel', () => { if (gWait) gWait.cancel(); return true; });
+
 let win = null;
 
 function createWindow() {
