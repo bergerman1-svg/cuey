@@ -447,3 +447,7 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - The local `/cb` page posts the fragment to `/done`; main checks the state with `timingSafeEqual`, returns the session to the app, brings the window to the front. Wrong state → 400. Tokens never go into a query string or leave the computer.
 - App: `gDesk()` shows the button in the desktop app; label changes to "Finish in your browser… (click to cancel)"; on success the usual `gFinish` (marketing opt-in, plan check).
 - Test: `tests/desktop_google_e2e.py` (main.js under Node with a stand-in electron module, the real sign-in page, the real app) — 14 checks.
+
+## 45. Fixes from the first team meeting (v0.42.1)
+- Desktop sign-in page: logo path fixed (`../logo-full.png`) and Poppins/Heebo loaded (Maya).
+- Sign-in reminder (`#nudge`) is pinned bottom-left in both languages; in Hebrew it used to sit bottom-right on top of GO / Freeze / Black during a show (Maya). When it may appear at all is waiting for Avi's decision.
