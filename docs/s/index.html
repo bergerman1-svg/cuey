@@ -47,8 +47,8 @@ body:hover #st{opacity:1}
 </div>
 <div id="st"></div>
 <script>
-const code=(new URLSearchParams(location.search).get('c')||'').toUpperCase();
-document.getElementById('code').textContent=code?'CUEY-'+code:'';
+const code=(new URLSearchParams(location.search).get('c')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,32);
+document.getElementById('code').textContent=code?'CUEY-'+(code.match(/.{1,4}/g)||[]).join('-'):'';
 if(!code){document.getElementById('msg').textContent='This link has no show code — ask for it again.'}
 function setSt(k,txt){st.className=k;st.title=txt||''}
 const cues={};let live=-1,cur='a',shown=null,n=0,lastTs=0;

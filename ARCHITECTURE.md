@@ -412,3 +412,23 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - Everyone who signs up during the beta/pilot — except Avi's own accounts (bergerman1@gmail.com, hello@cuey.live) — is a **pilot participant**: table `public.pilot_members(user_id, email, joined_at, source, offer, offer_sent_at, notes)`; RLS: a user can read only their own row; no client writes. Migration `pilot_members`.
 - Existing users were added (2 on 28.10.2026). New sign-ups are added automatically by the trigger `on_auth_user_pilot` (function `add_pilot_member`, security definer) **while** `app_settings.pilot_open = true`.
 - Later, when payments go live: set `pilot_open=false`, end the free beta Studio, and send each pilot member a thank-you offer (record it in `offer` / `offer_sent_at`), e.g. a free month of Pro or a pilot discount.
+
+## 40. Share-screen code — long and random (Phase S1, v0.41.1, 2026-10-28)
+- Before: 4 characters from `Math.random` → about 920,000 options, guessable.
+- Now: `shNewCode()` makes **12 characters** from `crypto.getRandomValues` (alphabet without 0/O/1/I/L, 31 letters, unbiased by rejection sampling) → about 59 bits; nobody can find another show's screen by guessing.
+- The code still lives for the session: stop + share again keeps the same link (the screen in the hall keeps working).
+- Screen page `/s/?c=` cleans the code (A–Z, 0–9 only, max 32) and shows it in groups of 4: `CUEY-ABCD-EFGH-JKMN`. Old short links still open.
+- Test: `tests/share_e2e.py` — app + screen page in one browser, a local stand-in for ntfy.sh (Playwright routes), real WebRTC, GO shows the right picture on the screen, stop closes it (19 checks). Needs the image fixtures from the feature-suite folder (red.png, green.png).
+- Still open in Phase S: own relay instead of the public ntfy.sh + TURN (S2).
+
+## 41. Promo — PowerPoint scene (2026-10-28)
+- New beat after the YouTube scene: a `.pptx` is dragged into the cue list, fans out into 4 slides, each lands as a cue row. HE "מצגת פאוורפוינט?" / "גוררים פנימה — והיא נפרסת לשקופיות." · EN "A PowerPoint deck?" / "Drop it in — it unfolds into slides."
+- Videos are now 71 s (were 66). Inserted at old time 35–39 (`pptScene`, `frame()` shifts later scenes by 4 s); WARP gets `[48.5,39]` and every later anchor +5 s.
+- Music `music5.m4a` = the same song continued (source track from 52.81 s, same loudness curve, 5 s longer) — no cut.
+- Site cache-bust: HE `?v=5`, EN `?v=4`.
+
+## 42. Debug round 28.10.2026 (v0.41.1)
+- feature suite 182/182, browser suite 154/154, share end-to-end 19/19.
+- Site check (desktop + phone, HE/EN, privacy, terms, screen page, app): no page errors, no missing files, no sideways scroll, all local links exist, prices and yearly switch OK. (The test browser can't play H.264, so the promo was checked with ffprobe: 71 s, all 4.)
+- Supabase: no performance warnings; security notes are expected (3 service-only tables with RLS and no policies = closed to the public; leaked-password check is irrelevant — Cuey has no passwords). No 4xx/5xx in 24 h apart from one direct `/auth/v1/callback` hit without state from a cloud IP (not our flow — Google sign-in uses ID tokens).
+- DB: 3 users, both non-owner users are pilot members, cron jobs all succeeded.
