@@ -3,7 +3,7 @@ Test media: tests/fixtures. Outputs (screenshots, suite_result.json) go to the c
     python3 tests/run_all.py"""
 import os, re, subprocess, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
-SUITES = ['feature_suite.py', 'browser_suite.py', 'share_e2e.py', 'save_media_e2e.py', 'desktop_google_e2e.py', 'site_outcomes.py']
+SUITES = ['feature_suite.py', 'browser_suite.py', 'share_e2e.py', 'save_media_e2e.py', 'desktop_google_e2e.py', 'site_outcomes.py', 'fade_e2e.py']
 bad = []
 for s in SUITES:
     p = subprocess.run([sys.executable, os.path.join(HERE, s)], capture_output=True, text=True, timeout=1800)
