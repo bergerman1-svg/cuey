@@ -70,11 +70,17 @@ async def main():
         ok('screen connects to the show (WebRTC)', con)
         ok('app counts 1 connected screen', await app.evaluate("Object.values(shPCs).filter(p=>p.connectionState==='connected').length") == 1)
         # GO -> the screen shows red
-        await app.evaluate("go()"); await app.wait_for_timeout(1800)
-        px = await scr.evaluate("(()=>{const v=document.getElementById('rtc'),c=document.createElement('canvas');c.width=64;c.height=36;const g=c.getContext('2d');g.drawImage(v,0,0,64,36);return Array.from(g.getImageData(32,18,1,1).data)})()")
+        async def settle(test, wait=4000):  # the screen dissolves (0.8 s) and the stream has latency: poll until the colour settles
+            px = None
+            for _ in range(wait // 200):
+                await app.wait_for_timeout(200); px = await scr.evaluate("(()=>{const v=document.getElementById('rtc'),c=document.createElement('canvas');c.width=64;c.height=36;const g=c.getContext('2d');g.drawImage(v,0,0,64,36);return Array.from(g.getImageData(32,18,1,1).data)})()")
+                if test(px): break
+            return px
+        await app.evaluate("go()")
+        px = await settle(lambda c: c[0] > 150 and c[1] < 90 and c[2] < 90)
         ok('after GO the screen shows the first cue (red)', px[0] > 150 and px[1] < 90 and px[2] < 90, px)
-        await app.evaluate("go()"); await app.wait_for_timeout(2500)
-        px = await scr.evaluate("(()=>{const v=document.getElementById('rtc'),c=document.createElement('canvas');c.width=64;c.height=36;const g=c.getContext('2d');g.drawImage(v,0,0,64,36);return Array.from(g.getImageData(32,18,1,1).data)})()")
+        await app.evaluate("go()")
+        px = await settle(lambda c: c[1] > 120 and c[0] < 120)
         ok('next GO shows the second cue (green)', px[1] > 120 and px[0] < 120, px)
         # traffic only on the new topic
         ok('signalling only on topic cuey-v1-CODE', posts and all(t == 'cuey-v1-' + code for t, _ in posts), {t for t, _ in posts})
