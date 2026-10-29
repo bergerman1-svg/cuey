@@ -11,7 +11,7 @@ permissions:
 jobs:
   # release gate (Ron, approved by Avi 29.10.2026): every test must pass before a version is built
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # pinned: Playwright's browser dependencies don't install on the new Ubuntu 26 image yet
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
