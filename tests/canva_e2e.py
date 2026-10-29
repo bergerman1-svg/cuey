@@ -139,6 +139,17 @@ async def main():
         await pg.goto('file://' + ROOT + '/docs/app/canva-callback.html?code=C2&state=' + 'B' * 32); await pg.wait_for_timeout(800)
         ok('callback (browser): does not call the server by itself', not fn_calls, fn_calls)
         ok('callback: the one-time code is removed from the address bar', 'code=' not in pg.url, pg.url)
+        # no Cuey window answers (closed / an older version open): the page finishes with this browser's own Cuey sign-in
+        ctx2 = await b.new_context(); fin = []
+        async def fnr2(r):
+            fin.append((r.request.headers.get('authorization'), r.request.post_data)); await r.fulfill(status=200, headers={'Access-Control-Allow-Origin': '*'}, content_type='application/json', body='{"ok":true}')
+        await ctx2.route(re.compile(r'.*/functions/v1/canva$'), fnr2)
+        await ctx2.add_init_script("try{localStorage.setItem('cuey.sess',JSON.stringify({at:'MYTOKEN',rt:'r',exp:Date.now()+3600e3,email:'a@b.c',id:'u1'}))}catch(e){}")
+        pg2 = await ctx2.new_page()
+        await pg2.goto('file://' + ROOT + '/docs/app/canva-callback.html?code=C3&state=' + 'D' * 32); await pg2.wait_for_timeout(4000)
+        ok('callback: no Cuey window answered → finishes with this browser\'s own sign-in', fin and fin[0][0] == 'Bearer MYTOKEN' and '"C3"' in fin[0][1], fin)
+        ok('…and shows "connected"', await pg2.evaluate("document.getElementById('ic').textContent==='✓'"))
+        await ctx2.close()
         await pg.goto('file://' + ROOT + '/docs/app/canva-callback.html?error=access_denied'); await pg.wait_for_timeout(300)
         ok('callback: "Not allowed" when the person said no in Canva', await pg.evaluate("document.getElementById('ic').textContent==='✋'"))
         await ctx.close()

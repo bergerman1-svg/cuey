@@ -537,3 +537,6 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 
 ### v0.47.5 (29.10)
 - `?utm_source=canva` also turns the Canva tile on (Canva listing destination allows only UTM tags: https://cuey.live/app/?utm_source=canva).
+
+### v0.47.6 (29.10)
+- Canva callback fallback: if no Cuey window answers in 3 s (closed, or an older version still open — happened to Avi with a v0.47.2 tab), the page finishes with this browser's own `cuey.sess` token. Server still requires the same user who started the state.

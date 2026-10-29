@@ -32,7 +32,8 @@ p{color:var(--mut);margin:0;font-size:15px}
    and that Cuey checks the state is the one it made and finishes with its own signed-in session (server checks it's the same
    user). So a Canva approval link started from someone else's Cuey account can never attach your Canva to theirs.
    - Desktop app: the state ends in .<port> → forward to the app's local listener on 127.0.0.1.
-   - Browser app: BroadcastChannel / localStorage event to the Cuey tab on cuey.live (Canva's pages cut window.opener). */
+   - Browser app: BroadcastChannel / localStorage event to the Cuey tab on cuey.live (Canva's pages cut window.opener);
+     if no Cuey tab answers in 3 s, finish here with this browser's own Cuey session (server still checks the user). */
 (function(){
 var HE;try{HE=(localStorage.getItem('cuey.lang')||((navigator.language||'').indexOf('he')===0?'he':'en'))==='he'}catch(e){HE=(navigator.language||'').indexOf('he')===0}
 var T=HE?{wait:'מחבר את Canva ל־Cuey…',ok:'Canva מחובר!',okp:'אפשר לסגור את החלון ולחזור ל־Cuey — העיצובים שלכם כבר שם.',no:'החיבור לא הצליח',nop:'חזרו ל־Cuey ולחצו שוב על "חיבור לקנבה". צריך שחלון Cuey יישאר פתוח בזמן החיבור.',deny:'לא אושר',denyp:'Cuey לא קיבל גישה לעיצובים. אפשר לנסות שוב מתוך Cuey מתי שרוצים.'}
@@ -53,6 +54,12 @@ try{bc=new BroadcastChannel('cuey-canva');bc.onmessage=function(e){if(e.data&&e.
 try{localStorage.setItem('cuey.canva.cb',JSON.stringify({code:code,state:state,t:Date.now()}));setTimeout(function(){try{localStorage.removeItem('cuey.canva.cb')}catch(e){}},4000)}catch(e){}
 try{if(window.opener)window.opener.postMessage(msg,'https://cuey.live')}catch(e){}
 window.addEventListener('storage',function(e){if(e.key==='cuey.canva.done'&&e.newValue===state)ok()});
+/* no Cuey window answered (closed, or an older version still open): finish here with this browser's own Cuey sign-in.
+   Same safety — the server only accepts it from the Cuey user who started this state. */
+setTimeout(function(){if(done)return;var ss=null;try{ss=JSON.parse(localStorage.getItem('cuey.sess')||'null')}catch(e){}
+  if(!ss||!ss.at||!(ss.exp>Date.now()))return;
+  fetch('https://lgemvnntlgasxhrpsdww.supabase.co/functions/v1/canva',{method:'POST',headers:{'Content-Type':'application/json','apikey':'sb_publishable_h4rKk5eB9He62to_-CnpJg_Y0KwJmby','Authorization':'Bearer '+ss.at},body:JSON.stringify({action:'finish',code:code,state:state})})
+   .then(function(r){if(r.ok)ok()}).catch(function(){})},3000);
 setTimeout(function(){if(!done)show('⚠️',T.no,T.nop)},20000);
 })();
 </script>
