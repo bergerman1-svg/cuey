@@ -485,7 +485,7 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - Test fix: `share_e2e.py` waits for the screen colour to settle (dissolve + stream latency) instead of a fixed delay.
 
 ## 50. FADE button for music (v0.45.0, 2026-10-29, Avi's design)
-- One button **FADE ↓ / פייד ↓** in the control column (between Black and MASTER) — control screen only, never on the event screen. Press: the current cue's sound fades out (keeps playing silently); press again: fades back in (**FADE ↑**). A thin bar under the label shows the level; orange while faded.
+- One button **Fade ↓ / פייד ↓** — since v0.45.1 it sits **in the live cue's row, right after its sound slider** (Avi: in the GO bar it could be mistaken for a picture fade). It appears only on the cue that is live and only if it has sound (music cue, video with sound, slide with music); control screen only, never on the event screen. Press: the current cue's sound fades out (keeps playing silently); press again: fades back in (**FADE ↑**). A thin bar under the label shows the level; orange while faded.
 - Fade time per cue: **Edit ▸ Sound ▸ Fade button** (0.5–30 s, default 3), saved in the show (`fadeT`).
 - Engine: every volume in the app goes through `vm() = master × fadeK²` (smooth, fader-like curve); `reVol()` re-applies the current cue's volumes; `show()` calls `fadeReset()` so GO always starts the next cue at full level. Works for music cues, video sound and music under slides, in the preview and the Output window.
 - Avi: no separate "music show" mode — music, videos and slides already share one list. Spotify can't be used (its terms forbid commercial playback / streaming integrations).
