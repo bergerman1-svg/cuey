@@ -540,3 +540,8 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 
 ### v0.47.6 (29.10)
 - Canva callback fallback: if no Cuey window answers in 3 s (closed, or an older version still open — happened to Avi with a v0.47.2 tab), the page finishes with this browser's own `cuey.sess` token. Server still requires the same user who started the state.
+
+### v0.48.0 (29.10) — "A new version is ready"
+- `#updBar` at the top: browser app compares with `cuey.live/app/version.json` (written by the Website workflow from package.json) → Refresh (asks to save unsaved changes first). Desktop compares with the latest GitHub release (published only after the installers are built) → opens the download page.
+- Never during a show: hidden while Output is open, the screen is shared, media plays, or exporting; comes back after (checked every minute). "Later" = not again for that version. First check 20 s after start, then on tab focus (5 min throttle). Not for a cuey.html opened from disk.
+- Test: `tests/update_e2e.py` (13) in the release gate.
