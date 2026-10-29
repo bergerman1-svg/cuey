@@ -50,6 +50,10 @@ async def main():
         await pg.goto(URL + 'en'); await pg.wait_for_timeout(700)
         ok('not opted in: Canva tile still disabled with "SOON"', await pg.evaluate("$('#adCv').disabled&&/SOON/.test($('#adCv').innerText)"))
         ok('not opted in: no calls to the Canva server', not calls, calls)
+        await pg.evaluate("saveSess({at:'tk',rt:'rt',exp:Date.now()+3600e3,email:'someone@school.org',id:'u2'});acctUI()")
+        ok('signed in as anyone else: still "SOON"', await pg.evaluate("$('#adCv').disabled"))
+        await pg.evaluate("saveSess({at:'tk',rt:'rt',exp:Date.now()+3600e3,email:'hello@cuey.live',id:'u1'});acctUI()")
+        ok('our own account (also the desktop app): tile is on without ?canva=1', await pg.evaluate("!$('#adCv').disabled"))
         await ctx.close()
         for lang in ('en', 'he'):
             L = f'[{lang}] '; st = {'connected': False}

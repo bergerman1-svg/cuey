@@ -517,3 +517,6 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - **App:** tile `#adCv` stays disabled "PRO · SOON" unless the browser opted in (`?canva=1`, stored in `cuey.canva`; `?canva=0` off). Dialog `#cvDlg`: connect → designs (search, more) → "Bring in as slides" (PNG 1920 per page) or "As a video (MP4 1080p)". Files kept with `keepGen` like PDF pages. Errors: paid elements (`license_required`), expired link → connect again.
 - Not used: the preview "design pages" API (public apps using preview APIs fail review).
 - Test: `tests/canva_e2e.py` (35, Canva mocked) in the release gate.
+
+### v0.47.1 (29.10)
+- Canva tile also turns on for our own accounts (CV_TEAM: bergerman1@gmail.com, hello@cuey.live) when signed in — works in the desktop app, which has no address bar for ?canva=1. Everyone else: unchanged ("SOON").
