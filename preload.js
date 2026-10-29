@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
 contextBridge.exposeInMainWorld('cueyNative', {
   platform: process.platform,
   onMenu: (cb) => ipcRenderer.on('menu', (_e, cmd) => cb(cmd)),
@@ -13,6 +13,10 @@ contextBridge.exposeInMainWorld('cueyNative', {
   openShow: () => ipcRenderer.invoke('show-open'),
   readShow: (p) => ipcRenderer.invoke('show-read', p),
   pptxToPdf: (name, data) => ipcRenderer.invoke('pptx-to-pdf', { name, data }),
+  // the show's media folder (next to the .cuey): copy files there, read one back
+  filePath: (f) => { try { return webUtils.getPathForFile(f) || ''; } catch (e) { return ''; } },
+  packMedia: (showPath, files) => ipcRenderer.invoke('pack-media', { showPath, files }),
+  readMedia: (showPath, name) => ipcRenderer.invoke('read-media', { showPath, name }),
   // Continue with Google: opens the browser, resolves with the session (or {error})
   googleSignIn: (lang) => ipcRenderer.invoke('google-signin', { lang }),
   googleCancel: () => ipcRenderer.invoke('google-cancel'),

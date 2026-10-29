@@ -1,7 +1,10 @@
 import asyncio, json, sys, traceback
 from playwright.async_api import async_playwright
 
-APP = 'file:///tmp/cuey/app/cuey.html'
+import os
+ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+FIX = os.environ.get('CUEY_FIXTURES') or os.path.join(ROOT, 'tests', 'fixtures')
+APP = 'file://' + ROOT + '/app/cuey.html'
 RES = []
 def ok(name, cond, info=''):
     RES.append((name, bool(cond), info))
@@ -20,7 +23,7 @@ async def fresh(ctx, lang='en'):
     return pg
 
 async def add(pg, files):
-    await pg.set_input_files('#fileIn', files)
+    await pg.set_input_files('#fileIn', [f if os.path.isabs(f) else os.path.join(FIX, f) for f in ([files] if isinstance(files, str) else files)])
     await pg.wait_for_timeout(700)
 
 E = lambda pg, js: pg.evaluate(js)
@@ -193,7 +196,7 @@ async def main():
                 ok(L+'pick-files dialog shown', await E(pg, "!$('#pickDlg').hidden"))
                 async with pg.expect_file_chooser() as fc:
                     await pg.click('#pkPick')
-                await (await fc.value).set_files(['red.png', 'green.png', 'va.webm', 'blue.png', 'tone.wav'])
+                await (await fc.value).set_files([os.path.join(FIX, n) for n in ['red.png', 'green.png', 'va.webm', 'blue.png', 'tone.wav']])
                 await pg.wait_for_timeout(1500)
                 ok(L+'reopen: same count', await E(pg, 'items.length')==len(d['cues']), [await E(pg,'items.length'),len(d['cues'])])
                 ok(L+'reopen: nothing missing', await E(pg, 'items.filter(i=>i.bad).length')==0, await E(pg,'items.filter(i=>i.bad).map(i=>i.name)'))

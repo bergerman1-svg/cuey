@@ -1,12 +1,15 @@
 """Cuey feature-by-feature checks (complements browser_suite.py).
-Run from the folder that holds the test media (red.png, green.png, blue.png, v.webm, va.webm, tone.wav):
-    python3 /path/to/feature_suite.py
+Test media live in tests/fixtures (or CUEY_FIXTURES). Run from anywhere — outputs go to the current folder:
+    python3 tests/feature_suite.py
 Each feature runs on a fresh page, in English and Hebrew."""
 import asyncio, json, os, sys, traceback, urllib.parse
 from playwright.async_api import async_playwright
 
-APP = 'file:///tmp/cuey/app/cuey.html'
-HERE = os.getcwd()
+import os
+ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+FIX = os.environ.get('CUEY_FIXTURES') or os.path.join(ROOT, 'tests', 'fixtures')
+APP = 'file://' + ROOT + '/app/cuey.html'
+HERE = FIX
 RES = []
 def ok(name, cond, info=''):
     RES.append((name, bool(cond), info))

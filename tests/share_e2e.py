@@ -2,9 +2,12 @@
 App (signed-in mock) shares -> the screen page /s/?c=CODE connects over WebRTC -> GO -> the screen shows the cue."""
 import asyncio, json, os, re, sys
 from playwright.async_api import async_playwright
-HERE = os.path.dirname(os.path.abspath(__file__))
-APP = 'file:///tmp/cuey/app/cuey.html?nosplash&notour'
-SCREEN = 'file:///tmp/cuey/docs/s/index.html'
+import os
+ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+FIX = os.environ.get('CUEY_FIXTURES') or os.path.join(ROOT, 'tests', 'fixtures')
+HERE = FIX
+APP = 'file://' + ROOT + '/app/cuey.html?nosplash&notour'
+SCREEN = 'file://' + ROOT + '/docs/s/index.html'
 res = []
 def ok(n, c, extra=''):
     res.append(c); print(('PASS ' if c else 'FAIL ') + n + (('  -> ' + str(extra)) if extra and not c else ''))

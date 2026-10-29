@@ -1,12 +1,15 @@
 """Offline / service-worker probe: serve /tmp/cuey/docs on localhost, install the SW, then go offline."""
 import asyncio, json, os, subprocess, time
 from playwright.async_api import async_playwright
-HERE = os.path.dirname(os.path.abspath(__file__))
+import os
+ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+FIX = os.environ.get('CUEY_FIXTURES') or os.path.join(ROOT, 'tests', 'fixtures')
+HERE = FIX
 PORT = 8765
 BASE = f'http://localhost:{PORT}/app/'
 def P(*a): print(*a, flush=True)
 async def main():
-    srv = subprocess.Popen(['python3', '-m', 'http.server', str(PORT), '--bind', '127.0.0.1', '-d', '/tmp/cuey/docs'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    srv = subprocess.Popen(['python3', '-m', 'http.server', str(PORT), '--bind', '127.0.0.1', '-d', os.path.join(ROOT, 'docs')], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     time.sleep(1)
     try:
         async with async_playwright() as p:

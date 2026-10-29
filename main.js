@@ -2,11 +2,11 @@ const { app, BrowserWindow, screen, Menu, shell, ipcMain, dialog } = require('el
 const path = require('path');
 const fs = require('fs');
 
-let uiLang = 'en', appQuitting = false;
+let uiLang = 'en', appQuitting = false, quitAfterSave = false;
 ipcMain.on('lang', (_e, l) => { uiLang = l === 'he' ? 'he' : 'en'; });
 app.on('before-quit', () => { appQuitting = true; });
 // the page saved after "Save" in the close question → now really close / quit
-ipcMain.on('close-now', () => { if (appQuitting) app.quit(); else if (win && !win.isDestroyed()) win.close(); });
+ipcMain.on('close-now', () => { if (appQuitting || quitAfterSave) { quitAfterSave = false; app.quit(); } else if (win && !win.isDestroyed()) win.close(); });
 
 // ---- Free music: while the user is on Pixabay, a new song in Downloads is handed to the page (only those files)
 const AUDIO = /\.(mp3|wav|m4a|aac|ogg)$/i;
@@ -45,6 +45,30 @@ ipcMain.handle('show-save', async (_e, o) => {
   }
   await fs.promises.writeFile(target, String(o.json), 'utf8');
   return { path: target, name: path.basename(target) };
+});
+// Show media folder: next to "My show.cuey" sits "My show media/". Every save puts the cues that exist only inside Cuey there
+// (PDF pages, PowerPoint videos, library backgrounds); "Save with all media…" copies every file, so the show opens on another computer.
+const mediaDir = (showPath) => showPath.replace(/\.cuey$/i, '') + ' media';
+const safeName = (n) => path.basename(String(n || '')).replace(/[\\/:*?"<>|\x00-\x1f]/g, '_').slice(0, 180);
+ipcMain.handle('pack-media', async (_e, o) => {
+  if (!o || !isShow(o.showPath)) return { error: 'no show' };
+  const dir = mediaDir(o.showPath); let n = 0;
+  try {
+    await fs.promises.mkdir(dir, { recursive: true });
+    for (const f of (o.files || [])) {
+      const nm = safeName(f.name); if (!nm) continue; const to = path.join(dir, nm);
+      try {
+        if (f.path) { const st = await fs.promises.stat(f.path); let same = false; try { same = (await fs.promises.stat(to)).size === st.size; } catch (_) {} if (!same) await fs.promises.copyFile(f.path, to); n++; }
+        else if (f.data) { let same = false; try { same = (await fs.promises.stat(to)).size === f.data.byteLength; } catch (_) {} if (!same) await fs.promises.writeFile(to, Buffer.from(f.data)); n++; }
+      } catch (e) { return { error: String(e && e.message || e), dir, count: n }; }
+    }
+    return { dir, count: n };
+  } catch (e) { return { error: String(e && e.message || e) }; }
+});
+ipcMain.handle('read-media', async (_e, o) => {
+  if (!o || !isShow(o.showPath)) return null;
+  const f = path.join(mediaDir(o.showPath), safeName(o.name));
+  try { return await fs.promises.readFile(f); } catch (e) { return null; }
 });
 ipcMain.handle('show-open', async () => {
   const r = await dialog.showOpenDialog(win, { properties: ['openFile'], filters: SHOW_F });
@@ -211,9 +235,20 @@ function createWindow() {
   win.webContents.on('did-create-window', (child) => {
     child.setMenuBarVisibility(false);
     // a screen plugged in (or back) while the show runs → move the Output there, full screen
-    const onAdd = (_e, d) => { if (child.isDestroyed()) return; const b = d.bounds; child.setFullScreen(false); child.setBounds({ x: b.x, y: b.y, width: b.width, height: b.height }); child.setFullScreen(true); };
+    const onAdd = (_e, d) => { if (child.isDestroyed()) return; const b = d.bounds; child.setFullScreen(false); child.setBounds({ x: b.x, y: b.y, width: b.width, height: b.height }); child.setFullScreen(true); child.setAlwaysOnTop(true); };
+    // the event screen unplugged mid-show → never leave a full-screen black window over the operator's laptop:
+    // shrink the Output to a small window in the corner of the laptop screen and give the focus back to Cuey
+    const onRemove = () => {
+      if (child.isDestroyed()) return;
+      const primary = screen.getPrimaryDisplay();
+      if (screen.getAllDisplays().some(d => d.id !== primary.id)) return;
+      const wa = primary.workArea, w = 480, h = 270;
+      child.setAlwaysOnTop(false); child.setFullScreen(false);
+      setTimeout(() => { if (child.isDestroyed()) return; child.setBounds({ x: wa.x + wa.width - w - 24, y: wa.y + wa.height - h - 24, width: w, height: h }); if (win && !win.isDestroyed()) win.focus(); }, 300);
+    };
     screen.on('display-added', onAdd);
-    child.on('closed', () => screen.removeListener('display-added', onAdd));
+    screen.on('display-removed', onRemove);
+    child.on('closed', () => { screen.removeListener('display-added', onAdd); screen.removeListener('display-removed', onRemove); });
     child.on('closed', () => { if (win && !win.isDestroyed()) win.focus(); });
   });
 
@@ -225,7 +260,7 @@ function createWindow() {
       message: he ? 'לשמור את השינויים בהופעה לפני הסגירה?' : 'Save the changes to this show before closing?',
       detail: he ? 'אם לא שומרים, השינויים האחרונים יאבדו.' : 'If you don’t save, your latest changes will be lost.' });
     if (c === 1) e.preventDefault();                       // close without saving
-    else { if (c === 0) win.webContents.send('menu', 'savequit'); appQuitting = false; }  // save first, or stay
+    else { if (c === 0) { quitAfterSave = appQuitting; win.webContents.send('menu', 'savequit'); } appQuitting = false; }  // save first (and finish the quit if ⌘Q started it), or stay
   });
   win.on('closed', () => { win = null; stopDl(); });
 }
@@ -239,6 +274,7 @@ const menuTemplate = () => [
       { type: 'separator' },
       { label: 'Save', accelerator: 'CmdOrCtrl+S', click: () => win && win.webContents.send('menu', 'save') },
       { label: 'Save As…', accelerator: 'CmdOrCtrl+Shift+S', click: () => win && win.webContents.send('menu', 'saveas') },
+      { label: 'Save with All Media (for another computer)…', click: () => win && win.webContents.send('menu', 'savepack') },
       { type: 'separator' },
       { label: 'Export Show MP4…', click: () => win && win.webContents.send('menu', 'export') },
       { type: 'separator' },

@@ -9,6 +9,21 @@ permissions:
   contents: write
 
 jobs:
+  # release gate (Ron, approved by Avi 29.10.2026): every test must pass before a version is built
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install playwright==1.56.0 && python -m playwright install --with-deps chromium
+      - run: mkdir -p /tmp/gate && cd /tmp/gate && python "$GITHUB_WORKSPACE/tests/run_all.py"
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with: { name: gate-screens, path: /tmp/gate/*.png, if-no-files-found: ignore }
+
   version:
     runs-on: ubuntu-latest
     outputs:
@@ -24,7 +39,7 @@ jobs:
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then echo "new=false" >> $GITHUB_OUTPUT; else echo "new=true" >> $GITHUB_OUTPUT; fi
 
   build:
-    needs: version
+    needs: [version, tests]
     if: needs.version.outputs.new == 'true'
     strategy:
       matrix:

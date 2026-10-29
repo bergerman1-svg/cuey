@@ -1,9 +1,12 @@
 """Share screen: what happens when a signalling WebSocket drops and reconnects (ntfy replays history with ?since=)."""
 import asyncio, json, os, re, time
 from playwright.async_api import async_playwright
-HERE = os.path.dirname(os.path.abspath(__file__))
-APP = 'file:///tmp/cuey/app/cuey.html?nosplash&notour'
-SCREEN = 'file:///tmp/cuey/docs/s/index.html'
+import os
+ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+FIX = os.environ.get('CUEY_FIXTURES') or os.path.join(ROOT, 'tests', 'fixtures')
+HERE = FIX
+APP = 'file://' + ROOT + '/app/cuey.html?nosplash&notour'
+SCREEN = 'file://' + ROOT + '/docs/s/index.html'
 subs, hist = {}, {}
 PX = "(()=>{const v=document.getElementById('rtc');if(!v||!v.videoWidth)return null;const c=document.createElement('canvas');c.width=64;c.height=36;const g=c.getContext('2d');g.drawImage(v,0,0,64,36);return Array.from(g.getImageData(32,18,1,1).data)})()"
 async def main(which):
