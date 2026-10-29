@@ -468,8 +468,8 @@ footer .legal .em{margin:0 10px;white-space:nowrap}
   const v=document.getElementById('demo'),box=document.getElementById('vid');
   // promo: 16:9 on computers, 9:16 on phones held upright
   const tall=matchMedia('(max-width:700px) and (orientation:portrait)').matches, src='../promo-he-'+(tall?'v':'h');
-  if(tall)box.classList.add('tall'); v.poster=src+'.jpg?v=5';
-  document.getElementById('play').onclick=()=>{box.classList.add('on');if(!v.getAttribute('src'))v.src=src+'.mp4?v=5';v.muted=false;v.controls=true;v.play()};
+  if(tall)box.classList.add('tall'); v.poster=src+'.jpg?v=6';
+  document.getElementById('play').onclick=()=>{box.classList.add('on');if(!v.getAttribute('src'))v.src=src+'.mp4?v=6';v.muted=false;v.controls=true;v.play()};
   // highlight the right download
   const isMac=/Mac/i.test(ua)&&!isIOS;
   // one download button: pick the right file for this computer
