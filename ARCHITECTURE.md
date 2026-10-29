@@ -506,3 +506,6 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - **Replay the finished cue:** `cueDone` is set when the live cue ends (`onEnded`). If it is a video / music cue and it finished, GO (when there is no next cue) and Play run it again from IN (`replayable()`, `show(cur,true)`). A cue still playing is never restarted; a still picture stays.
 - **Chrome picker blocked folders:** `showOpenFilePicker` refuses files in protected folders (~/Library, app folders) and reports a plain AbortError. After any cancel in `pickFiles()`, `#pkHelp` shows for 9 s with "choose another way", which opens the classic `<input type=file>` (no folder limits).
 - Test: `tests/replay_e2e.py` (25 checks) in the release gate.
+
+### v0.46.4 (29.10)
+- GO replays a finished cue only when it is the **only** cue in the list (Avi). In a longer list GO on the finished last cue does nothing, as before. Play still replays any finished cue.

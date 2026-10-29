@@ -1,5 +1,5 @@
-"""The last cue finished — GO (or Play) runs it again (Avi, 29.10: "cue 1 ended, GO didn't play it again, Play neither").
-Covers a music cue and a video cue, alone in the list and last in a longer list; a cue that is still playing is never restarted."""
+"""A finished cue runs again (Avi, 29.10): GO replays it only when it is the ONLY cue in the list; Play replays any finished cue.
+In a longer list GO on the finished last cue does nothing (as before). A cue still playing is never restarted."""
 import asyncio, os
 from playwright.async_api import async_playwright
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
@@ -26,7 +26,10 @@ async def main():
             ok(f'{name}: it finished', (await pg.evaluate(POS))[1], await pg.evaluate(POS))
             await pg.evaluate("go()"); await pg.wait_for_timeout(600)
             r = await pg.evaluate(POS)
-            ok(f'{name}: GO after it ended plays it again from the start', r and not r[1] and r[0] < 1.5 and await pg.evaluate(f"cur==={last}"), r)
+            if last == 0:
+                ok(f'{name}: GO after it ended plays it again from the start', r and not r[1] and r[0] < 1.5 and await pg.evaluate(f"cur==={last}"), r)
+            else:
+                ok(f'{name}: GO on the finished LAST cue of a longer list does nothing (as before)', r and r[1] and await pg.evaluate(f"cur==={last}"), r)
             await pg.evaluate("{const m=tlSource();m.currentTime=Math.max(0,m.duration-0.3)}"); await pg.wait_for_timeout(1200)
             await pg.click('#pp'); await pg.wait_for_timeout(600)
             r = await pg.evaluate(POS)
