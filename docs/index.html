@@ -97,6 +97,8 @@ kbd{font-family:'JetBrains Mono',monospace;font-size:13px;background:#1C1C23;bor
 .car .tag{position:absolute;top:12px;inset-inline-start:12px;z-index:2;display:flex;align-items:center;font-family:inherit;font-size:11px;font-weight:500;line-height:1;letter-spacing:.02em;padding:5px 9px 5px 8px;border-radius:999px;border:0;color:rgba(242,242,245,.82);background:rgba(10,10,12,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .car .tag i{display:inline-block;flex:none;width:6px;height:6px;border-radius:50%;background:#ff3b30;margin-inline-end:6px;animation:carlive 1.6s infinite}
 @keyframes carlive{50%{opacity:.25}}
+@media (max-width:700px){.dlo{display:none}}
+.mf{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;width:100%}.mf input[type=email]{flex:1 1 170px;min-width:0;height:48px;border-radius:12px;border:1px solid var(--line);background:#0e0e12;color:var(--txt);padding:0 14px;font:inherit;font-size:16px}.mf input[type=email]:focus{outline:2px solid var(--go);outline-offset:1px}.mf button{height:48px;flex:0 0 auto}.mf .hp{position:absolute;width:1px;height:1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%);opacity:0}.mf .mfs{flex-basis:100%;margin:2px 0 0;color:var(--mut);font-size:14px;line-height:1.45}.mf .mfs:empty{display:none}
 .car .cap{min-height:3.2em;margin:14px 4px 0;color:var(--mut);font-size:15px;line-height:1.55;text-align:center}
 .car .bar{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px;direction:ltr}
 .car .bk{height:46px;min-width:96px;padding:0 18px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--txt);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
@@ -295,6 +297,12 @@ details.cmp summary:before{content:"+";display:inline-grid;place-items:center;wi
 details.cmp[open] summary:before{content:"–"}
 details.cmp .ptable{margin-top:12px}
 @media (max-width:860px){.plans{grid-template-columns:1fr}.plan .for{min-height:0}}
+/* ---- design pass 2 (Maya, 2026-10-29): no overflow on small phones, no orphan cards, quieter video label ---- */
+.video .play span{bottom:auto;top:calc(50% + 54px);padding:6px 14px;border-radius:999px;background:rgba(10,10,12,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);text-shadow:none;white-space:nowrap}
+@media (min-width:860px){.grid>.card:last-child:nth-child(3n+2){grid-column:span 2}.quotes:has(>:nth-child(4):last-child){grid-template-columns:repeat(2,1fr)}}
+.sheet h3{line-height:1.25}
+footer .legal .em{margin:0 10px;white-space:nowrap}
+@media (max-width:600px){.btn{white-space:normal;text-align:center;line-height:1.3}.mbox .btn,.sheet .btn{font-size:16px;padding:14px 16px}}
 </style>
 <script>(function(){var u=navigator.userAgent;if(/Android|iPhone|iPad|iPod/i.test(u)||(navigator.maxTouchPoints>1&&innerWidth<900))document.documentElement.classList.add("m")})()</script>
 </head>
@@ -386,8 +394,8 @@ details.cmp .ptable{margin-top:12px}
     <div class="bill"><div class="sw" role="tablist"><button class="on" data-b="m" role="tab" aria-selected="true">Monthly</button><button data-b="y" role="tab" aria-selected="false">Yearly<em>2 months free</em></button></div></div>
     <div class="plans">
       <div class="plan"><h3>Free</h3><p class="for">Everything you need to run an event.</p><div class="pr"><b>$0</b></div><div class="yr"></div><ul><li>Unlimited cue list — videos, pictures, music, PDF & PowerPoint</li><li>GO, cut & dissolve, loop, trims</li><li>Works offline · Mac, Windows and browser</li><li>Share screen to a tablet or TV (1 screen)</li><li>A small “Powered by Cuey” in the corner</li></ul><a class="btn sec" href="app/?lang=en">▶ Start free</a></div>
-      <div class="plan hl"><span class="tag">Most popular</span><h3>Studio</h3><p class="for">Your screen, not ours — clean and professional.</p><div class="pr"><b data-m="$5" data-y="$4">$5</b><span>/ month</span></div><div class="yr" data-y="Billed $50 a year"></div><ul><li>Everything in Free, plus:</li><li>No “Powered by Cuey” on the event screen</li><li>YouTube & Vimeo on the event screen</li><li>Background library — photos and breathing loops</li><li>Slide show that runs by itself · Export MP4</li><li>PowerPoint → a cue for every slide (desktop)</li><li>Unlimited screen sharing</li></ul><a class="btn" href="app/?lang=en">Try Studio</a></div>
-      <div class="plan"><h3>Pro</h3><p class="for">For producers and anyone running lots of events.</p><div class="pr"><b data-m="$16" data-y="$13">$16</b><span>/ month</span></div><div class="yr" data-y="Billed $160 a year"></div><ul><li>Everything in Studio, plus:</li><li>AI Builder — from a programme to designed slides <small>(up to 100 builds a month)</small></li><li class=soon>Design in Canva from inside Cuey — soon</li><li class=soon>Cloud shows and teamwork — soon</li><li class=soon>Several screens and a phone remote — soon</li></ul><a class="btn sec" href="app/?lang=en">Try Pro</a></div>
+      <div class="plan hl"><span class="tag">Most popular</span><h3>Studio</h3><p class="for">Your screen, not ours — clean and professional.</p><div class="pr"><b data-m="$5" data-y="$4">$5</b><span>/ month</span></div><div class="yr" data-y="Billed $50 a year"></div><ul><li>Everything in Free, plus:</li><li>No “Powered by Cuey” on the event screen</li><li>YouTube & Vimeo on the event screen</li><li>Background library — photos and breathing loops</li><li>Slide show that runs by itself · Export MP4</li><li>PowerPoint → a cue for every slide (desktop)</li><li>Unlimited screen sharing</li></ul><a class="btn" href="app/?lang=en&plan=studio">Try Studio</a></div>
+      <div class="plan"><h3>Pro</h3><p class="for">For producers and anyone running lots of events.</p><div class="pr"><b data-m="$16" data-y="$13">$16</b><span>/ month</span></div><div class="yr" data-y="Billed $160 a year"></div><ul><li>Everything in Studio, plus:</li><li>AI Builder — from a programme to designed slides <small>(up to 100 builds a month)</small></li><li class=soon>Design in Canva from inside Cuey — soon</li><li class=soon>Cloud shows and teamwork — soon</li><li class=soon>Several screens and a phone remote — soon</li></ul><a class="btn sec" href="app/?lang=en&plan=pro">Try Pro</a></div>
     </div>
     <div class="edu"><span class="ei">🎓</span><p><b>Students, teachers and schools</b> can ask for 30% off Studio and Pro, with proof of academic status.</p><a href="mailto:support@cuey.live?subject=Education%20discount%20%E2%80%94%20Cuey">Contact support</a></div>
     <details class="cmp"><summary>Full comparison of the plans</summary><table class="ptable"><thead><tr><th></th><th>Free<small>$0</small></th><th class="hl">Studio<small>$5 / month</small></th><th>Pro<small>$16 / month</small></th></tr></thead><tbody><tr class="grp"><td colspan="4">Run a whole event — free</td></tr><tr><td>Unlimited cue list — videos, pictures, music, PDF &amp; PowerPoint</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>GO, cut &amp; dissolve, loop, trims, music under slides</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>Create cue — text on a colour or your own picture / video</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>Works offline · Mac, Windows &amp; browser</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>Share screen to a tablet or TV (free account)</td><td><span class="n" style="font-size:.85em">1 screen</span></td><td class="hl"><span class="n" style="font-size:.85em">Unlimited</span></td><td><span class="n" style="font-size:.85em">Unlimited</span></td></tr><tr class="grp"><td colspan="4">Studio — your screen, not ours</td></tr><tr><td>No “Powered by Cuey” on the event screen</td><td><span class="n">—</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>YouTube &amp; Vimeo on the event screen</td><td><span class="n" style="font-size:.85em">Preview</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>Free backgrounds library — photos &amp; moving loops</td><td><span class="n" style="font-size:.85em">Preview</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>Slide show — runs and loops by itself</td><td><span class="n" style="font-size:.85em">Preview</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>Export MP4 — the whole show as one video</td><td><span class="n">—</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>PowerPoint → a cue for every slide (Cuey for desktop)</td><td>Videos only</td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr class="grp"><td colspan="4">Pro</td></tr><tr><td>AI Builder — from programme to ready slides in its own design, in one click</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="y" style="font-size:.85em">up to 100 a month</span></td></tr><tr><td>Design in Canva from inside Cuey</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="n" style="font-size:.85em">soon</span></td></tr><tr><td>Work on a show together</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="n" style="font-size:.85em">soon</span></td></tr></tbody></table></details>
@@ -407,7 +415,7 @@ details.cmp .ptable{margin-top:12px}
 
   <footer>
     Cuey · You don't need to be a technician to look professional.
-    <div class="legal"><a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms of Use</a> · privacy@cuey.live</div>
+    <div class="legal"><a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms of Use</a> · <bdi class="em">privacy@cuey.live</bdi></div>
   </footer>
 </div>
 
@@ -454,7 +462,7 @@ details.cmp .ptable{margin-top:12px}
   // phones: Cuey runs on a computer — send yourself the link (WhatsApp / email); phone app coming soon
   const dl='https://cuey.live/',msg='Cuey for desktop — open this on the computer that connects to the screen: ';
   document.querySelectorAll('[data-wa]').forEach(a=>{a.href='https://wa.me/?text='+encodeURIComponent(msg+dl);a.target='_blank';a.rel='noopener'});
-  document.querySelectorAll('[data-mail]').forEach(a=>{a.href='mailto:?subject='+encodeURIComponent('Cuey for desktop')+'&body='+encodeURIComponent(msg+dl)});
+  document.querySelectorAll('[data-mail]').forEach(a=>{const mt='mailto:?subject='+encodeURIComponent('Cuey for desktop')+'&body='+encodeURIComponent(msg+dl);a.href=mt;a.addEventListener('click',e=>{e.preventDefault();cueyMailForm(a,false,mt,r=>{try{t('site/email-link-'+r,1)}catch(x){}})})});
   if(mobile)document.querySelectorAll('a[href*="app/"]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();document.getElementById('mobSheet').classList.add('open');document.getElementById('scrim').classList.add('on')}));
   // demo video
   const v=document.getElementById('demo'),box=document.getElementById('vid');
@@ -468,8 +476,12 @@ details.cmp .ptable{margin-top:12px}
   (async()=>{const b=document.getElementById('dlMain'),os=document.getElementById('dlOs');if(!b)return;
     if(/Win/i.test(ua)){b.href=document.getElementById('dlWin').href;os.textContent='Windows';return}
     if(isMac){let intel=false;try{const h=navigator.userAgentData&&await navigator.userAgentData.getHighEntropyValues(['architecture']);if(h&&h.architecture)intel=h.architecture==='x86';else{const g=document.createElement('canvas').getContext('webgl'),d=g&&g.getExtension('WEBGL_debug_renderer_info'),r=d?g.getParameter(d.UNMASKED_RENDERER_WEBGL):'';intel=/Intel/i.test(r)&&!/Apple/i.test(r)}}catch(e){}
+      /* Safari doesn't tell the chip: the universal Mac file works on every Mac */
+      const known=!!(navigator.userAgentData&&navigator.userAgentData.platform);
+      if(!known){b.href='https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-universal.dmg';os.textContent='Mac';return}
       b.href=document.getElementById(intel?'dlIntel':'dlArm').href;os.textContent=intel?'Mac · Intel':'Mac · Apple Silicon';return}
-    os.textContent='Mac · Windows'})();
+    /* Linux, ChromeOS and anything else: no desktop app — open Cuey in the browser instead of downloading a Mac file */
+    b.removeAttribute('download');b.href='app/?lang=en';b.textContent='▶ Open Cuey in the browser';b.title='No desktop app for this computer — Cuey opens in the browser'})();
 })();
 </script>
 <script>
@@ -532,6 +544,28 @@ var x0=null;c.addEventListener('touchstart',function(e){x0=e.touches[0].clientX}
 c.addEventListener('touchend',function(e){if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>40){hold();show(i+(dx<0?1:-1))}},{passive:true});
 if('IntersectionObserver' in window)new IntersectionObserver(function(es){vis=es[0].isIntersecting},{threshold:.4}).observe(c);else vis=true;
 show(0);setInterval(function(){if(vis&&!document.hidden&&Date.now()-held>20000)show(i+1)},5500)})();
+</script>
+<script>
+/* "Email me the link": Cuey sends the email itself (noreply@cuey.live, Supabase function send-link).
+   If the service isn't available, falls back to the visitor's own mail app (the old way) — nothing breaks. */
+function cueyMailForm(a,he,fallback,done){
+  const L=he?{ph:'המייל שלך',send:'שלח',wait:'שולח…',ok:'נשלח! בדקו את תיבת המייל — ההודעה מ-noreply@cuey.live',lim:'כבר שלחנו לכתובת הזו — בדקו את תיבת המייל (וגם בספאם)',bad:'בדקו את כתובת המייל'}
+              :{ph:'Your email',send:'Send',wait:'Sending…',ok:'Sent! Check your inbox — it comes from noreply@cuey.live',lim:'We already sent it to this address — check your inbox (and spam)',bad:'Check the email address'};
+  let f=a.nextElementSibling;if(f&&f.classList.contains('mf')){f.querySelector('input').focus();return}
+  f=document.createElement('form');f.className='mf';f.noValidate=true;
+  f.innerHTML='<input type="email" name="email" required autocomplete="email" inputmode="email" dir="ltr"><input name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true"><button type="submit"></button><p class="mfs" aria-live="polite"></p>';
+  const inp=f.querySelector('[name=email]'),b=f.querySelector('button'),st=f.querySelector('.mfs');
+  inp.placeholder=L.ph;inp.setAttribute('aria-label',L.ph);b.textContent=L.send;b.className=a.className.replace(/\bsec\b/,'').trim()||'btn';
+  a.after(f);inp.focus();
+  f.onsubmit=async e=>{e.preventDefault();const em=inp.value.trim();
+    if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(em)){st.textContent=L.bad;inp.focus();return}
+    b.disabled=true;st.textContent=L.wait;
+    try{const r=await fetch('https://lgemvnntlgasxhrpsdww.supabase.co/functions/v1/send-link',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:em,lang:he?'he':'en',website:f.website.value})});
+      if(r.ok){st.textContent=L.ok;inp.disabled=true;done&&done('sent');return}
+      if(r.status===429){st.textContent=L.lim;done&&done('limit');return}
+      if(r.status===400){st.textContent=L.bad;b.disabled=false;return}
+      throw new Error(String(r.status))}
+    catch(x){st.textContent='';b.disabled=false;done&&done('fallback');location.href=fallback}}}
 </script>
 </body>
 </html>

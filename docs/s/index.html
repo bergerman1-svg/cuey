@@ -32,24 +32,30 @@ body:hover #st{opacity:1}
 <body>
 <div class="ly" id="a"></div><div class="ly" id="b"></div>
 <video id="rtc" autoplay playsinline muted style="position:fixed;inset:0;width:100%;height:100%;object-fit:contain;background:#000;display:none"></video>
-<button id="snd" style="display:none;z-index:5;position:fixed;bottom:16px;left:16px;padding:10px 14px;border-radius:10px;border:1px solid #333;background:#111;color:#ddd;font:14px Poppins,system-ui;cursor:pointer;opacity:.9">🔇 Sound off — click to unmute</button>
+<button id="snd" style="display:none;z-index:5;position:fixed;bottom:16px;left:16px;padding:10px 14px;border-radius:10px;border:1px solid #333;background:#111;color:#ddd;font:14px Poppins,system-ui;cursor:pointer;opacity:.9">🔇 Tap once for sound</button>
 <div id="web" style="position:fixed;inset:0;display:none;background:#000"><div id="ytp" style="width:100%;height:100%"></div></div>
 <div id="black"></div>
 <div id="wait">
   <img src="../logo-full.png" alt="Cuey">
   <div class="dot"></div>
-  <p id="msg">Looking for the show…</p>
-  <p>Keep this window on the projector. The phone or computer does the rest.</p>
-  <div class="lbl">SHOW CODE</div>
+  <p id="msg" data-s="look">Looking for the show…</p>
+  <p data-s="keep">Keep this window on the event screen. The phone or computer does the rest.</p>
+  <div class="lbl" data-s="code">SHOW CODE</div>
   <div class="code" id="code"></div>
   <p class="tip" id="tip"></p>
-  <button id="fs">⛶ Fullscreen</button>
+  <button id="fs" data-s="fs">⛶ Fullscreen</button>
 </div>
 <div id="st"></div>
 <script>
+/* language: the link from Cuey carries &l=he for a Hebrew show; otherwise the screen's own language */
+const HE=(new URLSearchParams(location.search).get('l')||navigator.language||'').toLowerCase().startsWith('he');
+const S=HE?{look:'מחפש את ההופעה…',keep:'השאירו את החלון הזה על מסך האירוע. הטלפון או המחשב עושים את השאר.',code:'קוד ההופעה',fs:'⛶ מסך מלא',nocode:'בקישור הזה אין קוד הופעה — בקשו אותו שוב.',lost:'החיבור נקטע לרגע — מתחבר מחדש…',tip:'טיפ: הכי טוב כששני המכשירים על אותה רשת Wi‑Fi.',off:'🔇 הקישו פעם אחת כדי להפעיל סאונד',on:'🔊 הסאונד פועל',ready:'מוכן — לחצו GO.',waiting:'מוכן — מחכה שההופעה תתחיל…',full:'ההופעה כבר משותפת למסך אחד (תוכנית חינם). המארגנים יכולים לשתף ליותר מסכים עם Cuey Studio.'}
+              :{look:'Looking for the show…',keep:'Keep this window on the event screen. The phone or computer does the rest.',code:'SHOW CODE',fs:'⛶ Fullscreen',nocode:'This link has no show code — ask for it again.',lost:'Lost the link for a moment — reconnecting…',tip:'Tip: both devices on the same Wi‑Fi works best.',off:'🔇 Tap once for sound',on:'🔊 Sound on',ready:'Ready — press GO.',waiting:'Ready — waiting for the show to start…',full:'This show is already shared to one screen (free plan). The organiser can share to more screens with Cuey Studio.'};
+document.documentElement.lang=HE?'he':'en';if(HE)document.getElementById('wait').dir='rtl';
+document.querySelectorAll('[data-s]').forEach(e=>{e.textContent=S[e.dataset.s]});
 const code=(new URLSearchParams(location.search).get('c')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,32);
 document.getElementById('code').textContent=code?'CUEY-'+(code.match(/.{1,4}/g)||[]).join('-'):'';
-if(!code){document.getElementById('msg').textContent='This link has no show code — ask for it again.'}
+if(!code){document.getElementById('msg').textContent=S.nocode}
 function setSt(k,txt){st.className=k;st.title=txt||''}
 const cues={};let live=-1,cur='a',shown=null,n=0,lastTs=0;
 const L={a:document.getElementById('a'),b:document.getElementById('b')};
@@ -77,12 +83,15 @@ async function onOffer(m){
   if(pc){try{pc.close()}catch(e){}}
   clearTimeout(offerT);offerT=setTimeout(()=>{if(!rtcLive()){try{pc&&pc.close()}catch(e){}rtcOn=false;hello()}},12000);
   pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
-  pc.ontrack=e=>{rtc.srcObject=e.streams[0];rtc.style.display='block';snd.style.display='block';rtcOn=true;document.getElementById('wait').classList.add('off');rtc.play().catch(()=>{})};
-  const me=pc;pc.onconnectionstatechange=()=>{if(pc!==me)return;const c=me.connectionState;setSt(c==='connected'?'ok':'warn',c);if(['failed','disconnected','closed'].includes(c)){rtcOn=false;rtc.style.display='none';snd.style.display='none';document.getElementById('wait').classList.remove('off');msg.textContent='Lost the link for a moment — reconnecting…';document.getElementById('tip').textContent='Tip: both devices on the same Wi‑Fi works best.';setTimeout(hello,1500)}};
+  pc.ontrack=e=>{rtc.srcObject=e.streams[0];rtc.style.display='block';rtcOn=true;snd.textContent=rtc.muted?S.off:S.on;sndShow();document.getElementById('wait').classList.add('off');rtc.play().catch(()=>{})};
+  const me=pc;pc.onconnectionstatechange=()=>{if(pc!==me)return;const c=me.connectionState;setSt(c==='connected'?'ok':'warn',c);if(['failed','disconnected','closed'].includes(c)){rtcOn=false;rtc.style.display='none';snd.style.display='none';document.getElementById('wait').classList.remove('off');msg.textContent=S.lost;document.getElementById('tip').textContent=S.tip;setTimeout(hello,1500)}};
   await pc.setRemoteDescription({type:'offer',sdp:m.sdp});const ans=await pc.createAnswer();await pc.setLocalDescription(ans);await waitIce(pc);
   post({t:'answer',id:myId,sdp:pc.localDescription.sdp});
 }
-snd.onclick=()=>{rtc.muted=!rtc.muted;snd.textContent=rtc.muted?'🔇 Sound off — click to unmute':'🔊 Sound on';webSync()};
+snd.onclick=()=>{rtc.muted=!rtc.muted;snd.textContent=rtc.muted?S.off:S.on;webSync();sndShow()};
+/* the sound button never sits over the live picture for long: it shows when the picture starts while sound is off (fades after 6 s), hides once sound is on, and a tap anywhere turns sound on */
+let sndT=0;function sndShow(){if(!rtcOn){snd.style.display='none';return}clearTimeout(sndT);snd.style.opacity='.9';snd.style.display='block';sndT=setTimeout(()=>{if(rtc.muted)snd.style.opacity='.35';else snd.style.display='none'},rtc.muted?6000:2500)}
+document.addEventListener('pointerdown',e=>{if(e.target!==snd&&rtcOn&&rtc.muted)snd.click()});
 /* ---- online videos (YouTube / Vimeo): the Cuey app can't send their picture, so this page plays the same video, in time ---- */
 const webBox=document.getElementById('web');let web=null,yt=null,ytReady=false,vmF=null,ytApi=null;
 function loadYtApi(){if(ytApi)return ytApi;ytApi=new Promise(r=>{window.onYouTubeIframeAPIReady=r;const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s)});return ytApi}
@@ -111,16 +120,16 @@ function handle(d){
   if(d.attachment&&m.startsWith('cue:')){const i=+m.split(':')[1];cues[i]={t:d.attachment.url};if(live===i&&shown!==i)show(i,'cut');return}
   let s;try{s=JSON.parse(m)}catch(e){return}
   if(s.t!=='state'||s.ts<lastTs)return;lastTs=s.ts;n=s.n;
-  if(s.live>=0)document.getElementById('wait').classList.add('off');else{document.getElementById('wait').classList.remove('off');msg.textContent='Ready — press GO.'}
+  if(s.live>=0)document.getElementById('wait').classList.add('off');else{document.getElementById('wait').classList.remove('off');msg.textContent=S.ready}
   if(s.live!==live||shown!==s.live){live=s.live;if(live>=0&&cues[live])show(live,s.trans||'dissolve')}
   setBlack(s.black)}
 function connect(){const ws=new WebSocket('wss://ntfy.sh/cuey-v1-'+code+'/ws?since='+(lastMsg||'6h'));
-  ws.onopen=()=>{setSt('ok','connected');if(live<0)msg.textContent='Ready — waiting for the show to start…';hello()};
+  ws.onopen=()=>{setSt('ok','connected');if(live<0)msg.textContent=S.waiting;hello()};
   ws.onmessage=async e=>{let d;try{d=JSON.parse(e.data)}catch(x){return}if(d.event!=='message')return;if(d.id)lastMsg=d.id;let m=null;try{m=JSON.parse(await body(d))}catch(x){}
     if(m&&m.t==='offer'&&m.to===myId){onOffer(m);return}
     if(m&&m.t==='bye'&&m.host){if(pc){try{pc.close()}catch(x){}}webOff();return}
     if(m&&m.t==='web'){onWeb(m);return}
-    if(m&&m.t==='full'&&m.to===myId){rtcOn=true;msg.textContent='This show is already shared to one screen (free plan). The organiser can share to more screens with Cuey Studio.';return}
+    if(m&&m.t==='full'&&m.to===myId){rtcOn=true;msg.textContent=S.full;return}
     handle(d)};
   ws.onclose=()=>{setSt('warn','reconnecting');setTimeout(connect,2000)};ws.onerror=()=>setSt('warn','error')}
 if(code)connect();

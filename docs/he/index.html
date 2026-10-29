@@ -97,6 +97,8 @@ kbd{font-family:'JetBrains Mono',monospace;font-size:13px;background:#1C1C23;bor
 .car .tag{position:absolute;top:12px;inset-inline-start:12px;z-index:2;display:flex;align-items:center;font-family:inherit;font-size:11px;font-weight:500;line-height:1;letter-spacing:.02em;padding:5px 9px 5px 8px;border-radius:999px;border:0;color:rgba(242,242,245,.82);background:rgba(10,10,12,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .car .tag i{display:inline-block;flex:none;width:6px;height:6px;border-radius:50%;background:#ff3b30;margin-inline-end:6px;animation:carlive 1.6s infinite}
 @keyframes carlive{50%{opacity:.25}}
+@media (max-width:700px){.dlo{display:none}}
+.mf{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;width:100%}.mf input[type=email]{flex:1 1 170px;min-width:0;height:48px;border-radius:12px;border:1px solid var(--line);background:#0e0e12;color:var(--txt);padding:0 14px;font:inherit;font-size:16px}.mf input[type=email]:focus{outline:2px solid var(--go);outline-offset:1px}.mf button{height:48px;flex:0 0 auto}.mf .hp{position:absolute;width:1px;height:1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%);opacity:0}.mf .mfs{flex-basis:100%;margin:2px 0 0;color:var(--mut);font-size:14px;line-height:1.45}.mf .mfs:empty{display:none}
 .car .cap{min-height:3.2em;margin:14px 4px 0;color:var(--mut);font-size:15px;line-height:1.55;text-align:center}
 .car .bar{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px;direction:ltr}
 .car .bk{height:46px;min-width:96px;padding:0 18px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--txt);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
@@ -296,6 +298,12 @@ details.cmp summary:before{content:"+";display:inline-grid;place-items:center;wi
 details.cmp[open] summary:before{content:"–"}
 details.cmp .ptable{margin-top:12px}
 @media (max-width:860px){.plans{grid-template-columns:1fr}.plan .for{min-height:0}}
+/* ---- design pass 2 (Maya, 2026-10-29): no overflow on small phones, no orphan cards, quieter video label ---- */
+.video .play span{bottom:auto;top:calc(50% + 54px);padding:6px 14px;border-radius:999px;background:rgba(10,10,12,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);text-shadow:none;white-space:nowrap}
+@media (min-width:860px){.grid>.card:last-child:nth-child(3n+2){grid-column:span 2}.quotes:has(>:nth-child(4):last-child){grid-template-columns:repeat(2,1fr)}}
+.sheet h3{line-height:1.25}
+footer .legal .em{margin:0 10px;white-space:nowrap}
+@media (max-width:600px){.btn{white-space:normal;text-align:center;line-height:1.3}.mbox .btn,.sheet .btn{font-size:16px;padding:14px 16px}}
 </style>
 <script>(function(){var u=navigator.userAgent;if(/Android|iPhone|iPad|iPod/i.test(u)||(navigator.maxTouchPoints>1&&innerWidth<900))document.documentElement.classList.add("m")})()</script>
 </head>
@@ -340,7 +348,7 @@ details.cmp .ptable{margin-top:12px}
       <div class="card"><div class="ic">♫</div><h3>סאונד, טקסט, חיתוך</h3><p>מוזיקה מתחת לשקופית. שקופית טקסט עם שם הדובר. חיתוך סרטון עם IN/OUT — בלי תוכנת עריכה.</p></div>
       <div class="card"><div class="ic">🔗</div><h3>מדביקים לינק מיוטיוב. GO.</h3><p>מעתיקים לינק מיוטיוב או Vimeo ולוחצים Ctrl+V ב-Cuey — וזה קיו. Cuey בודק כל לינק לפני האירוע (צריך אינטרנט באולם).</p></div>
       <div class="card"><div class="ic">⇩</div><h3>הגעתם עם PDF או פאוורפוינט?</h3><p>גוררים PDF (קנווה מייצאת בלחיצה) וכל עמוד הופך לשקופית. גוררים פאוורפוינט ל-Cuey למחשב עם Studio — וכל שקופית הופכת לקיו, כולל הסרטונים. אפשר לגרור גם תיקייה שלמה.</p></div>
-      <div class="card"><div class="ic">0</div><h3>מתחילים בחינם</h3><p>כל מה שצריך כדי להריץ אירוע — נסו בחינם, בלי הגבלה על כמות הקיוז. בפינת המסך יש "Powered by Cuey" קטן — מסירים אותו עם Studio — ₪19 לחודש, מבטלים מתי שרוצים.</p></div>
+      <div class="card"><div class="ic">0</div><h3>מתחילים בחינם</h3><p>כל מה שצריך כדי להריץ אירוע — נסו בחינם, בלי הגבלה על כמות הקיוז. בפינת המסך יש <bdi>"Powered by Cuey"</bdi> קטן — מסירים אותו עם Studio — ₪19 לחודש, מבטלים מתי שרוצים.</p></div>
     </div>
   </section>
 
@@ -386,12 +394,12 @@ details.cmp .ptable{margin-top:12px}
     <p class="lead">מריצים אירוע שלם בחינם. משדרגים רק כשרוצים — ומבטלים מתי שרוצים.</p>
     <div class="bill"><div class="sw" role="tablist"><button class="on" data-b="m" role="tab" aria-selected="true">חודשי</button><button data-b="y" role="tab" aria-selected="false">שנתי<em>חודשיים מתנה</em></button></div></div>
     <div class="plans">
-      <div class="plan"><h3>חינם</h3><p class="for">כל מה שצריך כדי להריץ אירוע.</p><div class="pr"><b>₪0</b></div><div class="yr"></div><ul><li>רשימת קיוז בלי הגבלה — סרטונים, תמונות, מוזיקה, PDF ופאוורפוינט</li><li>GO, קאט ודיזולב, לופ, חיתוך</li><li>עובד בלי אינטרנט · מק, ווינדוס ודפדפן</li><li>שיתוף מסך לטאבלט או לטלוויזיה (מסך 1)</li><li>“Powered by Cuey” קטן בפינת המסך</li></ul><a class="btn sec" href="../app/?lang=he">▶ להתחיל בחינם</a></div>
-      <div class="plan hl"><span class="tag">הכי פופולרי</span><h3>Studio</h3><p class="for">המסך שלכם, לא שלנו — נקי ומקצועי.</p><div class="pr"><b data-m="₪19" data-y="₪16">₪19</b><span>לחודש</span></div><div class="yr" data-y="משולם ₪190 בשנה"></div><ul><li>כל מה שבחינם, ועוד:</li><li>בלי “Powered by Cuey” על מסך האירוע</li><li>YouTube ו-Vimeo על מסך האירוע</li><li>ספריית רקעים — תמונות ולופים נושמים</li><li>Slide show שרץ לבד · ייצוא MP4</li><li>פאוורפוינט ← קיו לכל שקופית (בתוכנה למחשב)</li><li>שיתוף מסך בלי הגבלה</li></ul><a class="btn" href="../app/?lang=he">לנסות את Studio</a></div>
-      <div class="plan"><h3>Pro</h3><p class="for">למפיקים ולמי שמריץ הרבה אירועים.</p><div class="pr"><b data-m="₪59" data-y="₪49">₪59</b><span>לחודש</span></div><div class="yr" data-y="משולם ₪590 בשנה"></div><ul><li>כל מה שב-Studio, ועוד:</li><li>AI Builder — מתוכנייה לשקופיות מעוצבות <small>(עד 100 בניות בחודש)</small></li><li class=soon>עיצוב ב-Canva מתוך Cuey — בקרוב</li><li class=soon>הופעות בענן ועבודה בצוות — בקרוב</li><li class=soon>כמה מסכים ושלט מהטלפון — בקרוב</li></ul><a class="btn sec" href="../app/?lang=he">לנסות את Pro</a></div>
+      <div class="plan"><h3>חינם</h3><p class="for">כל מה שצריך כדי להריץ אירוע.</p><div class="pr"><b>₪0</b></div><div class="yr"></div><ul><li>רשימת קיוז בלי הגבלה — סרטונים, תמונות, מוזיקה, PDF ופאוורפוינט</li><li>GO, קאט ודיזולב, לופ, חיתוך</li><li>עובד בלי אינטרנט · מק, ווינדוס ודפדפן</li><li>שיתוף מסך לטאבלט או לטלוויזיה (מסך 1)</li><li><bdi>“Powered by Cuey”</bdi> קטן בפינת המסך</li></ul><a class="btn sec" href="../app/?lang=he">▶ להתחיל בחינם</a></div>
+      <div class="plan hl"><span class="tag">הכי פופולרי</span><h3>Studio</h3><p class="for">המסך שלכם, לא שלנו — נקי ומקצועי.</p><div class="pr"><b data-m="₪19" data-y="₪16">₪19</b><span>לחודש</span></div><div class="yr" data-y="משולם ₪190 בשנה"></div><ul><li>כל מה שבחינם, ועוד:</li><li>בלי <bdi>“Powered by Cuey”</bdi> על מסך האירוע</li><li>YouTube ו-Vimeo על מסך האירוע</li><li>ספריית רקעים — תמונות ולופים נושמים</li><li>Slide show שרץ לבד · ייצוא MP4</li><li>פאוורפוינט ← קיו לכל שקופית (בתוכנה למחשב)</li><li>שיתוף מסך בלי הגבלה</li></ul><a class="btn" href="../app/?lang=he&plan=studio">לנסות את Studio</a></div>
+      <div class="plan"><h3>Pro</h3><p class="for">למפיקים ולמי שמריץ הרבה אירועים.</p><div class="pr"><b data-m="₪59" data-y="₪49">₪59</b><span>לחודש</span></div><div class="yr" data-y="משולם ₪590 בשנה"></div><ul><li>כל מה שב-Studio, ועוד:</li><li>AI Builder — מתוכנייה לשקופיות מעוצבות <small>(עד 100 בניות בחודש)</small></li><li class=soon>עיצוב ב-Canva מתוך Cuey — בקרוב</li><li class=soon>הופעות בענן ועבודה בצוות — בקרוב</li><li class=soon>כמה מסכים ושלט מהטלפון — בקרוב</li></ul><a class="btn sec" href="../app/?lang=he&plan=pro">לנסות את Pro</a></div>
     </div>
     <div class="edu"><span class="ei">🎓</span><p><b>סטודנטים, מורים ובתי ספר</b> יכולים לבקש 30% הנחה על Studio ו-Pro, עם אישור על מעמד אקדמי.</p><a href="mailto:support@cuey.live?subject=%D7%94%D7%A0%D7%97%D7%AA%20%D7%97%D7%99%D7%A0%D7%95%D7%9A%20%E2%80%94%20Cuey">פנייה לתמיכה</a></div>
-    <details class="cmp"><summary>השוואה מלאה בין התוכניות</summary><table class="ptable"><thead><tr><th></th><th>חינם<small>₪0</small></th><th class="hl">Studio<small>₪19 לחודש</small></th><th>Pro<small>₪59 לחודש</small></th></tr></thead><tbody><tr class="grp"><td colspan="4">להריץ אירוע שלם — בחינם</td></tr><tr><td>רשימת קיוז בלי הגבלה — סרטונים, תמונות, מוזיקה, PDF ופאוורפוינט</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>GO, קאט ודיזולב, לופ, חיתוך, מוזיקה מתחת לשקופיות</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>יצירת קיו — טקסט על צבע או על תמונה / סרטון שלכם</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>עובד בלי אינטרנט · מק, ווינדוס ודפדפן</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>שיתוף מסך לטאבלט או לטלוויזיה (חשבון חינמי)</td><td><span class="n" style="font-size:.85em">מסך 1</span></td><td class="hl"><span class="n" style="font-size:.85em">בלי הגבלה</span></td><td><span class="n" style="font-size:.85em">בלי הגבלה</span></td></tr><tr class="grp"><td colspan="4">Studio — המסך שלכם, לא שלנו</td></tr><tr><td>בלי “Powered by Cuey” על מסך האירוע</td><td><span class="n">—</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>YouTube ו-Vimeo על מסך האירוע</td><td><span class="n" style="font-size:.85em">תצוגה</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>ספריית רקעים — תמונות ולופים נושמים</td><td><span class="n" style="font-size:.85em">תצוגה</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>Slide show — רץ ומתגלגל לבד</td><td><span class="n" style="font-size:.85em">תצוגה</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>ייצוא MP4 — כל ההופעה כסרטון אחד</td><td><span class="n">—</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>פאוורפוינט ← קיו לכל שקופית (בתוכנה למחשב)</td><td>רק הסרטונים</td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr class="grp"><td colspan="4">Pro</td></tr><tr><td>AI Builder — מתוכנייה לשקופיות מוכנות בעיצוב שלה, בלחיצה</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="y" style="font-size:.85em">עד 100 בחודש</span></td></tr><tr><td>עיצוב ב-Canva מתוך Cuey</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="n" style="font-size:.85em">בקרוב</span></td></tr><tr><td>עובדים יחד על הופעה</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="n" style="font-size:.85em">בקרוב</span></td></tr></tbody></table></details>
+    <details class="cmp"><summary>השוואה מלאה בין התוכניות</summary><table class="ptable"><thead><tr><th></th><th>חינם<small>₪0</small></th><th class="hl">Studio<small>₪19 לחודש</small></th><th>Pro<small>₪59 לחודש</small></th></tr></thead><tbody><tr class="grp"><td colspan="4">להריץ אירוע שלם — בחינם</td></tr><tr><td>רשימת קיוז בלי הגבלה — סרטונים, תמונות, מוזיקה, PDF ופאוורפוינט</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>GO, קאט ודיזולב, לופ, חיתוך, מוזיקה מתחת לשקופיות</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>יצירת קיו — טקסט על צבע או על תמונה / סרטון שלכם</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>עובד בלי אינטרנט · מק, ווינדוס ודפדפן</td><td><span class="y">✓</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>שיתוף מסך לטאבלט או לטלוויזיה (חשבון חינמי)</td><td><span class="n" style="font-size:.85em">מסך 1</span></td><td class="hl"><span class="n" style="font-size:.85em">בלי הגבלה</span></td><td><span class="n" style="font-size:.85em">בלי הגבלה</span></td></tr><tr class="grp"><td colspan="4">Studio — המסך שלכם, לא שלנו</td></tr><tr><td>בלי <bdi>“Powered by Cuey”</bdi> על מסך האירוע</td><td><span class="n">—</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>YouTube ו-Vimeo על מסך האירוע</td><td><span class="n" style="font-size:.85em">תצוגה</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>ספריית רקעים — תמונות ולופים נושמים</td><td><span class="n" style="font-size:.85em">תצוגה</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>Slide show — רץ ומתגלגל לבד</td><td><span class="n" style="font-size:.85em">תצוגה</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>ייצוא MP4 — כל ההופעה כסרטון אחד</td><td><span class="n">—</span></td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr><td>פאוורפוינט ← קיו לכל שקופית (בתוכנה למחשב)</td><td>רק הסרטונים</td><td class="hl"><span class="y">✓</span></td><td><span class="y">✓</span></td></tr><tr class="grp"><td colspan="4">Pro</td></tr><tr><td>AI Builder — מתוכנייה לשקופיות מוכנות בעיצוב שלה, בלחיצה</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="y" style="font-size:.85em">עד 100 בחודש</span></td></tr><tr><td>עיצוב ב-Canva מתוך Cuey</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="n" style="font-size:.85em">בקרוב</span></td></tr><tr><td>עובדים יחד על הופעה</td><td><span class="n">—</span></td><td class="hl"><span class="n">—</span></td><td><span class="n" style="font-size:.85em">בקרוב</span></td></tr></tbody></table></details>
     <p class="pnote"><b>בזמן הבטא Studio פתוח בחינם, ו-AI Builder פתוח לכולם</b> — רק מתחברים בתוך Cuey. מנוי מתבטל בלחיצה מתוך החשבון, ולא נעצר באמצע אירוע. המחירים כוללים מע"מ.</p>
   </section>
   <section id="download">
@@ -408,7 +416,7 @@ details.cmp .ptable{margin-top:12px}
 
   <footer>
     Cuey · לא צריך להיות טכנאי כדי להיראות מקצועי.
-    <div class="legal"><a href="privacy.html">מדיניות פרטיות</a> · <a href="terms.html">תנאי שימוש</a> · privacy@cuey.live</div>
+    <div class="legal"><a href="privacy.html">מדיניות פרטיות</a> · <a href="terms.html">תנאי שימוש</a> · <bdi class="em">privacy@cuey.live</bdi></div>
   </footer>
 </div>
 
@@ -453,7 +461,7 @@ details.cmp .ptable{margin-top:12px}
   // phones: Cuey runs on a computer — send yourself the link (WhatsApp / email); phone app coming soon
   const dl='https://cuey.live/he/',msg='Cuey למחשב — לפתוח במחשב שמחובר למסך: ';
   document.querySelectorAll('[data-wa]').forEach(a=>{a.href='https://wa.me/?text='+encodeURIComponent(msg+dl);a.target='_blank';a.rel='noopener'});
-  document.querySelectorAll('[data-mail]').forEach(a=>{a.href='mailto:?subject='+encodeURIComponent('Cuey למחשב')+'&body='+encodeURIComponent(msg+dl)});
+  document.querySelectorAll('[data-mail]').forEach(a=>{const mt='mailto:?subject='+encodeURIComponent('Cuey למחשב')+'&body='+encodeURIComponent(msg+dl);a.href=mt;a.addEventListener('click',e=>{e.preventDefault();cueyMailForm(a,true,mt,r=>{try{t('site/email-link-'+r,1)}catch(x){}})})});
   if(mobile)document.querySelectorAll('a[href*="app/"]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();document.getElementById('mobSheet').classList.add('open');document.getElementById('scrim').classList.add('on')}));
   // demo video
   const v=document.getElementById('demo'),box=document.getElementById('vid');
@@ -467,8 +475,12 @@ details.cmp .ptable{margin-top:12px}
   (async()=>{const b=document.getElementById('dlMain'),os=document.getElementById('dlOs');if(!b)return;
     if(/Win/i.test(ua)){b.href=document.getElementById('dlWin').href;os.textContent='Windows';return}
     if(isMac){let intel=false;try{const h=navigator.userAgentData&&await navigator.userAgentData.getHighEntropyValues(['architecture']);if(h&&h.architecture)intel=h.architecture==='x86';else{const g=document.createElement('canvas').getContext('webgl'),d=g&&g.getExtension('WEBGL_debug_renderer_info'),r=d?g.getParameter(d.UNMASKED_RENDERER_WEBGL):'';intel=/Intel/i.test(r)&&!/Apple/i.test(r)}}catch(e){}
+      /* Safari doesn't tell the chip: the universal Mac file works on every Mac */
+      const known=!!(navigator.userAgentData&&navigator.userAgentData.platform);
+      if(!known){b.href='https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-universal.dmg';os.textContent='Mac';return}
       b.href=document.getElementById(intel?'dlIntel':'dlArm').href;os.textContent=intel?'Mac · Intel':'Mac · Apple Silicon';return}
-    os.textContent='Mac · Windows'})();
+    /* Linux, ChromeOS and anything else: no desktop app — open Cuey in the browser instead of downloading a Mac file */
+    b.removeAttribute('download');b.href='../app/?lang=he';b.textContent='▶ לפתוח את Cuey בדפדפן';b.title='אין גרסת מחשב למערכת הזו — Cuey ייפתח בדפדפן'})();
 })();
 </script>
 <script>
@@ -531,6 +543,28 @@ var x0=null;c.addEventListener('touchstart',function(e){x0=e.touches[0].clientX}
 c.addEventListener('touchend',function(e){if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>40){hold();show(i+(dx<0?1:-1))}},{passive:true});
 if('IntersectionObserver' in window)new IntersectionObserver(function(es){vis=es[0].isIntersecting},{threshold:.4}).observe(c);else vis=true;
 show(0);setInterval(function(){if(vis&&!document.hidden&&Date.now()-held>20000)show(i+1)},5500)})();
+</script>
+<script>
+/* "Email me the link": Cuey sends the email itself (noreply@cuey.live, Supabase function send-link).
+   If the service isn't available, falls back to the visitor's own mail app (the old way) — nothing breaks. */
+function cueyMailForm(a,he,fallback,done){
+  const L=he?{ph:'המייל שלך',send:'שלח',wait:'שולח…',ok:'נשלח! בדקו את תיבת המייל — ההודעה מ-noreply@cuey.live',lim:'כבר שלחנו לכתובת הזו — בדקו את תיבת המייל (וגם בספאם)',bad:'בדקו את כתובת המייל'}
+              :{ph:'Your email',send:'Send',wait:'Sending…',ok:'Sent! Check your inbox — it comes from noreply@cuey.live',lim:'We already sent it to this address — check your inbox (and spam)',bad:'Check the email address'};
+  let f=a.nextElementSibling;if(f&&f.classList.contains('mf')){f.querySelector('input').focus();return}
+  f=document.createElement('form');f.className='mf';f.noValidate=true;
+  f.innerHTML='<input type="email" name="email" required autocomplete="email" inputmode="email" dir="ltr"><input name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true"><button type="submit"></button><p class="mfs" aria-live="polite"></p>';
+  const inp=f.querySelector('[name=email]'),b=f.querySelector('button'),st=f.querySelector('.mfs');
+  inp.placeholder=L.ph;inp.setAttribute('aria-label',L.ph);b.textContent=L.send;b.className=a.className.replace(/\bsec\b/,'').trim()||'btn';
+  a.after(f);inp.focus();
+  f.onsubmit=async e=>{e.preventDefault();const em=inp.value.trim();
+    if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(em)){st.textContent=L.bad;inp.focus();return}
+    b.disabled=true;st.textContent=L.wait;
+    try{const r=await fetch('https://lgemvnntlgasxhrpsdww.supabase.co/functions/v1/send-link',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:em,lang:he?'he':'en',website:f.website.value})});
+      if(r.ok){st.textContent=L.ok;inp.disabled=true;done&&done('sent');return}
+      if(r.status===429){st.textContent=L.lim;done&&done('limit');return}
+      if(r.status===400){st.textContent=L.bad;b.disabled=false;return}
+      throw new Error(String(r.status))}
+    catch(x){st.textContent='';b.disabled=false;done&&done('fallback');location.href=fallback}}}
 </script>
 </body>
 </html>

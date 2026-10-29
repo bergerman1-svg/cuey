@@ -90,6 +90,7 @@ async def main():
         ok('same code is reused if sharing again in this session', (await app.evaluate("(startShare(),shCode)")) == code)
         await app.evaluate("stopShare()")
         ok('no page errors (app)', not errs, errs[:3]); ok('no page errors (screen)', not serrs, serrs[:3])
-        await b.close()
-    print(f'\n{sum(res)}/{len(res)} passed')
+        print(f'\n{sum(res)}/{len(res)} passed', flush=True)
+        try: await b.close()  # Playwright's WebSocket-route stand-in can throw on close (KeyError 'code'); the result is already printed
+        except Exception: pass
 asyncio.run(main())
