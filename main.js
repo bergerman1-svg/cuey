@@ -187,6 +187,19 @@ ipcMain.handle('google-signin', async (_e, o) => {
   });
 });
 ipcMain.handle('google-cancel', () => { if (gWait) gWait.cancel(); return true; });
+// "Present on event screen": how many screens, extend / put back (Windows has a built-in tool for it), Display settings
+ipcMain.handle('displays', () => ({ count: screen.getAllDisplays().length, platform: process.platform }));
+ipcMain.handle('extend-displays', async (_e, mode) => {
+  if (process.platform !== 'win32') return { ok: false, count: screen.getAllDisplays().length };
+  const exe = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'DisplaySwitch.exe');
+  try { require('child_process').spawn(exe, [mode === 'clone' ? '/clone' : '/extend'], { detached: true, stdio: 'ignore', windowsHide: true }).unref(); } catch (_) { return { ok: false, count: screen.getAllDisplays().length }; }
+  return await new Promise((resolve) => {
+    let done = false;
+    const fin = () => { if (done) return; done = true; screen.removeListener('display-added', fin); screen.removeListener('display-removed', fin); setTimeout(() => resolve({ ok: true, count: screen.getAllDisplays().length }), 800); };
+    screen.on('display-added', fin); screen.on('display-removed', fin); setTimeout(fin, 6000);
+  });
+});
+ipcMain.handle('open-display-settings', () => { shell.openExternal(process.platform === 'darwin' ? 'x-apple.systempreferences:com.apple.Displays-Settings.extension' : 'ms-settings:display'); return true; });
 // Add from Canva: Canva returns to cuey.live/app/canva-callback.html, which forwards {code, state} here (state ends in .<port>).
 // The page in this window then checks the state and finishes the link with its own Cuey session — so a Canva approval link
 // started from someone else's Cuey account can never land in this one.
@@ -248,7 +261,7 @@ function createWindow() {
       overrideBrowserWindowOptions: {
         x: b.x, y: b.y, width: ext ? b.width : 960, height: ext ? b.height : 540,
         frame: !ext, fullscreen: !!ext, alwaysOnTop: !!ext, backgroundColor: '#000000',
-        title: 'Cuey — Output', autoHideMenuBar: true,
+        title: 'Cuey — Event screen', autoHideMenuBar: true,
         webPreferences: { contextIsolation: true, nodeIntegration: false, backgroundThrottling: false, autoplayPolicy: 'no-user-gesture-required' }
       }
     };
@@ -320,10 +333,10 @@ const menuTemplate = () => [
         { label: 'PDF / PowerPoint…', click: send('add-pdf') }, { label: 'Create Cue…', click: send('add-card') },
         { label: 'Free Music…', click: send('add-music') }, { label: 'AI Builder…', click: send('add-ai') } ] }
   ]},
-  { label: 'Output', submenu: [
-      { label: 'Output Window', accelerator: 'CmdOrCtrl+Shift+O', click: () => win && win.webContents.send('menu', 'output') },
-      { label: 'Close Output', click: send('closeout') },
-      { label: 'Share Output Screen…', click: () => win && win.webContents.send('menu', 'share') },
+  { label: 'Event Screen', submenu: [
+      { label: 'Present on Event Screen', accelerator: 'CmdOrCtrl+Shift+O', click: () => win && win.webContents.send('menu', 'output') },
+      { label: 'Close Event Screen…', click: send('closeout') },
+      { label: 'Share Event Screen…', click: () => win && win.webContents.send('menu', 'share') },
       { type: 'separator' },
       { label: 'Black', click: () => win && win.webContents.send('menu', 'black') },
       { role: 'togglefullscreen' }

@@ -21,6 +21,9 @@ contextBridge.exposeInMainWorld('cueyNative', {
   googleSignIn: (lang) => ipcRenderer.invoke('google-signin', { lang }),
   googleCancel: () => ipcRenderer.invoke('google-cancel'),
   canvaListen: () => ipcRenderer.invoke('canva-listen'),
+  displays: () => ipcRenderer.invoke('displays'),
+  extendDisplays: (mode) => ipcRenderer.invoke('extend-displays', mode),
+  openDisplaySettings: () => ipcRenderer.invoke('open-display-settings'),
   onCanvaCode: (cb) => ipcRenderer.on('canva-code', (_e, d) => cb(d)),
   setRecent: (names) => ipcRenderer.send('recent', names)
 });

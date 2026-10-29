@@ -545,3 +545,12 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - `#updBar` at the top: browser app compares with `cuey.live/app/version.json` (written by the Website workflow from package.json) → Refresh (asks to save unsaved changes first). Desktop compares with the latest GitHub release (published only after the installers are built) → opens the download page.
 - Never during a show: hidden while Output is open, the screen is shared, media plays, or exporting; comes back after (checked every minute). "Later" = not again for that version. First check 20 s after start, then on tab focus (5 min throttle). Not for a cuey.html opened from disk.
 - Test: `tests/update_e2e.py` (13) in the release gate.
+
+### v0.49.0 (30.10) — "Present on event screen" (Avi)
+- One toggle `#openOut.evs`: off = lime "▶ Present on event screen" / "הצג על מסך האירוע" with a two-screens SVG icon; live = red, blinking dot + pulsing signal arc, "Event screen live" / "מסך האירוע פעיל". `#st` is only shown during MP4 export (REC timer). The small ✕ (`#closeOut`) is always hidden.
+- Pressing it while live (also menu "Close" and desktop menu closeout) → `askCloseOut()`: "Close the event screen? The audience will see an empty screen." Cancel is the default (Escape / click outside = Cancel).
+- Wording: OUTPUT → "event screen" / "מסך האירוע" everywhere in the UI (PROGRAM / NEXT stay). Desktop menu "Event Screen". Output window title "Cuey — Event screen".
+- Desktop extend (`extendFirst()` before opening): only one display → "Extend the screens?". Windows: `extend-displays` IPC runs `%SystemRoot%\System32\DisplaySwitch.exe /extend`, waits for display-added (the existing handler moves the event-screen window there, full screen). Mac: no public switch → opens Display settings (`x-apple.systempreferences:com.apple.Displays-Settings.extension`) with the steps. "Not now" opens on this screen. Asked once per session. After closing, if Cuey extended: offer to put back (`/clone`).
+- Browser unchanged (Window Management API; guide when one screen) — browsers can't change display settings.
+- NOT yet tested on real hardware (Windows with a projector, Mac mirrored) — Avi to test.
+- Test: `tests/evs_e2e.py` (26); browser_suite updated (ask-before-close).
