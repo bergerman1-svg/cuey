@@ -523,3 +523,6 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 
 ### v0.47.2 (29.10)
 - Canva: designs with no thumbnail in the list (new / untitled) get a preview — function action `thumb`: Canva get-design thumbnail, else a 480px JPG export of page 1 (~4–5 s). Two at a time, remembered per design+last change for the visit. Untitled designs show "Untitled design".
+
+### v0.47.3 (29.10)
+- Canva tile + dialog title use the official Canva logo (supplied by Avi), embedded as a 96px PNG data URI (works offline / desktop).
