@@ -24,13 +24,14 @@ async def setup(b, lang, state):
         if a == 'start': return await js({'url': 'https://www.canva.com/api/oauth/authorize?x=1'})
         if a == 'list':
             if state.get('list401'): return await js({'error': 'not_connected'}, 401)
-            return await js({'items': [{'id': 'DAF1', 'title': 'Opening slides', 'pages': 2, 'thumb': 'https://document-export.canva.com/t1.png'}, {'id': 'DAF2', 'title': 'Promo clip', 'pages': 1, 'thumb': ''}], 'continuation': None})
+            return await js({'items': [{'id': 'DAF1', 'title': 'Opening slides', 'pages': 2, 'thumb': 'https://document-export.canva.com/t1.png'}, {'id': 'DAF2', 'title': 'Promo clip', 'pages': 1, 'thumb': ''}, {'id': 'DAF3', 'title': '', 'pages': 8, 'thumb': ''}], 'continuation': None})
         if a == 'export':
             if body.get('design_id') == 'DAF2' and state.get('lic'): return await js({'job': {'id': 'J9', 'status': 'failed', 'error': {'code': 'license_required'}}})
             state['kind'] = body.get('kind'); return await js({'job': {'id': 'J1', 'status': 'in_progress'}})
         if a == 'job':
             if state['kind'] == 'mp4': return await js({'job': {'id': 'J1', 'status': 'success', 'urls': ['https://export-download.canva.com/v.mp4']}})
             return await js({'job': {'id': 'J1', 'status': 'success', 'urls': ['https://export-download.canva.com/p1.png', 'https://export-download.canva.com/p2.png']}})
+        if a == 'thumb': state['thumbs'] = state.get('thumbs', 0) + 1; return await js({'url': 'https://document-export.canva.com/page1.jpg'})
         if a == 'disconnect': state['connected'] = False; return await js({'ok': True})
         return await js({'error': 'action'}, 400)
     await ctx.route(re.compile(r'.*/functions/v1/canva$'), fn)
@@ -73,7 +74,11 @@ async def main():
             ok(L + 'Connect opens Canva in its own window', 'canva.com/api/oauth/authorize' in popup.url, popup.url)
             ok(L + '…and says to finish there', await pg.evaluate("!$('#cvWait').hidden"))
             st['connected'] = True; await popup.close(); await pg.wait_for_timeout(3200)
-            ok(L + 'after connecting, Cuey continues by itself to the designs', await pg.evaluate("!$('#cvPick').hidden&&document.querySelectorAll('#cvGrid .cvd').length===2"))
+            ok(L + 'after connecting, Cuey continues by itself to the designs', await pg.evaluate("!$('#cvPick').hidden&&document.querySelectorAll('#cvGrid .cvd').length===3"))
+            await pg.wait_for_timeout(600)
+            ok(L + 'designs Canva sent no preview for get one (page 1)', await pg.evaluate("document.querySelectorAll('#cvGrid .cvd img').length===3&&!document.querySelector('#cvGrid .cvd i')"))
+            un = await pg.evaluate("document.querySelectorAll('#cvGrid .cvd b')[2].textContent")
+            ok(L + 'an untitled design is called "Untitled design", not "Canva"', un in ('Untitled design', 'עיצוב ללא שם'), un)
             ok(L + 'nothing chosen yet: the bring-in buttons wait', await pg.evaluate("$('#cvImg').disabled&&$('#cvVid').disabled"))
             # slides
             n0 = await pg.evaluate("items.length")

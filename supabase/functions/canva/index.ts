@@ -7,6 +7,7 @@
 //   status   (signed in)  → {connected}
 //   list     (signed in)  → {items, continuation}   your designs (title, thumbnail, pages)
 //   export   (signed in)  → {job}          {design_id, kind:'png'|'mp4'}
+//   thumb    (signed in)  → {url}          a preview picture when Canva's list has none
 //   job      (signed in)  → {job}          {id} → status + download urls (one per page)
 //   file     (signed in)  → the file bytes {url} (only export-download.canva.com), for browsers that can't fetch it directly
 //   disconnect (signed in)→ {ok}           revoke at Canva + forget the tokens
@@ -111,6 +112,23 @@ Deno.serve(async (req) => {
     const format = b?.kind === "mp4" ? { type: "mp4", quality: "horizontal_1080p" } : { type: "png", width: 1920 };
     const r = await canva(uid, "/exports", { method: "POST", body: JSON.stringify({ design_id: id, format }) });
     return json(r.status === 200 ? { job: (r.body as any).job } : r.body, r.status);
+  }
+  if (action === "thumb") { // Canva sends no thumbnail for some designs (new / untitled): Canva's own preview, else a small picture of page 1
+    const id = String(b?.design_id || "");
+    if (!/^[A-Za-z0-9_-]{4,40}$/.test(id)) return json({ error: "bad_request" }, 400);
+    const g = await canva(uid, "/designs/" + id);
+    const t0 = (g.body as any)?.design?.thumbnail?.url;
+    if (g.status === 200 && t0) return json({ url: t0 });
+    if (g.status === 401) return json(g.body, 401);
+    let r = await canva(uid, "/exports", { method: "POST", body: JSON.stringify({ design_id: id, format: { type: "jpg", quality: 80, width: 480, pages: [1] } }) });
+    let job = (r.body as any)?.job;
+    const start = Date.now();
+    while (job && job.status === "in_progress" && Date.now() - start < 25000) {
+      await new Promise((z) => setTimeout(z, 1200));
+      r = await canva(uid, "/exports/" + job.id); job = (r.body as any)?.job;
+    }
+    const url = job?.status === "success" && job.urls?.[0];
+    return url ? json({ url }) : json({ error: "no_thumb" }, 404);
   }
   if (action === "job") {
     const id = String(b?.id || "");

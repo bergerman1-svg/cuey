@@ -520,3 +520,6 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 
 ### v0.47.1 (29.10)
 - Canva tile also turns on for our own accounts (CV_TEAM: bergerman1@gmail.com, hello@cuey.live) when signed in — works in the desktop app, which has no address bar for ?canva=1. Everyone else: unchanged ("SOON").
+
+### v0.47.2 (29.10)
+- Canva: designs with no thumbnail in the list (new / untitled) get a preview — function action `thumb`: Canva get-design thumbnail, else a 480px JPG export of page 1 (~4–5 s). Two at a time, remembered per design+last change for the visit. Untitled designs show "Untitled design".
