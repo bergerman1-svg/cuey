@@ -501,3 +501,8 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - Test `tests/fade_e2e.py` rewritten: 50 checks (fade, rows, edit window, audio IN/OUT, PowerPoint popup).
 - v0.46.1: a new music cue comes in with a **cut** (Avi: whoever adds a music cue wants it now); music rows don't show a transition tag. Release gate: a suite that crashes before reporting (Playwright WebSocket stand-in bug) is run once more; a FAIL is never retried.
 - v0.46.2: **Fade out is for sound files only** (Avi): the button and the Edit "fade-out time" appear only on music / audio cues — not on videos, YouTube / Vimeo or slides with music. **FREEZE works on a Create cue over a moving / breathing loop without music** (it had no timeline, so Freeze did nothing): it pauses and restarts the loop. Test `tests/freeze_e2e.py` (in the gate).
+
+### v0.46.3 (29.10)
+- **Replay the finished cue:** `cueDone` is set when the live cue ends (`onEnded`). If it is a video / music cue and it finished, GO (when there is no next cue) and Play run it again from IN (`replayable()`, `show(cur,true)`). A cue still playing is never restarted; a still picture stays.
+- **Chrome picker blocked folders:** `showOpenFilePicker` refuses files in protected folders (~/Library, app folders) and reports a plain AbortError. After any cancel in `pickFiles()`, `#pkHelp` shows for 9 s with "choose another way", which opens the classic `<input type=file>` (no folder limits).
+- Test: `tests/replay_e2e.py` (25 checks) in the release gate.
