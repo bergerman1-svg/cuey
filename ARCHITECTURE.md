@@ -526,3 +526,11 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 
 ### v0.47.3 (29.10)
 - Canva tile + dialog title use the official Canva logo (supplied by Avi), embedded as a 96px PNG data URI (works offline / desktop).
+
+### v0.47.4 (29.10) — Canva connect: OAuth state bound to the Cuey user (security)
+- Found while preparing Canva's security review: `finish` was public, so an approval link started from one Cuey account could attach another person's Canva to it. Now:
+  - `finish` requires the Cuey session and the server checks `canva_auth.user_id === caller` (403 `wrong_user`).
+  - The callback page never calls the server; it hands {code,state} back to the Cuey that started — browser: BroadcastChannel `cuey-canva` + localStorage `cuey.canva.cb` (+ opener postMessage); desktop: state ends in `.<port>` → `http://127.0.0.1:<port>/canva` (main.js `canva-listen`, preload `canvaListen` / `onCanvaCode`).
+  - The app accepts only the state it started (`cv.state`), then calls `finish`; replies `done` so the callback page shows ✓.
+  - `file` proxy limited to export-download / document-export.canva.com.
+- Tests: canva_e2e 49 (foreign state ignored, own state finished, callback forwards to 127.0.0.1, never calls the server, removes the code from the address bar, "Not allowed").

@@ -20,5 +20,7 @@ contextBridge.exposeInMainWorld('cueyNative', {
   // Continue with Google: opens the browser, resolves with the session (or {error})
   googleSignIn: (lang) => ipcRenderer.invoke('google-signin', { lang }),
   googleCancel: () => ipcRenderer.invoke('google-cancel'),
+  canvaListen: () => ipcRenderer.invoke('canva-listen'),
+  onCanvaCode: (cb) => ipcRenderer.on('canva-code', (_e, d) => cb(d)),
   setRecent: (names) => ipcRenderer.send('recent', names)
 });

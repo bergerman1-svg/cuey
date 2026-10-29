@@ -3,13 +3,14 @@
 // The client secret (CANVA_CLIENT_SECRET) and the user's Canva tokens stay here on the server; the browser never sees them.
 // Actions (POST JSON {action, ...}):
 //   start    (signed in)  → {url}          new PKCE verifier + state, saved server-side; the app opens the url
-//   finish   (public)     → {ok}           the callback page sends {code, state}; state ties it to the user who started
+//   finish   (signed in)  → {ok}           {code, state} — only the Cuey user who started this state can finish it
+//                                         (so an approval link started from someone else's account can't attach your Canva)
 //   status   (signed in)  → {connected}
 //   list     (signed in)  → {items, continuation}   your designs (title, thumbnail, pages)
 //   export   (signed in)  → {job}          {design_id, kind:'png'|'mp4'}
 //   thumb    (signed in)  → {url}          a preview picture when Canva's list has none
 //   job      (signed in)  → {job}          {id} → status + download urls (one per page)
-//   file     (signed in)  → the file bytes {url} (only export-download.canva.com), for browsers that can't fetch it directly
+//   file     (signed in)  → the file bytes {url} (only Canva's export / preview hosts), for browsers that can't fetch it directly
 //   disconnect (signed in)→ {ok}           revoke at Canva + forget the tokens
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
@@ -71,22 +72,24 @@ Deno.serve(async (req) => {
   let b: any; try { b = await req.json(); } catch { return json({ error: "bad_json" }, 400); }
   const action = String(b?.action || "");
 
-  if (action === "finish") { // from cuey.live/app/canva-callback.html — no Cuey session there (desktop users finish in their browser)
-    const state = String(b?.state || ""), code = String(b?.code || "");
-    if (!/^[A-Za-z0-9_-]{20,80}$/.test(state) || !code || code.length > 2000) return json({ error: "bad_request" }, 400);
-    const { data: row } = await db.from("canva_auth").delete().eq("state", state).select().maybeSingle(); // one use only
-    if (!row || Date.now() - new Date(row.created_at).getTime() > 15 * 60 * 1000) return json({ error: "expired" }, 410);
-    const j = await tokenCall({ grant_type: "authorization_code", code, code_verifier: row.verifier, redirect_uri: REDIRECT });
-    if (!j) return json({ error: "exchange" }, 502);
-    await keep(row.user_id, j);
-    return json({ ok: true });
-  }
-
   const uid = await userOf(req);
   if (!uid) return json({ error: "sign_in" }, 401);
 
+  if (action === "finish") { // the Cuey app (browser tab or desktop) that started the link sends back what Canva returned
+    const state = String(b?.state || ""), code = String(b?.code || "");
+    if (!/^[A-Za-z0-9_-]{20,80}(\.\d{4,5})?$/.test(state) || !code || code.length > 2000) return json({ error: "bad_request" }, 400);
+    const { data: row } = await db.from("canva_auth").delete().eq("state", state).select().maybeSingle(); // one use only
+    if (!row || Date.now() - new Date(row.created_at).getTime() > 15 * 60 * 1000) return json({ error: "expired" }, 410);
+    if (row.user_id !== uid) return json({ error: "wrong_user" }, 403);
+    const j = await tokenCall({ grant_type: "authorization_code", code, code_verifier: row.verifier, redirect_uri: REDIRECT });
+    if (!j) return json({ error: "exchange" }, 502);
+    await keep(uid, j);
+    return json({ ok: true });
+  }
+
   if (action === "start") {
-    const verifier = rnd(48), state = rnd(24);
+    const port = Number(b?.port) || 0; // desktop app: the callback page forwards Canva's answer to 127.0.0.1:<port>
+    const verifier = rnd(48), state = rnd(24) + (port >= 1024 && port <= 65535 ? "." + port : "");
     const ch = b64url(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier))));
     const { error } = await db.from("canva_auth").insert({ state, user_id: uid, verifier });
     if (error) return json({ error: "db" }, 500);
@@ -138,7 +141,7 @@ Deno.serve(async (req) => {
   }
   if (action === "file") {
     let u: URL; try { u = new URL(String(b?.url || "")); } catch { return json({ error: "bad_request" }, 400); }
-    if (u.protocol !== "https:" || !/(^|\.)canva\.com$/.test(u.hostname)) return json({ error: "bad_request" }, 400);
+    if (u.protocol !== "https:" || !/^(export-download|document-export)\.canva\.com$/.test(u.hostname)) return json({ error: "bad_request" }, 400);
     const r = await fetch(u.toString());
     if (!r.ok || !r.body) return json({ error: "download" }, 502);
     return new Response(r.body, { headers: { ...cors, "Content-Type": r.headers.get("Content-Type") || "application/octet-stream" } });

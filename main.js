@@ -187,6 +187,28 @@ ipcMain.handle('google-signin', async (_e, o) => {
   });
 });
 ipcMain.handle('google-cancel', () => { if (gWait) gWait.cancel(); return true; });
+// Add from Canva: Canva returns to cuey.live/app/canva-callback.html, which forwards {code, state} here (state ends in .<port>).
+// The page in this window then checks the state and finishes the link with its own Cuey session — so a Canva approval link
+// started from someone else's Cuey account can never land in this one.
+let cvSrv = null;
+ipcMain.handle('canva-listen', async () => {
+  if (cvSrv) { try { cvSrv.close(); } catch (_) {} cvSrv = null; }
+  return await new Promise((resolve) => {
+    const srv = http.createServer((req, res) => {
+      const u = new URL(req.url, 'http://127.0.0.1');
+      if (req.method !== 'GET' || u.pathname !== '/canva') { res.writeHead(404); return res.end(); }
+      const code = (u.searchParams.get('code') || '').slice(0, 2000), state = (u.searchParams.get('state') || '').slice(0, 100);
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' });
+      res.end(`<!doctype html><meta charset="utf-8"><title>Cuey</title><body style="margin:0;background:#0A0A0C;color:#F2F2F5;font:18px/1.5 system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;text-align:center"><div><div style="font:800 34px system-ui;color:#C8FF00">Cuey</div><p>Back to Cuey — you can close this tab.<br><span dir="rtl">חוזרים ל-Cuey — אפשר לסגור את הלשונית.</span></p></div><script>history.replaceState(null,'','/canva')</script></body>`);
+      if (code && state && win) { win.webContents.send('canva-code', { code, state }); if (win.isMinimized()) win.restore(); win.show(); win.focus(); }
+      setTimeout(() => { try { srv.close(); } catch (_) {} if (cvSrv === srv) cvSrv = null; }, 1500);
+    });
+    cvSrv = srv;
+    setTimeout(() => { try { srv.close(); } catch (_) {} if (cvSrv === srv) cvSrv = null; }, 10 * 60 * 1000);
+    srv.on('error', () => resolve(0));
+    srv.listen(0, '127.0.0.1', () => resolve(srv.address().port));
+  });
+});
 
 let win = null;
 

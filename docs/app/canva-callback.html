@@ -28,24 +28,32 @@ p{color:var(--mut);margin:0;font-size:15px}
 </div></main>
 <script>
 /* Canva sends people here after they allow Cuey to read their designs (Add from Canva).
-   This page hands the one-time code to Cuey's server (Supabase function canva, action finish), which keeps the Canva link
-   for the Cuey account that started it. The tokens never come to this page. Works for the browser app (popup) and the
-   desktop app (opened in the system browser): Cuey itself notices the link and continues. */
+   This page does NOT link anything by itself: it hands Canva's one-time answer {code, state} back to the Cuey that started,
+   and that Cuey checks the state is the one it made and finishes with its own signed-in session (server checks it's the same
+   user). So a Canva approval link started from someone else's Cuey account can never attach your Canva to theirs.
+   - Desktop app: the state ends in .<port> → forward to the app's local listener on 127.0.0.1.
+   - Browser app: BroadcastChannel / localStorage event to the Cuey tab on cuey.live (Canva's pages cut window.opener). */
 (function(){
 var HE;try{HE=(localStorage.getItem('cuey.lang')||((navigator.language||'').indexOf('he')===0?'he':'en'))==='he'}catch(e){HE=(navigator.language||'').indexOf('he')===0}
-var T=HE?{wait:'מחבר את Canva ל־Cuey…',ok:'Canva מחובר!',okp:'אפשר לסגור את החלון ולחזור ל־Cuey — העיצובים שלכם כבר שם.',no:'החיבור לא הצליח',nop:'חזרו ל־Cuey ולחצו שוב על "הוספה מקנבה".',deny:'לא אושר',denyp:'Cuey לא קיבל גישה לעיצובים. אפשר לנסות שוב מתוך Cuey מתי שרוצים.'}
-             :{wait:'Connecting Canva to Cuey…',ok:'Canva is connected!',okp:'You can close this window and go back to Cuey — your designs are already there.',no:'That didn’t work',nop:'Go back to Cuey and press “Add from Canva” again.',deny:'Not allowed',denyp:'Cuey didn’t get access to your designs. You can try again from Cuey any time.'};
+var T=HE?{wait:'מחבר את Canva ל־Cuey…',ok:'Canva מחובר!',okp:'אפשר לסגור את החלון ולחזור ל־Cuey — העיצובים שלכם כבר שם.',no:'החיבור לא הצליח',nop:'חזרו ל־Cuey ולחצו שוב על "חיבור לקנבה". צריך שחלון Cuey יישאר פתוח בזמן החיבור.',deny:'לא אושר',denyp:'Cuey לא קיבל גישה לעיצובים. אפשר לנסות שוב מתוך Cuey מתי שרוצים.'}
+             :{wait:'Connecting Canva to Cuey…',ok:'Canva is connected!',okp:'You can close this window and go back to Cuey — your designs are already there.',no:'That didn’t work',nop:'Go back to Cuey and press “Connect Canva” again. Keep the Cuey window open while you connect.',deny:'Not allowed',denyp:'Cuey didn’t get access to your designs. You can try again from Cuey any time.'};
 document.documentElement.lang=HE?'he':'en';document.documentElement.dir=HE?'rtl':'ltr';
 function $(i){return document.getElementById(i)}
 function show(ic,h,p){$('ic').textContent=ic;$('h').textContent=h;$('p').textContent=p}
-var q=new URLSearchParams(location.search),code=q.get('code'),state=q.get('state');
+var q=new URLSearchParams(location.search),code=q.get('code')||'',state=q.get('state')||'';
 history.replaceState(null,'',location.pathname); // the code is single-use; keep it out of history
 if(q.get('error')){show('✋',T.deny,T.denyp);return}
-if(!code||!state){show('⚠️',T.no,T.nop);return}
+if(!code||!/^[A-Za-z0-9_-]{20,80}(\.\d{4,5})?$/.test(state)){show('⚠️',T.no,T.nop);return}
+var m=state.match(/\.(\d{4,5})$/);
+if(m){var port=+m[1];if(port>=1024&&port<=65535){location.replace('http://127.0.0.1:'+port+'/canva?'+new URLSearchParams({code:code,state:state}).toString());return}}
 show('…',T.wait,'');
-fetch('https://lgemvnntlgasxhrpsdww.supabase.co/functions/v1/canva',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'finish',code:code,state:state})})
- .then(function(r){if(!r.ok)throw 0;show('✓',T.ok,T.okp);try{if(window.opener){window.opener.postMessage({cueyCanva:'connected'},'*');setTimeout(function(){window.close()},1200)}}catch(e){}})
- .catch(function(){show('⚠️',T.no,T.nop)});
+var done=false,bc=null,msg={cueyCanva:'code',code:code,state:state};
+function ok(){if(done)return;done=true;show('✓',T.ok,T.okp);setTimeout(function(){try{window.close()}catch(e){}},1500)}
+try{bc=new BroadcastChannel('cuey-canva');bc.onmessage=function(e){if(e.data&&e.data.cueyCanva==='done'&&e.data.state===state)ok()};bc.postMessage(msg)}catch(e){}
+try{localStorage.setItem('cuey.canva.cb',JSON.stringify({code:code,state:state,t:Date.now()}));setTimeout(function(){try{localStorage.removeItem('cuey.canva.cb')}catch(e){}},4000)}catch(e){}
+try{if(window.opener)window.opener.postMessage(msg,'https://cuey.live')}catch(e){}
+window.addEventListener('storage',function(e){if(e.key==='cuey.canva.done'&&e.newValue===state)ok()});
+setTimeout(function(){if(!done)show('⚠️',T.no,T.nop)},20000);
 })();
 </script>
 </body>

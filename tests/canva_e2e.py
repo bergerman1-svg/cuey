@@ -21,7 +21,12 @@ async def setup(b, lang, state):
         H = {'Access-Control-Allow-Origin': '*'}
         def js(d, s=200): return route.fulfill(status=s, headers=H, content_type='application/json', body=json.dumps(d))
         if a == 'status': return await js({'connected': state['connected']})
-        if a == 'start': return await js({'url': 'https://www.canva.com/api/oauth/authorize?x=1'})
+        if a == 'start':
+            state['st'] = 'S' * 32 + (('.' + str(body['port'])) if body.get('port') else ''); return await js({'url': 'https://www.canva.com/api/oauth/authorize?x=1&state=' + state['st']})
+        if a == 'finish':
+            state['finished'] = body
+            if body.get('state') != state.get('st'): return await js({'error': 'expired'}, 410)
+            state['connected'] = True; return await js({'ok': True})
         if a == 'list':
             if state.get('list401'): return await js({'error': 'not_connected'}, 401)
             return await js({'items': [{'id': 'DAF1', 'title': 'Opening slides', 'pages': 2, 'thumb': 'https://document-export.canva.com/t1.png'}, {'id': 'DAF2', 'title': 'Promo clip', 'pages': 1, 'thumb': ''}, {'id': 'DAF3', 'title': '', 'pages': 8, 'thumb': ''}], 'continuation': None})
@@ -73,7 +78,13 @@ async def main():
             popup = await pop.value
             ok(L + 'Connect opens Canva in its own window', 'canva.com/api/oauth/authorize' in popup.url, popup.url)
             ok(L + '…and says to finish there', await pg.evaluate("!$('#cvWait').hidden"))
-            st['connected'] = True; await popup.close(); await pg.wait_for_timeout(3200)
+            await popup.close()
+            # a Canva answer with somebody else's state (an approval link started from another Cuey account) is ignored
+            await pg.evaluate("{const b=new BroadcastChannel('cuey-canva');b.postMessage({cueyCanva:'code',code:'EVIL',state:'X'.repeat(32)})}"); await pg.wait_for_timeout(500)
+            ok(L + 'security: an answer for a state Cuey did not start is ignored (never sent to the server)', 'finished' not in st and await pg.evaluate("!$('#cvConn').hidden"), st.get('finished'))
+            # the real answer (from canva-callback.html in another window) → Cuey finishes with its own session
+            await pg.evaluate("{const b=new BroadcastChannel('cuey-canva');b.postMessage({cueyCanva:'code',code:'GOOD',state:'" + 'S' * 32 + "'})}"); await pg.wait_for_timeout(800)
+            ok(L + 'security: Cuey finishes only its own state, signed in (server checks the same user)', st.get('finished', {}).get('code') == 'GOOD')
             ok(L + 'after connecting, Cuey continues by itself to the designs', await pg.evaluate("!$('#cvPick').hidden&&document.querySelectorAll('#cvGrid .cvd').length===3"))
             await pg.wait_for_timeout(600)
             ok(L + 'designs Canva sent no preview for get one (page 1)', await pg.evaluate("document.querySelectorAll('#cvGrid .cvd img').length===3&&!document.querySelector('#cvGrid .cvd i')"))
@@ -111,6 +122,22 @@ async def main():
             if lang == 'he': ok(L + 'Hebrew dialog is right-to-left', rtl == 'rtl', rtl)
             ok(L + 'no page errors', not errs, errs)
             await ctx.close()
+        # the callback page never links anything itself; desktop answers go to the app's local listener
+        ctx = await b.new_context(); hits = []; fn_calls = []
+        async def fnr(r): fn_calls.append(r.request.url); await r.abort()
+        async def lo(r): hits.append(r.request.url); await r.fulfill(status=200, body='ok')
+        await ctx.route(re.compile(r'.*/functions/v1/.*'), fnr)
+        await ctx.route(re.compile(r'^http://127\.0\.0\.1:5555/.*'), lo)
+        pg = await ctx.new_page()
+        await pg.goto('file://' + ROOT + '/docs/app/canva-callback.html?code=C1&state=' + 'A' * 32 + '.5555'); await pg.wait_for_timeout(800)
+        ok('callback (desktop): forwards to the app on 127.0.0.1 with code + state', hits and 'code=C1' in hits[0] and 'state=' + 'A' * 32 in hits[0], hits)
+        pg = await ctx.new_page()
+        await pg.goto('file://' + ROOT + '/docs/app/canva-callback.html?code=C2&state=' + 'B' * 32); await pg.wait_for_timeout(800)
+        ok('callback (browser): does not call the server by itself', not fn_calls, fn_calls)
+        ok('callback: the one-time code is removed from the address bar', 'code=' not in pg.url, pg.url)
+        await pg.goto('file://' + ROOT + '/docs/app/canva-callback.html?error=access_denied'); await pg.wait_for_timeout(300)
+        ok('callback: "Not allowed" when the person said no in Canva', await pg.evaluate("document.getElementById('ic').textContent==='✋'"))
+        await ctx.close()
         await b.close()
     print(f'\n{sum(res)}/{len(res)} passed')
 asyncio.run(main())
