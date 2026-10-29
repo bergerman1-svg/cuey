@@ -490,3 +490,12 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - Engine: every volume in the app goes through `vm() = master × fadeK²` (smooth, fader-like curve); `reVol()` re-applies the current cue's volumes; `show()` calls `fadeReset()` so GO always starts the next cue at full level. Works for music cues, video sound and music under slides, in the preview and the Output window.
 - Avi: no separate "music show" mode — music, videos and slides already share one list. Spotify can't be used (its terms forbid commercial playback / streaming integrations).
 - Test: `tests/fade_e2e.py` (30 checks, in the release gate).
+
+## 51. Music cues, round 2 (v0.46.0, 2026-10-29 — Avi tried it)
+- **Fade out only** (Avi: keep it simple): the row button says "Fade out / פייד אאוט"; one press takes the live cue's sound down over its fade time; a second press does nothing; GO starts the next cue at full level (`fadeOut()`; `fadeToggle()` kept internally).
+- **Always on the cue:** every cue with sound shows its volume slider + Fade out button in the same place (right end of the row), live or not; on a cue that isn't playing the button is dimmed and only explains ("works on the cue that is playing"). The row's second line no longer wraps: tags shrink with a soft fade, the sound controls keep a fixed position; long names are cut with "…".
+- **The button's colour turns orange slowly with the fade** (`--fk` drives `color-mix()` for text, border and the level bar).
+- **IN / OUT for music cues** (was video only): timeline I / O buttons and markers, Edit ▸ Trim; playback starts at IN, stops at OUT (or loops between them); the "✂ trim" tag shows on the row.
+- **Edit window for a music cue** shows only what matters for sound: loop; at the end "Wait for GO / Next cue" (no "hold last frame", no Black); volume; fade-out time; IN / OUT with music wording. No picture-transition section. Videos and pictures unchanged. Hebrew section headers without letter-spacing.
+- **PowerPoint in the browser** (by design: slides → cues is desktop + Studio): a clear popup "PowerPoint in the browser version" with the two ways (save as PDF and drop it in / download Cuey for desktop, with a button); any videos inside are still added. Old or other formats (.ppt, .pps, .key, .odp) are no longer silently ignored — a popup says to save as PDF (or .pptx on desktop). `.ppsx` is read like `.pptx`. The file pickers accept these formats so they can be chosen.
+- Test `tests/fade_e2e.py` rewritten: 50 checks (fade, rows, edit window, audio IN/OUT, PowerPoint popup).
