@@ -6,9 +6,12 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SUITES = ['feature_suite.py', 'browser_suite.py', 'share_e2e.py', 'save_media_e2e.py', 'desktop_google_e2e.py', 'site_outcomes.py', 'fade_e2e.py']
 bad = []
 for s in SUITES:
-    p = subprocess.run([sys.executable, os.path.join(HERE, s)], capture_output=True, text=True, timeout=1800)
-    out = p.stdout + p.stderr
-    m = re.findall(r'^(\d+)/(\d+) passed$', out, re.M)
+    for attempt in (1, 2):  # a suite that CRASHED before reporting (test-harness bug, e.g. Playwright's WebSocket stand-in) gets one more run; a FAIL never does
+        p = subprocess.run([sys.executable, os.path.join(HERE, s)], capture_output=True, text=True, timeout=1800)
+        out = p.stdout + p.stderr
+        m = re.findall(r'^(\d+)/(\d+) passed$', out, re.M)
+        if m or attempt == 2: break
+        print(f'     {s}: crashed before reporting — running it once more')
     fails = [l for l in out.splitlines() if l.startswith('FAIL ')]
     ok = bool(m) and m[-1][0] == m[-1][1] and not fails
     print(f"{'OK  ' if ok else 'RED '} {s}: {m[-1][0] + '/' + m[-1][1] if m else 'no result'}")

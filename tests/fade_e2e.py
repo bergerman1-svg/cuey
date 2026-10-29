@@ -19,6 +19,7 @@ async def main():
             pg.on('pageerror', lambda e: errs.append(str(e)))
             await pg.goto('file://' + ROOT + f'/app/cuey.html?nosplash&notour&lang={lang}'); await pg.wait_for_timeout(700)
             await pg.set_input_files('#fileIn', [os.path.join(FIX, 'tone.wav'), os.path.join(FIX, 'va.webm'), os.path.join(FIX, 'red.png')]); await pg.wait_for_timeout(1200)
+            ok(L + 'a new music cue comes in with a cut (starts now)', await pg.evaluate("items[0].trans==='cut'&&items[1].trans==='dissolve'"))
             ok(L + 'no fade button in the GO bar', await pg.evaluate("!document.querySelector('.side [data-k=fade],#fadeBtn')"))
             ok(L + 'every cue with sound shows "Fade out", the picture does not', await pg.evaluate("[...document.querySelectorAll('.item')].map(r=>!!r.querySelector('[data-k=fade]')).join()") == 'true,true,false')
             label = await pg.evaluate("document.querySelector('.item [data-k=fade]').textContent")
