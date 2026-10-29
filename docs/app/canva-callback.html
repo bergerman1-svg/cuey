@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<title>Cuey — Canva</title>
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--bg:#0A0A0C;--panel:#131317;--line:#26262e;--txt:#F2F2F5;--mut:#9A9AA8;--go:#C8FF00}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.55 Poppins,Heebo,system-ui,-apple-system,"Segoe UI",sans-serif}
+main{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+.card{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:32px 24px;text-align:center}
+.logo{width:140px;height:auto;margin:0 auto 18px;display:block}
+.ic{font-size:40px;line-height:1;margin-bottom:10px}
+h1{font-size:21px;margin:0 0 8px}
+p{color:var(--mut);margin:0;font-size:15px}
+</style>
+</head>
+<body>
+<main><div class="card">
+  <img class="logo" src="../logo-full.png" alt="Cuey">
+  <div class="ic" id="ic">…</div>
+  <h1 id="h"></h1>
+  <p id="p"></p>
+</div></main>
+<script>
+/* Canva sends people here after they allow Cuey to read their designs (Add from Canva).
+   This page hands the one-time code to Cuey's server (Supabase function canva, action finish), which keeps the Canva link
+   for the Cuey account that started it. The tokens never come to this page. Works for the browser app (popup) and the
+   desktop app (opened in the system browser): Cuey itself notices the link and continues. */
+(function(){
+var HE;try{HE=(localStorage.getItem('cuey.lang')||((navigator.language||'').indexOf('he')===0?'he':'en'))==='he'}catch(e){HE=(navigator.language||'').indexOf('he')===0}
+var T=HE?{wait:'מחבר את Canva ל־Cuey…',ok:'Canva מחובר!',okp:'אפשר לסגור את החלון ולחזור ל־Cuey — העיצובים שלכם כבר שם.',no:'החיבור לא הצליח',nop:'חזרו ל־Cuey ולחצו שוב על "הוספה מקנבה".',deny:'לא אושר',denyp:'Cuey לא קיבל גישה לעיצובים. אפשר לנסות שוב מתוך Cuey מתי שרוצים.'}
+             :{wait:'Connecting Canva to Cuey…',ok:'Canva is connected!',okp:'You can close this window and go back to Cuey — your designs are already there.',no:'That didn’t work',nop:'Go back to Cuey and press “Add from Canva” again.',deny:'Not allowed',denyp:'Cuey didn’t get access to your designs. You can try again from Cuey any time.'};
+document.documentElement.lang=HE?'he':'en';document.documentElement.dir=HE?'rtl':'ltr';
+function $(i){return document.getElementById(i)}
+function show(ic,h,p){$('ic').textContent=ic;$('h').textContent=h;$('p').textContent=p}
+var q=new URLSearchParams(location.search),code=q.get('code'),state=q.get('state');
+history.replaceState(null,'',location.pathname); // the code is single-use; keep it out of history
+if(q.get('error')){show('✋',T.deny,T.denyp);return}
+if(!code||!state){show('⚠️',T.no,T.nop);return}
+show('…',T.wait,'');
+fetch('https://lgemvnntlgasxhrpsdww.supabase.co/functions/v1/canva',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'finish',code:code,state:state})})
+ .then(function(r){if(!r.ok)throw 0;show('✓',T.ok,T.okp);try{if(window.opener){window.opener.postMessage({cueyCanva:'connected'},'*');setTimeout(function(){window.close()},1200)}}catch(e){}})
+ .catch(function(){show('⚠️',T.no,T.nop)});
+})();
+</script>
+</body>
+</html>

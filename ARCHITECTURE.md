@@ -509,3 +509,11 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 
 ### v0.46.4 (29.10)
 - GO replays a finished cue only when it is the **only** cue in the list (Avi). In a longer list GO on the finished last cue does nothing, as before. Play still replays any finished cue.
+
+### v0.47.0 (29.10) — Add from Canva (Pro · beta, opt-in)
+- **Canva app:** "Cuey" on canva.dev (App ID AAHOGOQ3ItU, Client ID OC-AaGI0-gvUqsP), owned by hello@cuey.live (MFA on). Public distribution, **draft** — until Canva approves it, only our own Canva account can connect. Scopes read-only: `design:meta:read`, `design:content:read`. Redirect: `https://cuey.live/app/canva-callback.html`.
+- **Server:** Supabase function `canva` (verify_jwt off; checks the Cuey session itself except `finish`). Secret `CANVA_CLIENT_SECRET`. Actions start / finish / status / list / export / job / file / disconnect. PKCE verifier + state live in `canva_auth` (one use, 15 min; cron `canva-auth-cleanup` hourly); tokens in `canva_tokens` (per Cuey user, refresh tokens are single-use). Both tables RLS on, no policies, revoked from anon/authenticated. Source in `supabase/functions/canva/index.ts`.
+- **Callback page** `docs/app/canva-callback.html`: sends {code,state} to `finish`, never sees tokens; works for the desktop app too (the state ties the code to the Cuey user who pressed Connect; the app polls `status`).
+- **App:** tile `#adCv` stays disabled "PRO · SOON" unless the browser opted in (`?canva=1`, stored in `cuey.canva`; `?canva=0` off). Dialog `#cvDlg`: connect → designs (search, more) → "Bring in as slides" (PNG 1920 per page) or "As a video (MP4 1080p)". Files kept with `keepGen` like PDF pages. Errors: paid elements (`license_required`), expired link → connect again.
+- Not used: the preview "design pages" API (public apps using preview APIs fail review).
+- Test: `tests/canva_e2e.py` (35, Canva mocked) in the release gate.
