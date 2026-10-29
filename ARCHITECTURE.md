@@ -534,3 +534,6 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
   - The app accepts only the state it started (`cv.state`), then calls `finish`; replies `done` so the callback page shows ✓.
   - `file` proxy limited to export-download / document-export.canva.com.
 - Tests: canva_e2e 49 (foreign state ignored, own state finished, callback forwards to 127.0.0.1, never calls the server, removes the code from the address bar, "Not allowed").
+
+### v0.47.5 (29.10)
+- `?utm_source=canva` also turns the Canva tile on (Canva listing destination allows only UTM tags: https://cuey.live/app/?utm_source=canva).

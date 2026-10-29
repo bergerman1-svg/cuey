@@ -51,6 +51,10 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=['--allow-file-access-from-files'])
         URL = 'file://' + ROOT + '/app/cuey.html?nosplash&notour&lang='
+        ctx0 = await b.new_context(); pg0 = await ctx0.new_page()
+        await pg0.goto(URL + 'en&utm_source=canva'); await pg0.wait_for_timeout(600)
+        ok("arriving from Canva's listing (?utm_source=canva) turns the tile on", await pg0.evaluate("!$('#adCv').disabled"))
+        await ctx0.close()
         # 1. nobody opted in: exactly as before
         ctx, pg, errs, calls = await setup(b, 'en', {'connected': False})
         await pg.goto(URL + 'en'); await pg.wait_for_timeout(700)
