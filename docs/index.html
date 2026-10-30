@@ -99,7 +99,7 @@ kbd{font-family:'JetBrains Mono',monospace;font-size:13px;background:#1C1C23;bor
 @keyframes carlive{50%{opacity:.25}}
 .wai{display:inline-block;vertical-align:-4px;margin-inline-end:8px;flex:none}
 @media (max-width:700px){.dlo{display:none}}
-.mf{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;width:100%}.mf input[type=email]{flex:1 1 170px;min-width:0;height:48px;border-radius:12px;border:1px solid var(--line);background:#0e0e12;color:var(--txt);padding:0 14px;font:inherit;font-size:16px}.mf input[type=email]:focus{outline:2px solid var(--go);outline-offset:1px}.mf button{height:48px;flex:0 0 auto}.mf .hp{position:absolute;width:1px;height:1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%);opacity:0}.mf .mfs{flex-basis:100%;margin:2px 0 0;color:var(--mut);font-size:14px;line-height:1.45}.mf .mfs:empty{display:none}
+.mf{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;width:100%}.mf input[type=email]{flex:1 1 170px;min-width:0;height:48px;border-radius:12px;border:1px solid var(--line);background:#0e0e12;color:var(--txt);padding:0 14px;font:inherit;font-size:16px}.mf input[type=email]:focus{outline:2px solid var(--go);outline-offset:1px}.mf button{height:48px;flex:0 0 auto}.mf .hp{position:absolute;width:1px;height:1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%);opacity:0}.mf .mfs{flex-basis:100%;margin:2px 0 0;color:var(--mut);font-size:14px;line-height:1.45}.mf .mfs:empty{display:none}.mfok{flex-basis:100%;display:flex;gap:14px;align-items:center;padding:16px;border-radius:14px;background:rgba(200,255,0,.08);border:1px solid rgba(200,255,0,.35);animation:mfin .35s ease-out}.mfok .ck{flex:0 0 48px;height:48px;border-radius:50%;background:var(--go);color:#0A0A0C;display:grid;place-items:center;font-size:26px;font-weight:900}.mfok b{display:block;font-size:20px;color:var(--txt)}.mfok span{display:block;color:var(--mut);font-size:14px;line-height:1.45;margin-top:2px}.mfok bdi{color:var(--txt)}@keyframes mfin{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}@media (prefers-reduced-motion:reduce){.mfok{animation:none}}
 .car .cap{min-height:3.2em;margin:14px 4px 0;color:var(--mut);font-size:15px;line-height:1.55;text-align:center}
 .car .bar{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px;direction:ltr}
 .car .bk{height:46px;min-width:96px;padding:0 18px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--txt);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
@@ -550,9 +550,9 @@ show(0);setInterval(function(){if(vis&&!document.hidden&&Date.now()-held>20000)s
 /* "Email me the link": Cuey sends the email itself (noreply@cuey.live, Supabase function send-link).
    If the service isn't available, falls back to the visitor's own mail app (the old way) — nothing breaks. */
 function cueyMailForm(a,he,fallback,done){
-  const L=he?{ph:'המייל שלך',send:'שלח',wait:'שולח…',ok:'נשלח! בדקו את תיבת המייל — ההודעה מ-noreply@cuey.live',lim:'כבר שלחנו לכתובת הזו — בדקו את תיבת המייל (וגם בספאם)',bad:'בדקו את כתובת המייל'}
-              :{ph:'Your email',send:'Send',wait:'Sending…',ok:'Sent! Check your inbox — it comes from noreply@cuey.live',lim:'We already sent it to this address — check your inbox (and spam)',bad:'Check the email address'};
-  let f=a.nextElementSibling;if(f&&f.classList.contains('mf')){f.querySelector('input').focus();return}
+  const L=he?{ph:'המייל שלך',send:'שלח',wait:'שולח…',okT:'הלינק נשלח!',okS:'בדקו את המייל ב־{e}. ההודעה מגיעה מ־noreply@cuey.live (לא הגיע? הציצו בספאם).',limT:'כבר שלחנו לכם',limS:'הלינק כבר בדרך ל־{e}. בדקו את תיבת המייל, וגם בספאם.',bad:'בדקו את כתובת המייל'}
+              :{ph:'Your email',send:'Send',wait:'Sending…',okT:'Link sent!',okS:'We sent it to {e}<br>Not there in a minute? Check spam',limT:'Already sent',limS:'It’s on its way to {e}<br>Check your inbox, and spam too',bad:'Check the email address'};
+  let f=a.nextElementSibling;if(f&&f.classList.contains('mf')){const i0=f.querySelector('input');i0?i0.focus():f.scrollIntoView({block:'nearest'});return}
   f=document.createElement('form');f.className='mf';f.noValidate=true;
   f.innerHTML='<input type="email" name="email" required autocomplete="email" inputmode="email" dir="ltr"><input name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true"><button type="submit"></button><p class="mfs" aria-live="polite"></p>';
   const inp=f.querySelector('[name=email]'),b=f.querySelector('button'),st=f.querySelector('.mfs');
@@ -561,9 +561,10 @@ function cueyMailForm(a,he,fallback,done){
   f.onsubmit=async e=>{e.preventDefault();const em=inp.value.trim();
     if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(em)){st.textContent=L.bad;inp.focus();return}
     b.disabled=true;st.textContent=L.wait;
+    const okBox=(h,sub)=>{const d=document.createElement('div');d.className='mfok';d.setAttribute('role','status');d.innerHTML='<div class="ck" aria-hidden="true">✓</div><div><b></b><span></span></div>';d.querySelector('b').textContent=h;d.querySelector('span').innerHTML=sub.replace('{e}','<bdi></bdi>');d.querySelector('bdi').textContent=em;f.replaceChildren(d)};
     try{const r=await fetch('https://lgemvnntlgasxhrpsdww.supabase.co/functions/v1/send-link',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:em,lang:he?'he':'en',website:f.website.value})});
-      if(r.ok){st.textContent=L.ok;inp.disabled=true;done&&done('sent');return}
-      if(r.status===429){st.textContent=L.lim;done&&done('limit');return}
+      if(r.ok){okBox(L.okT,L.okS);done&&done('sent');return}
+      if(r.status===429){okBox(L.limT,L.limS);done&&done('limit');return}
       if(r.status===400){st.textContent=L.bad;b.disabled=false;return}
       throw new Error(String(r.status))}
     catch(x){st.textContent='';b.disabled=false;done&&done('fallback');location.href=fallback}}}
