@@ -305,6 +305,13 @@ details.cmp .ptable{margin-top:12px}
 .sheet h3{line-height:1.25}
 footer .legal .em{margin:0 10px;white-space:nowrap}
 @media (max-width:600px){.btn{white-space:normal;text-align:center;line-height:1.3}.mbox .btn,.sheet .btn{font-size:16px;padding:14px 16px}}
+
+/* after a download: how to install, with the short animation (Avi, 31.10) */
+.inst .chbox{width:min(760px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:24px}
+.inst h3{margin:0 0 4px;font-size:22px}.inst .isub{margin:0 0 14px;color:var(--mut,#999);font-size:15px}
+.inst video{display:block;width:100%;aspect-ratio:16/9;border-radius:12px;background:#000;border:1px solid var(--line)}
+.inst ol{margin:16px 0 8px;padding-inline-start:22px;line-height:1.6;font-size:16px}.inst ol li{margin-bottom:6px}.inst ol b{color:var(--go)}
+.inst .ifb{font-size:13px;color:var(--mut,#999);margin:8px 0 16px}.inst .ifb code{white-space:nowrap;direction:ltr;unicode-bidi:isolate;background:#0006;padding:2px 6px;border-radius:5px;user-select:all}
 </style>
 <script>(function(){var u=navigator.userAgent;if(/Android|iPhone|iPad|iPod/i.test(u)||(navigator.maxTouchPoints>1&&innerWidth<900))document.documentElement.classList.add("m")})()</script>
 </head>
@@ -576,6 +583,26 @@ function cueyMailForm(a,he,fallback,done){
       if(r.status===400){st.textContent=L.bad;b.disabled=false;return}
       throw new Error(String(r.status))}
     catch(x){st.textContent='';b.disabled=false;done&&done('fallback');location.href=fallback}}}
+</script>
+<div id="instDlg" class="choose inst" hidden role="dialog" aria-modal="true" aria-labelledby="inT"><div class="chbox">
+  <button class="chx" id="inX" aria-label="Close">×</button>
+  <h3 id="inT">Your download has started — here’s how to install</h3><p class="isub">Once, about a minute.</p>
+  <video id="inV" muted loop playsinline autoplay preload="none"></video>
+  <ol id="inMac"><li>Open the downloaded file and drag Cuey into <b>Applications</b>.</li><li>Open Cuey. A warning appears — click <b>“Done”</b>. That’s expected: Cuey isn’t signed with Apple yet.</li><li><b>System Settings → Privacy &amp; Security</b>, scroll down and click <b>“Open Anyway”</b>.</li><li>Confirm with your computer password. From now on Cuey opens normally.</li></ol><p class="ifb" id="inMacFb">It says the app “is damaged”? It isn’t (older builds do this). Open Terminal and paste: <code>xattr -cr /Applications/Cuey.app</code></p>
+  <ol id="inWin"><li>Open <b>Cuey-windows.exe</b> from your Downloads folder.</li><li>“Windows protected your PC” appears — click <b>“More info”</b>, then <b>“Run anyway”</b>. That’s expected: Cuey isn’t signed with Microsoft yet.</li><li>Install and click <b>“Finish”</b>. Cuey opens, and there’s a shortcut on your desktop.</li></ol>
+  <button class="btn" id="inOk">Got it</button>
+</div></div>
+<script>
+/* any Mac / Windows download → show how to install it (the file still downloads) */
+(function(){const d=document.getElementById('instDlg'),v=document.getElementById('inV');if(!d)return;
+  const close=()=>{d.hidden=true;v.pause()};
+  document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href]');if(!a)return;const h=a.getAttribute('href');const os=/\.dmg$/i.test(h)?'mac':/\.exe$/i.test(h)?'win':'';if(!os)return;
+    document.getElementById('inMac').hidden=document.getElementById('inMacFb').hidden=os!=='mac';document.getElementById('inWin').hidden=os!=='win';
+    v.poster='install-'+os+'-en.jpg?v=1';v.src='install-'+os+'-en.mp4?v=1';d.hidden=false;const pp=v.play();if(pp&&pp.catch)pp.catch(()=>{})
+    setTimeout(()=>document.getElementById('inOk').focus(),50)});
+  document.getElementById('inX').onclick=close;document.getElementById('inOk').onclick=close;
+  d.addEventListener('click',e=>{if(e.target===d)close()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!d.hidden)close()});
+})();
 </script>
 </body>
 </html>
