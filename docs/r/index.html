@@ -23,7 +23,8 @@
 html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:Poppins,Heebo,system-ui,sans-serif;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 body[dir=rtl]{font-family:Heebo,Poppins,system-ui,sans-serif}
 #app{position:fixed;inset:0;display:flex;flex-direction:column;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 10px) max(14px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 14px) max(14px,env(safe-area-inset-left,0px))}
-.top{display:flex;align-items:center;gap:10px;min-height:34px}
+.top{display:flex;align-items:center;gap:10px;min-height:34px;direction:ltr} /* Cuey REMOTE always on the left, in every language */
+.top .conn{unicode-bidi:isolate}
 .top img{height:24px}
 .top .rm{font:800 12px Poppins,system-ui;letter-spacing:.14em;color:var(--mut)}
 .top .sp{flex:1}
