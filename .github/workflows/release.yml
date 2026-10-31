@@ -77,6 +77,17 @@ jobs:
             echo "unsigned build"
           fi
           ${{ matrix.cmd }} -- --publish never $EXTRA
+      # every Mac installer must hold a valid signature (ad-hoc or Developer ID): a broken one = "Cuey is damaged"
+      - name: Check Mac signatures
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          for f in release/*.dmg; do
+            m=$(mktemp -d); hdiutil attach -nobrowse -readonly -mountpoint "$m" "$f" >/dev/null
+            codesign --verify --deep --strict --verbose=2 "$m/Cuey.app" && echo "OK  $f" || { hdiutil detach "$m" >/dev/null; echo "BROKEN SIGNATURE: $f"; exit 1; }
+            codesign -dv "$m/Cuey.app" 2>&1 | grep -E "Signature|Authority|TeamIdentifier" || true
+            hdiutil detach "$m" >/dev/null
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: cuey-${{ matrix.os }}
