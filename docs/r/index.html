@@ -107,8 +107,8 @@ button:disabled{opacity:.35}
 (function(){
 const q=new URLSearchParams(location.search);
 let saved={};try{saved=JSON.parse(localStorage.getItem('cuey.remote')||'{}')||{}}catch(e){}
-const T={he:{live:'PROGRAM',next:'NEXT',back:'אחורה',freeze:'הקפאה',resume:'המשך',black:'מסך שחור',go:'GO',play:'הפעל',look:'מתחבר ל־Cuey…',tip:'השאירו את Cuey פתוח במחשב. בפעם הראשונה: לוחצים שם על 📱 שלט וסורקים את הקוד.',on:'מחובר',off:'מתחבר…',lost:'מתחבר מחדש… הכפתורים ממשיכים לעבוד',end:'השלט נותק מהמחשב. כדי לחבר שוב, לחצו ב־Cuey על 📱 שלט וסרקו את הקוד החדש.',full:'כבר מחוברים 3 טלפונים להופעה הזו.',nocode:'עוד אין שלט מחובר. ב־Cuey במחשב לוחצים על 📱 שלט וסורקים את הקוד.',none:'אין עוד קיואים',empty:'—',slow:'השלט עובד דרך האינטרנט — לחיצות עלולות להגיע לאט יותר',blk:'מסך שחור',frz:'הקפאה',inst:'שמרו את השלט במסך הבית',instGo:'איך?',instIos:'בספארי: לוחצים על כפתור השיתוף ובוחרים "הוסף למסך הבית".',instAnd:'פותחים את התפריט של הדפדפן ובוחרים "הוספה למסך הבית".'},
-         en:{live:'PROGRAM',next:'NEXT',back:'BACK',freeze:'FREEZE',resume:'PLAY',black:'BLACK',go:'GO',play:'PLAY',look:'Connecting to Cuey…',tip:'Keep Cuey open on the computer. First time: press 📱 Remote there and scan the code.',on:'Connected',off:'Connecting…',lost:'Reconnecting… the buttons still work',end:'The remote was disconnected on the computer. To connect again, press 📱 Remote in Cuey and scan the new code.',full:'3 phones are already connected to this show.',nocode:'No remote connected yet. In Cuey on the computer, press 📱 Remote and scan the code.',none:'No more cues',empty:'—',slow:'The remote is going through the internet — presses may arrive a bit slower',blk:'BLACK',frz:'FREEZE',inst:'Keep the remote on your home screen',instGo:'How?',instIos:'In Safari: tap Share and choose “Add to Home Screen”.',instAnd:'Open the browser menu and choose “Add to Home screen”.'}};
+const T={he:{live:'PROGRAM',next:'NEXT',back:'אחורה',freeze:'הקפאה',resume:'המשך',black:'מסך שחור',go:'GO',play:'הפעל',look:'מתחבר ל־Cuey…',tip:'השאירו את Cuey פתוח במחשב. בפעם הראשונה: לוחצים שם על 📱 שלט וסורקים את הקוד.',on:'מחובר',off:'מתחבר…',lost:'מתחבר מחדש… הכפתורים ממשיכים לעבוד',end:'השלט נותק מהמחשב. כדי לחבר שוב, לחצו ב־Cuey על 📱 שלט וסרקו את הקוד החדש.',full:'כבר מחוברים 3 טלפונים להופעה הזו.',nocode:'עוד אין שלט מחובר. ב־Cuey במחשב לוחצים על 📱 שלט וסורקים את הקוד.',none:'אין עוד קיואים',empty:'—',slow:'השלט עובד דרך האינטרנט — לחיצות עלולות להגיע לאט יותר',blk:'מסך שחור',frz:'הקפאה',inst:'התקינו את השלט בטלפון',instGo:'התקנה',instHow:'איך?',instDone:'השלט הותקן — הוא במסך הבית',instSam:'לוחצים על ☰ למטה ← "הוסף דף אל" ← "מסך הבית"',instIos:'לוחצים על כפתור השיתוף ⬆︎ למטה ← "הוסף למסך הבית"'},
+         en:{live:'PROGRAM',next:'NEXT',back:'BACK',freeze:'FREEZE',resume:'PLAY',black:'BLACK',go:'GO',play:'PLAY',look:'Connecting to Cuey…',tip:'Keep Cuey open on the computer. First time: press 📱 Remote there and scan the code.',on:'Connected',off:'Connecting…',lost:'Reconnecting… the buttons still work',end:'The remote was disconnected on the computer. To connect again, press 📱 Remote in Cuey and scan the new code.',full:'3 phones are already connected to this show.',nocode:'No remote connected yet. In Cuey on the computer, press 📱 Remote and scan the code.',none:'No more cues',empty:'—',slow:'The remote is going through the internet — presses may arrive a bit slower',blk:'BLACK',frz:'FREEZE',inst:'Install the remote on your phone',instGo:'Install',instHow:'How?',instDone:'Installed — it is on your home screen',instSam:'Tap ☰ at the bottom → “Add page to” → “Home screen”',instIos:'Tap Share ⬆︎ at the bottom → “Add to Home Screen”'}};
 let HE=((q.get('l')||saved.l||'')||(navigator.language||'')).toLowerCase().startsWith('he'),S=T[HE?'he':'en'];
 function applyLang(){S=T[HE?'he':'en'];document.documentElement.lang=HE?'he':'en';document.body.dir=HE?'rtl':'ltr';document.querySelectorAll('[data-s]').forEach(e=>{e.textContent=S[e.dataset.s]});
   const c=document.getElementById('conn');if(c)document.getElementById('connT').textContent=c.classList.contains('ok')?S.on:S.off;document.getElementById('lostT').textContent=S.lost;document.getElementById('instT').textContent=S.inst;document.getElementById('instGo').textContent=S.instGo}
@@ -185,11 +185,20 @@ let wl=null;async function wake(){try{if('wakeLock' in navigator&&document.visib
 wake();function revive(){if(ended)return;if(!ws||ws.readyState>1){try{ws&&(ws.onclose=null)}catch(e){}connect()}else if(!dcOpen())hello()}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){wake();revive()}});addEventListener('online',revive);addEventListener('pageshow',revive);
 // save to home screen: Android asks with its own prompt; iPhone gets the two-tap hint. Shown once it works, until closed.
-let bip=null;
+/* Install Cuey Remote:
+   - Chrome on Android: one tap ("Install") — Chrome builds a modern app, no warnings. The install file is offered only to Chrome:
+     Samsung's own browser turns it into an old-style app that Google Play Protect blocks as "unsafe".
+   - Samsung Internet: no install — the box shows its menu steps for a home-screen shortcut.
+   - iPhone: Apple allows no install button — the box shows the two taps in Safari. */
+const UA=navigator.userAgent, IOS=/iPhone|iPad|iPod/.test(UA), SAMSUNG=/SamsungBrowser/i.test(UA);
+if(!IOS&&!SAMSUNG){const l=document.createElement('link');l.rel='manifest';l.href='manifest.webmanifest';document.head.appendChild(l)}
+let bip=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();bip=e;instShow()});addEventListener('appinstalled',()=>{$('inst').classList.remove('on');toast(S.instDone,3000)});
 function standalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone}
-function instShow(){let no=false;try{no=localStorage.getItem('cuey.remote.inst')==='no'}catch(e){}const ios=/iPhone|iPad|iPod/.test(navigator.userAgent);
-  $('inst').classList.toggle('on',everOk&&!standalone()&&!no)}
-$('instGo').onclick=()=>{$('instT').textContent=/iPhone|iPad|iPod/.test(navigator.userAgent)?S.instIos:S.instAnd;$('inst').classList.add('how')}; /* the steps show in the same box (a toast ran off the screen) */
+function instShow(){let no=false;try{no=localStorage.getItem('cuey.remote.inst')==='no'}catch(e){}
+  const can=!!bip||IOS||SAMSUNG; $('instGo').textContent=bip?S.instGo:S.instHow;
+  $('inst').classList.toggle('on',everOk&&!standalone()&&!no&&can)}
+$('instGo').onclick=async()=>{if(bip){bip.prompt();let r=null;try{r=await bip.userChoice}catch(e){}bip=null;if(r&&r.outcome==='accepted')$('inst').classList.remove('on');else instShow();return}
+  $('instT').textContent=IOS?S.instIos:S.instSam;$('inst').classList.add('how')};
 $('instX').onclick=()=>{try{localStorage.setItem('cuey.remote.inst','no')}catch(e){}$('inst').classList.remove('on')};
 addEventListener('pagehide',()=>{if(!ended)post({t:'bye',id:myId})});
 setConn(false);
