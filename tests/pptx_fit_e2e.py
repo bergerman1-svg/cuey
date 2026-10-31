@@ -62,6 +62,18 @@ async def main():
         s3 = z.read('ppt/slides/slide3.xml').decode()
         szs = [int(v) for v in re.findall(r'sz="(\d+)"', s3)]
         ok('two titles side by side whose letters would meet: both get a little smaller', len(szs) == 2 and all(v < 7270 for v in szs) and min(szs) >= 7270 * .6, szs)
+        # cue names from slide titles (Avi, 31.10: "3a5e587a-…" told nobody which slide it was)
+        def sp(t, sz, x, y, ph=''):
+            return f'<p:sp><p:nvSpPr><p:nvPr>{f"<p:ph type=\"{ph}\"/>" if ph else ""}</p:nvPr></p:nvSpPr><p:spPr><a:xfrm><a:off x="{x}" y="{y}"/><a:ext cx="1" cy="1"/></a:xfrm></p:spPr><p:txBody><a:p><a:r><a:rPr sz="{sz}"/><a:t>{t}</a:t></a:r></a:p></p:txBody></p:sp>'
+        cases = [
+            (slide(sp('שוק', 7200, 11100000, 2200000), sp('ניתוח', 7200, 12800000, 2200000), sp('PAGE 007', 1700, 0, 0), sp('טקסט קטן', 1200, 0, 5000000)), 'ניתוח שוק', 'two big Hebrew boxes side by side → read right to left'),
+            (slide(sp('Agenda', 2000, 0, 0, 'title'), sp('Huge number 42', 9000, 0, 3000000)), 'Agenda', 'the title placeholder wins over bigger text'),
+            (slide(sp('www.example.com', 9000, 0, 0), sp('Hello', 4000, 0, 0)), 'Hello', 'web addresses and page numbers are never the name'),
+            (slide(sp('x' * 90, 5000, 0, 0)), None, 'a very long title is cut short with …'),
+        ]
+        for xml, want, name in cases:
+            got = await pg.evaluate("x=>pptTitle(x)", xml)
+            ok('slide title: ' + name, (got == want) if want else (len(got) <= 60 and got.endswith('…')), got)
         bad = await pg.evaluate("(async()=>{const r=await pptxFit(new Uint8Array([1,2,3,4]).buffer);return r.n===0&&r.buf.byteLength===4})()")
         ok('not a zip → the original comes back untouched', bad)
         ok('no page errors', not errs, errs[:3])
