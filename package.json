@@ -41,7 +41,12 @@
       ],
       "icon": "build/icon.png",
       "hardenedRuntime": true,
-      "gatekeeperAssess": false
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "extendInfo": {
+        "NSAppleEventsUsageDescription": "Cuey asks Keynote or PowerPoint to turn your presentation into slides."
+      }
     },
     "dmg": {
       "artifactName": "Cuey-mac-${arch}.${ext}"
