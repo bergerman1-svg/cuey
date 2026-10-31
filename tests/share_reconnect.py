@@ -29,7 +29,7 @@ async def main(which):
             subs.setdefault(topic, []).append(ws)
             ws.send(json.dumps({'event': 'open', 'topic': topic}))
             for m in hist.get(topic, []): ws.send(m)          # ?since=10m / 6h: ntfy replays the cached messages
-            ws.on_close(lambda *a: subs.get(topic, []).remove(ws) if ws in subs.get(topic, []) else None)
+            # (no ws.on_close: Playwright's handler for it crashes with KeyError 'code' when a page closes its socket; sending to a closed socket is already caught)
             ws.tag = 'app' if 'since=10m' in ws.url else 'screen'
         await ctx.route_web_socket(re.compile(r'wss://ntfy\.sh/.*'), on_ws)
         app = await ctx.new_page(); await app.goto(APP); await app.wait_for_timeout(800)

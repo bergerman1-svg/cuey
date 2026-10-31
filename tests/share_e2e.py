@@ -33,8 +33,10 @@ async def main():
             topic = re.search(r'ntfy\.sh/([^/]+)/ws', ws.url).group(1)
             subs.setdefault(topic, []).append(ws)
             ws.send(json.dumps({'event': 'open', 'topic': topic}))
-            ws.on_close(lambda *a: subs.get(topic, []).remove(ws) if ws in subs.get(topic, []) else None)
+            # (no ws.on_close: Playwright's handler for it crashes with KeyError 'code' when a page closes its socket; sending to a closed socket is already caught)
         await ctx.route_web_socket(re.compile(r'wss://ntfy\.sh/.*'), on_ws)
+        # a page closing its socket without a close code trips Playwright's websocket stand-in (KeyError 'code') and fails a later step at random: always close with 1000
+        await ctx.add_init_script("(()=>{const c=WebSocket.prototype.close;WebSocket.prototype.close=function(code,reason){return c.call(this,code||1000,reason||'')}})()")
 
         app = await ctx.new_page(); errs = []
         app.on('pageerror', lambda e: errs.append(str(e)))
