@@ -20,6 +20,9 @@ TIGHT = box('תודה על ההקשבה', 3000000, 2700000, 2500000, 1654299, 13
 ROOMY = box('Hi', 1000000, 100000, 6000000, 300000, 1800, algn='l', rtl=False)          # fits easily: letters unchanged
 MULTI = box('שורה', 0, 0, 1000000, 300000, 4000, paras=2)                              # two paragraphs: not touched
 ROT = box('ארוך מאוד מאוד מאוד', 0, 0, 500000, 400000, 4000, rot=' rot="5400000"')   # turned box: not touched
+# two one-line titles side by side, left-aligned, the first one's letters run into the second ("ניתוח" | "שוק")
+NEXT_L = box('שוקשוקשוק', 1000000, 3000000, 6000000, 915059, 7270, algn='l', rtl=False, lnspc=6834)
+NEXT_R = box('ניתוח', 2200000, 3000000, 2000000, 915059, 7270, algn='l', rtl=False, lnspc=6834)
 FIXED = box('ארוך מאוד מאוד מאוד', 0, 0, 500000, 400000, 4000, auto=False)           # not auto-fit: not touched
 
 def make_pptx():
@@ -29,6 +32,7 @@ def make_pptx():
         z.writestr('ppt/presentation.xml', '<p:presentation/>')
         z.writestr('ppt/slides/slide1.xml', slide(TIGHT, ROOMY))
         z.writestr('ppt/slides/slide2.xml', slide(MULTI, ROT, FIXED))
+        z.writestr('ppt/slides/slide3.xml', slide(NEXT_L, NEXT_R))
         z.writestr('ppt/media/image1.png', b'\x89PNG' + os.urandom(2000), compress_type=zipfile.ZIP_STORED)
     return b.getvalue()
 
@@ -55,6 +59,9 @@ async def main():
         roomy = re.search(r'<p:sp>.*?>Hi<.*?</p:sp>', s1, re.S).group(0)
         ok('a title that fits keeps its letter size', 'sz="1800"' in roomy)
         ok('two paragraphs, a turned box and a fixed-size box are left exactly as they were', s2 == slide(MULTI, ROT, FIXED))
+        s3 = z.read('ppt/slides/slide3.xml').decode()
+        szs = [int(v) for v in re.findall(r'sz="(\d+)"', s3)]
+        ok('two titles side by side whose letters would meet: both get a little smaller', len(szs) == 2 and all(v < 7270 for v in szs) and min(szs) >= 7270 * .6, szs)
         bad = await pg.evaluate("(async()=>{const r=await pptxFit(new Uint8Array([1,2,3,4]).buffer);return r.n===0&&r.buf.byteLength===4})()")
         ok('not a zip → the original comes back untouched', bad)
         ok('no page errors', not errs, errs[:3])
