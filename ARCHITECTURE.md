@@ -562,3 +562,4 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - App → phone state every 500 ms when changed: LIVE/NEXT names + 320×180 thumbs, black/freeze/armed, video time. Max 3 phones.
 - Phone: acts on pointerdown, 250 ms tap lock, vibration, wake lock, landscape layout, Hebrew/English (`&l=he`).
 - Test: `tests/remote_e2e.py` (28 checks) in the gate.
+- v0.50.1 (Avi): phone uses Cuey's own words (PROGRAM / NEXT, אחורה / הקפאה / המשך / מסך שחור / הפעל); language = Cuey's interface language (link `&l=`, and `st.lg` switches it live); GO a bit smaller, side buttons bigger. Home-screen install (`docs/r/manifest.webmanifest`, start_url `./`; the page reuses the last code from localStorage `cuey.remote`); after the first connection a lost link shows a thin "reconnecting" bar instead of the full screen, and comes back at once on return to the page (visibility / online / pageshow).

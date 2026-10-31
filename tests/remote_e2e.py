@@ -41,12 +41,15 @@ async def main():
         ph2 = await ctx.new_page(); await ph2.goto(PHONE + '?c=ABC'); await ph2.wait_for_timeout(300)
         ok('[en] phone page in English, waiting screen until Cuey answers', await ph2.evaluate("document.getElementById('msg').textContent") == 'Connecting to Cuey…')
         ph3 = await ctx.new_page(); await ph3.goto(PHONE); await ph3.wait_for_timeout(200)
-        ok('a link with no code explains what to do', 'no code' in await ph3.evaluate("document.getElementById('msg').textContent"))
+        ok('opened from the home screen (no code in the link): uses the code this phone had last time', (await ph3.evaluate("location.search")).startswith('?c=ABC'))
+        await ph3.evaluate("localStorage.removeItem('cuey.remote')"); await ph3.goto(PHONE); await ph3.wait_for_timeout(200)
+        ok('never scanned: explains to press 📱 Remote in Cuey', 'Remote' in await ph3.evaluate("document.getElementById('msg').textContent"))
+        ok('the phone has a home-screen manifest named Cuey Remote', await ph3.evaluate("document.querySelector('link[rel=manifest]').getAttribute('href')") == 'manifest.webmanifest')
         for pg_ in (en, ph2, ph3): await pg_.close()
         await app.set_input_files('#fileIn', [os.path.join(FIX, n) for n in ('red.png', 'green.png', 'blue.png')]); await app.wait_for_timeout(1200)
         await app.click('#rmBtn'); await app.wait_for_timeout(300)
         code = await app.evaluate("rmCode"); link = await app.evaluate("$('#rmLink').textContent")
-        ok('Remote window: QR + link with a 12-char code', re.fullmatch(r'[A-HJKMNP-Z2-9]{12}', code or '') and link == 'https://cuey.live/r/?c=' + code + '&l=he' and await app.evaluate("!!$('#rmQr svg')"), link)
+        ok('Remote window: QR + link with a 12-char code (+ the app language)', bool(re.fullmatch(r'[A-HJKMNP-Z2-9]{12}', code or '')) and link == 'https://cuey.live/r/?c=' + code + '&l=he' and await app.evaluate("!!$('#rmQr svg')"), link)
         ok('…says it is waiting for a phone', 'מחכה לטלפון' in await app.evaluate("$('#rmStat').textContent"))
         ok('the code is kept on this computer for next time', await app.evaluate("localStorage.getItem('cuey.rm')") == code)
 
@@ -74,6 +77,11 @@ async def main():
                 if await ph.evaluate(js): return True
                 await ph.wait_for_timeout(100)
             return False
+        ok('labels follow Cuey: PROGRAM / NEXT, אחורה / הקפאה / מסך שחור', (await ph.evaluate("[...document.querySelectorAll('.lb')].map(e=>e.textContent.trim()).join('|')")).startswith('PROGRAM') and await ph.evaluate("document.querySelector('#blk span').textContent") == 'מסך שחור')
+        await app.evaluate("lang='en';applyLang()"); 
+        ok('Cuey switched to English → the phone follows', await wait_ph("document.querySelector('#back span').textContent==='BACK'&&document.body.dir==='ltr'"))
+        await app.evaluate("lang='he';applyLang()")
+        ok('…and back to Hebrew', await wait_ph("document.querySelector('#back span').textContent==='אחורה'&&document.body.dir==='rtl'"))
         ok('before GO: phone shows NEXT = the first cue', await wait_ph("document.getElementById('nnm').textContent==='red'"))
         await ph.dispatch_event('#go', 'pointerdown');
         ok('GO on the phone → cue 1 is live in Cuey', await wait_app("cur===0"))
@@ -113,6 +121,7 @@ async def main():
         ok('…and the next Remote has a new code', await app.evaluate("rmCode") != code)
         await app.evaluate("stopRemote()")
         ok('no page errors (app)', not errs, errs[:3]); ok('no page errors (phone)', not perrs, perrs[:3])
-        await b.close()
-    print(f'\n{sum(res)}/{len(res)} passed')
+        print(f'\n{sum(res)}/{len(res)} passed', flush=True)  # before closing: playwright's websocket stand-in can trip while pages close
+        try: await asyncio.wait_for(b.close(), 10)
+        except Exception: pass
 asyncio.run(main())

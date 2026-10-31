@@ -13,6 +13,7 @@
 <title>Cuey Remote</title>
 <link rel="icon" href="../favicon.png">
 <link rel="apple-touch-icon" href="../app/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@500;700;800;900&family=Poppins:wght@600;800;900&display=swap">
 <style>
@@ -34,7 +35,7 @@ body[dir=rtl]{font-family:Heebo,Poppins,system-ui,sans-serif}
 .card{display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:10px;min-width:0}
 .card.live{border-color:rgba(200,255,0,.45)}
 .card .th{flex:0 0 auto;width:96px;aspect-ratio:16/9;border-radius:9px;background:#000 center/contain no-repeat;border:1px solid #222}
-.card.nx .th{width:64px}
+.card.nx .th{width:76px}
 .card .tx{min-width:0;flex:1}
 .card .lb{font:800 10.5px Poppins,system-ui;letter-spacing:.14em;color:var(--mut)}
 .card.live .lb{color:var(--go)}
@@ -47,7 +48,7 @@ body[dir=rtl]{font-family:Heebo,Poppins,system-ui,sans-serif}
 .tm.end .rem{color:var(--amb)}
 .tag{display:inline-block;font:800 10px Poppins,system-ui;letter-spacing:.1em;padding:2px 7px;border-radius:99px;margin-inline-start:6px;vertical-align:1px}
 .tag.blk{background:#fff;color:#000}.tag.frz{background:var(--amb);color:#fff}
-#go{flex:1;min-height:150px;border:0;border-radius:26px;background:var(--go);color:#0A0A0C;font:900 clamp(56px,17vw,96px)/1 Poppins,system-ui;letter-spacing:.02em;display:flex;align-items:center;justify-content:center;gap:.25em;box-shadow:0 0 40px rgba(200,255,0,.25);transition:transform .08s,box-shadow .2s;position:relative;overflow:hidden}
+#go{flex:1 1 0;min-height:110px;border:0;border-radius:26px;background:var(--go);color:#0A0A0C;font:900 clamp(48px,14vw,84px)/1 Poppins,system-ui;letter-spacing:.02em;display:flex;align-items:center;justify-content:center;gap:.25em;box-shadow:0 0 40px rgba(200,255,0,.25);transition:transform .08s,box-shadow .2s;position:relative;overflow:hidden}
 #go svg{width:.62em;height:.62em}
 #go.armed{background:var(--amb);color:#fff;box-shadow:0 0 40px rgba(255,117,31,.3)}
 #go:active,#go.down{transform:scale(.97)}
@@ -55,8 +56,8 @@ body[dir=rtl]{font-family:Heebo,Poppins,system-ui,sans-serif}
 #go.hit .rip{animation:rip .45s ease-out}
 @keyframes rip{from{box-shadow:inset 0 0 0 40px rgba(10,10,12,.35)}to{box-shadow:inset 0 0 0 0 rgba(10,10,12,0)}}
 .row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.row button{height:74px;border-radius:18px;border:1px solid var(--line);background:var(--panel);color:var(--txt);font:800 15px/1.1 inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:transform .08s}
-.row button svg{width:22px;height:22px}
+.row button{height:clamp(100px,17vh,150px);border-radius:20px;border:1px solid var(--line);background:var(--panel);color:var(--txt);font:800 18px/1.1 inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:transform .08s}
+.row button svg{width:34px;height:34px}
 .row button:active,.row button.down{transform:scale(.95)}
 #frz.on{background:var(--amb);border-color:var(--amb);color:#fff}
 #blk.on{background:#fff;border-color:#fff;color:#000}
@@ -68,11 +69,13 @@ button:disabled{opacity:.35}
 #wait .dot{width:10px;height:10px;border-radius:50%;background:var(--amb);animation:pl 1.2s infinite;margin-top:10px}
 #wait p{margin:0;color:var(--mut);font-size:15px;max-width:340px;line-height:1.5}
 #wait #msg{color:var(--txt);font-weight:700;font-size:17px}
+#lost{display:none;align-items:center;gap:8px;background:rgba(255,117,31,.12);border:1px solid rgba(255,117,31,.45);color:#ffd2b5;border-radius:12px;padding:8px 12px;font-size:13.5px}#lost i{width:8px;height:8px;border-radius:50%;background:var(--amb);animation:pl 1.2s infinite;flex:0 0 auto}body.lost #lost{display:flex}
+#inst{display:none;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px 8px 12px;font-size:13.5px}#inst.on{display:flex}#inst b{flex:1;font-weight:700}#inst button{border:0;background:var(--go);color:#0A0A0C;font:800 13px inherit;border-radius:9px;padding:7px 12px}#inst .x{background:transparent;color:var(--mut);padding:7px 6px}
 #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 104px);transform:translateX(-50%);background:#1d1d23;border:1px solid var(--line);color:var(--txt);padding:9px 14px;border-radius:12px;font-size:13.5px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:6;white-space:nowrap}
 #toast.on{opacity:1}
 @media (orientation:landscape) and (max-height:520px){
  #app{display:grid;grid-template-columns:1fr 1.2fr;grid-template-rows:auto 1fr auto;column-gap:14px}
- .top{grid-column:1/3}.cards{grid-row:2/4}#go{grid-column:2;grid-row:2;min-height:0}.row{grid-column:2;grid-row:3}.row button{height:58px}
+ .top{grid-column:1/3}.cards{grid-row:2/4}#go{grid-column:2;grid-row:2;min-height:0}.row{grid-column:2;grid-row:3}.row button{height:68px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -80,6 +83,8 @@ button:disabled{opacity:.35}
 <body>
 <div id="app">
   <div class="top"><img src="../logo-full.png" alt="Cuey"><span class="rm">REMOTE</span><span class="sp"></span><span class="conn" id="conn"><i></i><span id="connT"></span></span></div>
+  <div id="lost"><i></i><span id="lostT"></span></div>
+  <div id="inst"><b id="instT"></b><button id="instGo" type="button"></button><button class="x" id="instX" type="button" aria-label="close">✕</button></div>
   <div class="cards">
     <div class="card live"><div class="th" id="lth"></div><div class="tx"><div class="lb"><span data-s="live">LIVE</span><span id="tags"></span></div><div class="nm" id="lnm">—</div><div class="tm" id="tm" hidden><span id="tpos">0:00</span><span class="bar"><b id="tbar"></b></span><span class="rem" id="trem">-0:00</span></div></div></div>
     <div class="card nx"><div class="th" id="nth"></div><div class="tx"><div class="lb" data-s="next">NEXT</div><div class="nm" id="nnm">—</div></div></div>
@@ -101,21 +106,26 @@ button:disabled{opacity:.35}
 <script>
 (function(){
 const q=new URLSearchParams(location.search);
-const HE=(q.get('l')||navigator.language||'').toLowerCase().startsWith('he');
-const S=HE?{live:'באוויר',next:'הבא',back:'אחורה',freeze:'הקפאה',resume:'המשך',black:'מסך שחור',go:'GO',play:'PLAY',look:'מתחבר ל־Cuey…',tip:'השאירו את Cuey פתוח במחשב, עם חלון השלט מוצג שם.',on:'מחובר',off:'מתחבר…',lost:'החיבור נותק — מתחבר מחדש…',end:'השלט נותק מהמחשב. כדי לחבר שוב, סרקו את הקוד החדש ב־Cuey.',full:'כבר מחוברים 3 טלפונים להופעה הזו.',nocode:'בלינק הזה אין קוד. סרקו שוב את הקוד מ־Cuey.',none:'אין עוד קיואים',empty:'—',slow:'השלט עובד דרך האינטרנט — לחיצות עלולות להגיע לאט יותר',blk:'שחור',frz:'מוקפא',sent:'נשלח'}
-             :{live:'LIVE',next:'NEXT',back:'BACK',freeze:'FREEZE',resume:'RESUME',black:'BLACK',go:'GO',play:'PLAY',look:'Connecting to Cuey…',tip:'Keep Cuey open on the computer, with the Remote window shown there.',on:'Connected',off:'Connecting…',lost:'Connection lost — reconnecting…',end:'The remote was disconnected on the computer. To connect again, scan the new code in Cuey.',full:'3 phones are already connected to this show.',nocode:'This link has no code. Scan the code in Cuey again.',none:'No more cues',empty:'—',slow:'The remote is going through the internet — presses may arrive a bit slower',blk:'BLACK',frz:'FROZEN',sent:'Sent'};
-document.documentElement.lang=HE?'he':'en';document.body.dir=HE?'rtl':'ltr';
-document.querySelectorAll('[data-s]').forEach(e=>{e.textContent=S[e.dataset.s]});
+let saved={};try{saved=JSON.parse(localStorage.getItem('cuey.remote')||'{}')||{}}catch(e){}
+const T={he:{live:'PROGRAM',next:'NEXT',back:'אחורה',freeze:'הקפאה',resume:'המשך',black:'מסך שחור',go:'GO',play:'הפעל',look:'מתחבר ל־Cuey…',tip:'השאירו את Cuey פתוח במחשב. בפעם הראשונה: לוחצים שם על 📱 שלט וסורקים את הקוד.',on:'מחובר',off:'מתחבר…',lost:'מתחבר מחדש… הכפתורים ממשיכים לעבוד',end:'השלט נותק מהמחשב. כדי לחבר שוב, לחצו ב־Cuey על 📱 שלט וסרקו את הקוד החדש.',full:'כבר מחוברים 3 טלפונים להופעה הזו.',nocode:'עוד אין שלט מחובר. ב־Cuey במחשב לוחצים על 📱 שלט וסורקים את הקוד.',none:'אין עוד קיואים',empty:'—',slow:'השלט עובד דרך האינטרנט — לחיצות עלולות להגיע לאט יותר',blk:'מסך שחור',frz:'הקפאה',inst:'שמרו את השלט במסך הבית',instGo:'שמירה',instIos:'בספארי: לוחצים על כפתור השיתוף ⬆︎ ואז "הוסף למסך הבית"'},
+         en:{live:'PROGRAM',next:'NEXT',back:'BACK',freeze:'FREEZE',resume:'PLAY',black:'BLACK',go:'GO',play:'PLAY',look:'Connecting to Cuey…',tip:'Keep Cuey open on the computer. First time: press 📱 Remote there and scan the code.',on:'Connected',off:'Connecting…',lost:'Reconnecting… the buttons still work',end:'The remote was disconnected on the computer. To connect again, press 📱 Remote in Cuey and scan the new code.',full:'3 phones are already connected to this show.',nocode:'No remote connected yet. In Cuey on the computer, press 📱 Remote and scan the code.',none:'No more cues',empty:'—',slow:'The remote is going through the internet — presses may arrive a bit slower',blk:'BLACK',frz:'FREEZE',inst:'Keep the remote on your home screen',instGo:'Add',instIos:'In Safari: tap Share ⬆︎, then “Add to Home Screen”'}};
+let HE=((q.get('l')||saved.l||'')||(navigator.language||'')).toLowerCase().startsWith('he'),S=T[HE?'he':'en'];
+function applyLang(){S=T[HE?'he':'en'];document.documentElement.lang=HE?'he':'en';document.body.dir=HE?'rtl':'ltr';document.querySelectorAll('[data-s]').forEach(e=>{e.textContent=S[e.dataset.s]});
+  const c=document.getElementById('conn');if(c)document.getElementById('connT').textContent=c.classList.contains('ok')?S.on:S.off;document.getElementById('lostT').textContent=S.lost;document.getElementById('instT').textContent=S.inst;document.getElementById('instGo').textContent=S.instGo}
+applyLang();
 const $=id=>document.getElementById(id);
-const code=(q.get('c')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,32);
-if(!code){$('msg').textContent=S.nocode;$('tip').textContent='';return}
-history.replaceState(null,'',location.pathname+'?c='+code+(HE?'&l=he':'')); // tidy link, still saveable to the home screen
+/* the code comes from the scanned link; opened from the home screen (no link) it is the one this phone used last time */
+const code=((q.get('c')||saved.c||'')+'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,32);
+if(!code){$('msg').textContent=S.nocode;$('tip').textContent='';$('wait').querySelector('.dot').style.display='none';return}
+try{localStorage.setItem('cuey.remote',JSON.stringify({c:code,l:HE?'he':'en'}))}catch(e){}
+history.replaceState(null,'',location.pathname+'?c='+code+'&l='+(HE?'he':'en')); // tidy link, still saveable to the home screen
 const topic='cuey-r1-'+code, myId=(crypto.getRandomValues?Array.from(crypto.getRandomValues(new Uint8Array(6)),b=>b.toString(36)).join(''):Math.random().toString(36).slice(2,10));
 function post(o){return fetch('https://ntfy.sh/'+topic,{method:'POST',body:JSON.stringify(o)}).catch(()=>{})}
 async function body(d){if(d.attachment&&d.attachment.url){try{return await (await fetch(d.attachment.url)).text()}catch(e){return ''}}return d.message||''}
 let pc=null,dc=null,helloN='',ws=null,lastId='',seq=Date.now()%1e6,ended=false,helloT=0,slowShown=false;
 const dcOpen=()=>!!(dc&&dc.readyState==='open');
-function setConn(ok){$('conn').classList.toggle('ok',ok);$('connT').textContent=ok?S.on:S.off;$('wait').classList.toggle('off',ok)}
+let everOk=false;
+function setConn(ok){$('conn').classList.toggle('ok',ok);$('connT').textContent=ok?S.on:S.off;if(ok)everOk=true;$('wait').classList.toggle('off',ok||(everOk&&!ended));document.body.classList.toggle('lost',!ok&&everOk&&!ended);if(ok)instShow()}
 function toast(s,ms){const t=$('toast');t.textContent=s;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),ms||1800)}
 function hello(){if(dcOpen()||ended)return;helloN=Math.random().toString(36).slice(2,12);post({t:'hello',id:myId,n:helloN})}
 function waitIce(p){return new Promise(r=>{if(p.iceGatheringState==='complete')return r();const f=()=>{if(p.iceGatheringState==='complete'){p.removeEventListener('icegatheringstatechange',f);r()}};p.addEventListener('icegatheringstatechange',f);setTimeout(r,2500)})}
@@ -128,13 +138,13 @@ async function onOffer(m){
   await pc.setRemoteDescription({type:'offer',sdp:m.sdp});await pc.setLocalDescription(await pc.createAnswer());await waitIce(pc);
   post({t:'answer',id:myId,sdp:pc.localDescription.sdp});
 }
-function connect(){
+function connect(){if(ws&&ws.readyState<2)return;
   ws=new WebSocket('wss://ntfy.sh/'+topic+'/ws?since='+(lastId||'30s'));
   ws.onopen=()=>{hello()};
   ws.onmessage=async e=>{let d;try{d=JSON.parse(e.data)}catch(x){return}if(d.event!=='message')return;if(d.id)lastId=d.id;let m;try{m=JSON.parse(await body(d))}catch(x){return}
     if(m.t==='offer'&&m.to===myId)onOffer(m);
     else if(m.t==='full'&&m.to===myId){ended=true;$('msg').textContent=S.full;$('tip').textContent=''}
-    else if(m.t==='bye'&&m.host){if(m.end){ended=true;setConn(false);$('msg').textContent=S.end;$('tip').textContent='';try{pc&&pc.close()}catch(x){}}else{setConn(false);$('msg').textContent=S.lost}}};
+    else if(m.t==='bye'&&m.host){if(m.end){ended=true;setConn(false);$('wait').classList.remove('off');document.body.classList.remove('lost');$('msg').textContent=S.end;$('tip').textContent='';try{pc&&pc.close()}catch(x){}}else{setConn(false);$('msg').textContent=S.lost}}};
   ws.onclose=()=>{if(!ended)setTimeout(connect,2000)};
 }
 // keep asking until Cuey answers (Cuey may open the Remote window after the phone scanned)
@@ -145,6 +155,7 @@ let tm=null,tmRx=0;
 function fmt(s){s=Math.max(0,Math.round(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
 function onMsg(m){
   if(m.t==='st'){
+    if(m.lg&&(m.lg==='he')!==HE){HE=m.lg==='he';applyLang();try{localStorage.setItem('cuey.remote',JSON.stringify({c:code,l:m.lg}))}catch(e){}}
     $('lnm').textContent=m.live?m.live.name:S.empty;$('nnm').textContent=m.next?m.next.name:(m.n?S.none:S.empty);
     if('lt' in m)$('lth').style.backgroundImage=m.lt?'url('+m.lt+')':'none';if('nt' in m)$('nth').style.backgroundImage=m.nt?'url('+m.nt+')':'none';
     $('tags').innerHTML=(m.black?'<span class="tag blk">'+S.blk+'</span>':'')+(m.frz?'<span class="tag frz">'+S.frz+'</span>':'');
@@ -168,7 +179,15 @@ function bind(id,c){const b=$(id);let lock=0;
 bind('go','go');bind('back','back');bind('frz','freeze');bind('blk','black');
 // the screen stays on while the remote is open
 let wl=null;async function wake(){try{if('wakeLock' in navigator&&document.visibilityState==='visible')wl=await navigator.wakeLock.request('screen')}catch(e){}}
-wake();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){wake();if(!dcOpen())hello()}});
+wake();function revive(){if(ended)return;if(!ws||ws.readyState>1){try{ws&&(ws.onclose=null)}catch(e){}connect()}else if(!dcOpen())hello()}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){wake();revive()}});addEventListener('online',revive);addEventListener('pageshow',revive);
+// save to home screen: Android asks with its own prompt; iPhone gets the two-tap hint. Shown once it works, until closed.
+let bip=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();bip=e;instShow()});
+function standalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone}
+function instShow(){let no=false;try{no=localStorage.getItem('cuey.remote.inst')==='no'}catch(e){}const ios=/iPhone|iPad|iPod/.test(navigator.userAgent);
+  $('inst').classList.toggle('on',everOk&&!standalone()&&!no&&(!!bip||ios))}
+$('instGo').onclick=async()=>{if(bip){bip.prompt();try{await bip.userChoice}catch(e){}bip=null;$('inst').classList.remove('on')}else toast(S.instIos,5000)};
+$('instX').onclick=()=>{try{localStorage.setItem('cuey.remote.inst','no')}catch(e){}$('inst').classList.remove('on')};
 addEventListener('pagehide',()=>{if(!ended)post({t:'bye',id:myId})});
 setConn(false);
 })();
