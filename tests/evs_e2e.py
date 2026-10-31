@@ -8,11 +8,11 @@ res = []
 def ok(n, c, extra=''):
     res.append(bool(c)); print(('PASS ' if c else 'FAIL ') + n + (('  -> ' + str(extra)[:300]) if extra and not c else ''))
 URL = 'file://' + ROOT + '/app/cuey.html?nosplash&notour&lang='
-def native(platform, count, after):
+def native(platform, count, after, online='null'):
     return ("window.__calls=[];window.__disp=%d;window.cueyNative={onMenu(){},onDownloaded(){},setLang(){},onCanvaCode(){},"
-            "displays:async()=>{__calls.push('displays');return {count:__disp,platform:'%s'}},"
+            "displays:async()=>{__calls.push('displays');return {count:__disp,online:%s,platform:'%s'}},"
             "extendDisplays:async(m)=>{__calls.push('extend:'+m);if(m==='extend')__disp=%d;return {ok:true,count:__disp}},"
-            "openDisplaySettings:async()=>{__calls.push('settings');return true}};" % (count, platform, after))
+            "openDisplaySettings:async()=>{__calls.push('settings');return true}};" % (count, online, platform, after))
 
 async def main():
     async with async_playwright() as p:
@@ -77,6 +77,25 @@ async def main():
         ok('Mac: explains "מסך מורחב" and offers Display settings', 'מסך מורחב' in t and 'הגדרות מסכים' in t, t)
         await pg.click('#extQ .pri'); await pg.wait_for_timeout(200)
         ok('Mac: opens Display settings, waits for the operator', await pg.evaluate("__calls.includes('settings')&&!outStage"))
+        await ctx.close()
+        # ---- desktop, Mac, nothing plugged in (macOS sees 1 screen online): say so, no Display settings (Avi's Mac, 31.10)
+        ctx = await b.new_context(); await ctx.add_init_script(native('darwin', 1, 1, '1')); pg = await ctx.new_page()
+        await pg.goto(URL + 'he'); await pg.wait_for_timeout(600)
+        await pg.click('#openOut'); await pg.wait_for_timeout(300)
+        t = await pg.evaluate("$('#extQ')?$('#extQ').innerText:''")
+        ok('Mac, no second screen plugged in: "לא מחובר מסך נוסף" + connect a cable', 'לא מחובר מסך נוסף' in t and 'כבל' in t and 'הגדרות מסכים' not in t, t)
+        await pg.click('#extQ .pri'); await pg.wait_for_timeout(200)
+        ok('…"הבנתי" closes, nothing opens, settings untouched', await pg.evaluate("!$('#extQ')&&!outStage&&!__calls.includes('settings')"))
+        async with pg.expect_popup() as pop:
+            await pg.click('#openOut'); await pg.wait_for_timeout(300); await pg.click('#extQ [data-v=here]')
+        await (await pop.value).wait_for_timeout(300)
+        ok('…asked again next time, and "show it here" opens on this screen', await pg.evaluate("!!outStage"))
+        await ctx.close()
+        # ---- desktop, Mac, mirrored (2 online, 1 seen): the Display-settings question
+        ctx = await b.new_context(); await ctx.add_init_script(native('darwin', 1, 1, '2')); pg = await ctx.new_page()
+        await pg.goto(URL + 'he'); await pg.wait_for_timeout(600)
+        await pg.click('#openOut'); await pg.wait_for_timeout(300)
+        ok('Mac, mirrored (2 plugged in): still offers Display settings', 'הגדרות מסכים' in await pg.evaluate("$('#extQ')?$('#extQ').innerText:''"))
         await ctx.close()
         # ---- desktop, two screens: no question at all
         ctx = await b.new_context(); await ctx.add_init_script(native('win32', 2, 2)); pg = await ctx.new_page()

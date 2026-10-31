@@ -188,7 +188,10 @@ ipcMain.handle('google-signin', async (_e, o) => {
 });
 ipcMain.handle('google-cancel', () => { if (gWait) gWait.cancel(); return true; });
 // "Present on event screen": how many screens, extend / put back (Windows has a built-in tool for it), Display settings
-ipcMain.handle('displays', () => ({ count: screen.getAllDisplays().length, platform: process.platform }));
+/* how many screens are plugged in. A Mac that mirrors shows ONE screen to apps, so on a Mac with one screen we also ask
+   macOS how many are physically connected (online): 1 = nothing plugged in (say so), 2+ = mirrored (offer Display settings) */
+async function macOnlineDisplays() { const r = await run('system_profiler', ['SPDisplaysDataType', '-json'], 8000); if (!r.ok) return null; try { const j = JSON.parse(r.out); let n = 0; for (const g of j.SPDisplaysDataType || []) n += (g.spdisplays_ndrvs || []).length; return n || null; } catch (_) { return null; } }
+ipcMain.handle('displays', async () => { const count = screen.getAllDisplays().length; let online = null; if (process.platform === 'darwin' && count < 2) online = await macOnlineDisplays(); return { count, online, platform: process.platform }; });
 ipcMain.handle('extend-displays', async (_e, mode) => {
   if (process.platform !== 'win32') return { ok: false, count: screen.getAllDisplays().length };
   const exe = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'DisplaySwitch.exe');
