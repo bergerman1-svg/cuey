@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 let uiLang = 'en', appQuitting = false, quitAfterSave = false;
-ipcMain.on('lang', (_e, l) => { uiLang = l === 'he' ? 'he' : 'en'; });
+ipcMain.on('lang', (_e, l) => { const n = l === 'he' ? 'he' : 'en'; if (n === uiLang) return; uiLang = n; try { Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate())); } catch (_) {} });
 app.on('before-quit', () => { appQuitting = true; });
 // the page saved after "Save" in the close question → now really close / quit
 ipcMain.on('close-now', () => { if (appQuitting || quitAfterSave) { quitAfterSave = false; app.quit(); } else if (win && !win.isDestroyed()) win.close(); });
@@ -301,49 +301,56 @@ function createWindow() {
 }
 
 const send = (c) => () => win && win.webContents.send('menu', c);
+/* the menu speaks the app's language (Avi: "השפה צריכה להיות תואמת את שפת הממשק"); it is rebuilt when the language changes */
+const M = (en, he) => (uiLang === 'he' ? he : en);
 const menuTemplate = () => [
   ...(process.platform === 'darwin' ? [{ role: 'appMenu' }] : []),
-  { label: 'Show', submenu: [
-      { label: 'Open…', accelerator: 'CmdOrCtrl+O', click: () => win && win.webContents.send('menu', 'open') },
-      { label: 'Open Recent', submenu: recentNames.length ? recentNames.map((n, i) => ({ label: n, click: send('recent:' + i) })) : [{ label: '(none yet)', enabled: false }] },
+  { label: M('Show', 'הופעה'), submenu: [
+      { label: M('Open…', 'פתיחה…'), accelerator: 'CmdOrCtrl+O', click: () => win && win.webContents.send('menu', 'open') },
+      { label: M('Open Recent', 'פתיחת אחרונים'), submenu: recentNames.length ? recentNames.map((n, i) => ({ label: n, click: send('recent:' + i) })) : [{ label: M('(none yet)', '(עדיין אין)'), enabled: false }] },
       { type: 'separator' },
-      { label: 'Save', accelerator: 'CmdOrCtrl+S', click: () => win && win.webContents.send('menu', 'save') },
-      { label: 'Save As…', accelerator: 'CmdOrCtrl+Shift+S', click: () => win && win.webContents.send('menu', 'saveas') },
-      { label: 'Save with All Media (for another computer)…', click: () => win && win.webContents.send('menu', 'savepack') },
+      { label: M('Save', 'שמירה'), accelerator: 'CmdOrCtrl+S', click: () => win && win.webContents.send('menu', 'save') },
+      { label: M('Save As…', 'שמירה בשם…'), accelerator: 'CmdOrCtrl+Shift+S', click: () => win && win.webContents.send('menu', 'saveas') },
+      { label: M('Save with All Media (for another computer)…', 'שמירה עם כל הקבצים (למחשב אחר)…'), click: () => win && win.webContents.send('menu', 'savepack') },
       { type: 'separator' },
-      { label: 'Export Show MP4…', click: () => win && win.webContents.send('menu', 'export') },
+      { label: M('Export Show MP4…', 'ייצוא ההופעה ל-MP4…'), click: () => win && win.webContents.send('menu', 'export') },
       { type: 'separator' },
-      process.platform === 'darwin' ? { role: 'close' } : { role: 'quit' }
+      process.platform === 'darwin' ? { role: 'close', label: M('Close Window', 'סגירת חלון') } : { role: 'quit', label: M('Quit', 'יציאה') }
   ]},
   // Edit menu: on a Mac, ⌘C / ⌘V / ⌘X / ⌘A in text fields only work when the app has one (pasting a YouTube link, typing a title…)
   { role: 'editMenu' },
-  { label: 'Cue', submenu: [
-      { label: 'Move Up', accelerator: 'Alt+Up', click: () => win && win.webContents.send('menu', 'up') },
-      { label: 'Move Down', accelerator: 'Alt+Down', click: () => win && win.webContents.send('menu', 'down') },
-      { label: 'Duplicate Cue', accelerator: 'CmdOrCtrl+D', click: () => win && win.webContents.send('menu', 'dup') },
-      { label: 'Remove', click: () => win && win.webContents.send('menu', 'del') },
+  { label: M('Cue', 'קיו'), submenu: [
+      { label: M('Move Up', 'הזזה למעלה'), accelerator: 'Alt+Up', click: () => win && win.webContents.send('menu', 'up') },
+      { label: M('Move Down', 'הזזה למטה'), accelerator: 'Alt+Down', click: () => win && win.webContents.send('menu', 'down') },
+      { label: M('Duplicate Cue', 'שכפול קיו'), accelerator: 'CmdOrCtrl+D', click: () => win && win.webContents.send('menu', 'dup') },
+      { label: M('Remove', 'מחיקה'), click: () => win && win.webContents.send('menu', 'del') },
       { type: 'separator' },
-      { label: 'Select All', click: () => win && win.webContents.send('menu', 'selall') },
-      { label: 'Clear All List…', click: () => win && win.webContents.send('menu', 'clear') },
+      { label: M('Select All', 'בחירת הכול'), click: () => win && win.webContents.send('menu', 'selall') },
+      { label: M('Clear All List…', 'ניקוי כל הרשימה…'), click: () => win && win.webContents.send('menu', 'clear') },
       { type: 'separator' },
-      { label: 'Create Slide Show', click: () => win && win.webContents.send('menu', 'slideshow') },
+      { label: M('Create Slide Show', 'יצירת Slide Show'), click: () => win && win.webContents.send('menu', 'slideshow') },
       { type: 'separator' },
-      { label: 'Add Cue From', submenu: [
-        { label: 'Computer…', click: send('add-pc') }, { label: 'YouTube / Vimeo Link…', click: send('add-link') },
-        { label: 'PDF / PowerPoint…', click: send('add-pdf') }, { label: 'Create Cue…', click: send('add-card') },
-        { label: 'Free Music…', click: send('add-music') }, { label: 'AI Builder…', click: send('add-ai') } ] }
+      { label: M('Add Cue From', 'הוספת קיו מ…'), submenu: [
+        { label: M('Computer…', 'המחשב…'), click: send('add-pc') }, { label: M('YouTube / Vimeo Link…', 'לינק YouTube / Vimeo…'), click: send('add-link') },
+        { label: M('PDF / PowerPoint…', 'PDF / פאוורפוינט…'), click: send('add-pdf') }, { label: M('Create Cue…', 'יצירת קיו…'), click: send('add-card') },
+        { label: M('Free Music…', 'מוזיקה חופשית…'), click: send('add-music') }, { label: M('AI Builder…', 'AI Builder…'), click: send('add-ai') } ] }
   ]},
-  { label: 'Event Screen', submenu: [
-      { label: 'Present on Event Screen', accelerator: 'CmdOrCtrl+Shift+O', click: () => win && win.webContents.send('menu', 'output') },
-      { label: 'Close Event Screen…', click: send('closeout') },
-      { label: 'Share Event Screen…', click: () => win && win.webContents.send('menu', 'share') },
+  { label: M('Event Screen', 'מסך האירוע'), submenu: [
+      { label: M('Present on Event Screen', 'הצג על מסך האירוע'), accelerator: 'CmdOrCtrl+Shift+O', click: () => win && win.webContents.send('menu', 'output') },
+      { label: M('Close Event Screen…', 'סגירת מסך האירוע…'), click: send('closeout') },
+      { label: M('Share Event Screen…', 'שיתוף מסך האירוע…'), click: () => win && win.webContents.send('menu', 'share') },
+      { label: M('Cuey Remote (Phone)…', 'שלט בטלפון (Cuey Remote)…'), click: send('remote') },
       { type: 'separator' },
-      { label: 'Black', click: () => win && win.webContents.send('menu', 'black') },
-      { role: 'togglefullscreen' }
+      { label: M('Black', 'מסך שחור'), click: () => win && win.webContents.send('menu', 'black') },
+      { role: 'togglefullscreen', label: M('Toggle Full Screen', 'מסך מלא') }
   ]},
-  { role: 'viewMenu' },
+  /* no Reload / Developer Tools in the real app: ⌘R in the middle of a show would wipe the running show */
+  { label: M('View', 'תצוגה'), submenu: [
+      ...(app.isPackaged ? [] : [{ role: 'reload' }, { role: 'toggleDevTools' }, { type: 'separator' }]),
+      { role: 'resetZoom', label: M('Actual Size', 'גודל רגיל') }, { role: 'zoomIn', label: M('Zoom In', 'הגדלה') }, { role: 'zoomOut', label: M('Zoom Out', 'הקטנה') },
+      { type: 'separator' }, { role: 'togglefullscreen', label: M('Toggle Full Screen', 'מסך מלא') } ] },
   { role: 'windowMenu' },
-  { role: 'help', submenu: [{ label: 'Keyboard Shortcuts', click: () => win && win.webContents.send('menu', 'keys') }, { label: 'Quick Tour', click: () => win && win.webContents.send('menu', 'tour') }, { label: 'Contact Support', click: () => shell.openExternal('mailto:support@cuey.live?subject=' + encodeURIComponent('Cuey support ' + app.getVersion())) }, { label: 'About Cuey', click: () => win && win.webContents.send('menu', 'about') }, { type: 'separator' }, { label: 'Cuey Website', click: () => shell.openExternal('https://cuey.live/') }] }
+  { role: 'help', label: M('Help', 'עזרה'), submenu: [{ label: M('Keyboard Shortcuts', 'קיצורי מקלדת'), click: () => win && win.webContents.send('menu', 'keys') }, { label: M('Quick Tour', 'סיור קצר'), click: () => win && win.webContents.send('menu', 'tour') }, { label: M('Contact Support', 'פנייה לתמיכה'), click: () => win && win.webContents.send('menu', 'support') }, { label: M('About Cuey', 'אודות Cuey'), click: () => win && win.webContents.send('menu', 'about') }, { type: 'separator' }, { label: M('Cuey Website', 'האתר של Cuey'), click: () => shell.openExternal(uiLang === 'he' ? 'https://cuey.live/he/' : 'https://cuey.live/') }] }
 ];
 
 app.whenReady().then(() => {
