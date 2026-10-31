@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0A0A0C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cuey Remote">
+<title>Cuey Remote</title>
+<link rel="icon" href="../favicon.png">
+<link rel="apple-touch-icon" href="../app/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@500;700;800;900&family=Poppins:wght@600;800;900&display=swap">
+<style>
+/* Cuey Remote — the phone is the clicker. One big GO, the three show buttons under it, and what's live / next on top. */
+:root{--bg:#0A0A0C;--panel:#131317;--line:#26262e;--txt:#F2F2F5;--mut:#9A9AA8;--go:#C8FF00;--amb:#FF751F;--red:#ff3b3b;color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:Poppins,Heebo,system-ui,sans-serif;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+body[dir=rtl]{font-family:Heebo,Poppins,system-ui,sans-serif}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 10px) max(14px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 14px) max(14px,env(safe-area-inset-left,0px))}
+.top{display:flex;align-items:center;gap:10px;min-height:34px}
+.top img{height:24px}
+.top .rm{font:800 12px Poppins,system-ui;letter-spacing:.14em;color:var(--mut)}
+.top .sp{flex:1}
+.conn{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mut)}
+.conn i{width:9px;height:9px;border-radius:50%;background:var(--amb);animation:pl 1.2s infinite}
+.conn.ok i{background:var(--go);animation:none;box-shadow:0 0 10px var(--go)}
+@keyframes pl{50%{opacity:.3}}
+.cards{display:flex;flex-direction:column;gap:8px}
+.card{display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:10px;min-width:0}
+.card.live{border-color:rgba(200,255,0,.45)}
+.card .th{flex:0 0 auto;width:96px;aspect-ratio:16/9;border-radius:9px;background:#000 center/contain no-repeat;border:1px solid #222}
+.card.nx .th{width:64px}
+.card .tx{min-width:0;flex:1}
+.card .lb{font:800 10.5px Poppins,system-ui;letter-spacing:.14em;color:var(--mut)}
+.card.live .lb{color:var(--go)}
+.card .nm{font-weight:700;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.card.nx .nm{font-size:14.5px;color:#d6d6de}
+.tm{display:flex;align-items:center;gap:8px;margin-top:6px;font:600 12px ui-monospace,monospace;color:var(--mut)}
+.tm .bar{flex:1;height:4px;border-radius:2px;background:#26262e;overflow:hidden}
+.tm .bar b{display:block;height:100%;width:0;background:var(--go)}
+.tm[hidden]{display:none}.tm .rem{color:var(--txt)}
+.tm.end .rem{color:var(--amb)}
+.tag{display:inline-block;font:800 10px Poppins,system-ui;letter-spacing:.1em;padding:2px 7px;border-radius:99px;margin-inline-start:6px;vertical-align:1px}
+.tag.blk{background:#fff;color:#000}.tag.frz{background:var(--amb);color:#fff}
+#go{flex:1;min-height:150px;border:0;border-radius:26px;background:var(--go);color:#0A0A0C;font:900 clamp(56px,17vw,96px)/1 Poppins,system-ui;letter-spacing:.02em;display:flex;align-items:center;justify-content:center;gap:.25em;box-shadow:0 0 40px rgba(200,255,0,.25);transition:transform .08s,box-shadow .2s;position:relative;overflow:hidden}
+#go svg{width:.62em;height:.62em}
+#go.armed{background:var(--amb);color:#fff;box-shadow:0 0 40px rgba(255,117,31,.3)}
+#go:active,#go.down{transform:scale(.97)}
+#go .rip{position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 0 rgba(10,10,12,.5);pointer-events:none}
+#go.hit .rip{animation:rip .45s ease-out}
+@keyframes rip{from{box-shadow:inset 0 0 0 40px rgba(10,10,12,.35)}to{box-shadow:inset 0 0 0 0 rgba(10,10,12,0)}}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.row button{height:74px;border-radius:18px;border:1px solid var(--line);background:var(--panel);color:var(--txt);font:800 15px/1.1 inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:transform .08s}
+.row button svg{width:22px;height:22px}
+.row button:active,.row button.down{transform:scale(.95)}
+#frz.on{background:var(--amb);border-color:var(--amb);color:#fff}
+#blk.on{background:#fff;border-color:#fff;color:#000}
+button:disabled{opacity:.35}
+#wait{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:var(--bg);text-align:center;padding:24px;z-index:5;transition:opacity .4s}
+#wait.off{opacity:0;pointer-events:none}
+#wait img{width:170px}
+#wait .rm{font:800 13px Poppins,system-ui;letter-spacing:.2em;color:var(--go);margin-top:-6px}
+#wait .dot{width:10px;height:10px;border-radius:50%;background:var(--amb);animation:pl 1.2s infinite;margin-top:10px}
+#wait p{margin:0;color:var(--mut);font-size:15px;max-width:340px;line-height:1.5}
+#wait #msg{color:var(--txt);font-weight:700;font-size:17px}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 104px);transform:translateX(-50%);background:#1d1d23;border:1px solid var(--line);color:var(--txt);padding:9px 14px;border-radius:12px;font-size:13.5px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:6;white-space:nowrap}
+#toast.on{opacity:1}
+@media (orientation:landscape) and (max-height:520px){
+ #app{display:grid;grid-template-columns:1fr 1.2fr;grid-template-rows:auto 1fr auto;column-gap:14px}
+ .top{grid-column:1/3}.cards{grid-row:2/4}#go{grid-column:2;grid-row:2;min-height:0}.row{grid-column:2;grid-row:3}.row button{height:58px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top"><img src="../logo-full.png" alt="Cuey"><span class="rm">REMOTE</span><span class="sp"></span><span class="conn" id="conn"><i></i><span id="connT"></span></span></div>
+  <div class="cards">
+    <div class="card live"><div class="th" id="lth"></div><div class="tx"><div class="lb"><span data-s="live">LIVE</span><span id="tags"></span></div><div class="nm" id="lnm">—</div><div class="tm" id="tm" hidden><span id="tpos">0:00</span><span class="bar"><b id="tbar"></b></span><span class="rem" id="trem">-0:00</span></div></div></div>
+    <div class="card nx"><div class="th" id="nth"></div><div class="tx"><div class="lb" data-s="next">NEXT</div><div class="nm" id="nnm">—</div></div></div>
+  </div>
+  <button id="go" type="button" aria-label="GO" dir="ltr"><span id="goT">GO</span><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M0 0 10 6 0 12z" fill="currentColor"/></svg><i class="rip"></i></button>
+  <div class="row">
+    <button id="back" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5v14M19 5 9 12l10 7z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span data-s="back">BACK</span></button>
+    <button id="frz" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></svg><span id="frzT" data-s="freeze">FREEZE</span></button>
+    <button id="blk" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="13" rx="2" fill="currentColor"/><path d="M8 21h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-s="black">BLACK</span></button>
+  </div>
+</div>
+<div id="wait">
+  <img src="../logo-full.png" alt="Cuey"><div class="rm">REMOTE</div>
+  <div class="dot"></div>
+  <p id="msg" data-s="look">Connecting to Cuey…</p>
+  <p id="tip" data-s="tip">Keep Cuey open on the computer, with the Remote window shown there.</p>
+</div>
+<div id="toast" role="status"></div>
+<script>
+(function(){
+const q=new URLSearchParams(location.search);
+const HE=(q.get('l')||navigator.language||'').toLowerCase().startsWith('he');
+const S=HE?{live:'באוויר',next:'הבא',back:'אחורה',freeze:'הקפאה',resume:'המשך',black:'מסך שחור',go:'GO',play:'PLAY',look:'מתחבר ל־Cuey…',tip:'השאירו את Cuey פתוח במחשב, עם חלון השלט מוצג שם.',on:'מחובר',off:'מתחבר…',lost:'החיבור נותק — מתחבר מחדש…',end:'השלט נותק מהמחשב. כדי לחבר שוב, סרקו את הקוד החדש ב־Cuey.',full:'כבר מחוברים 3 טלפונים להופעה הזו.',nocode:'בלינק הזה אין קוד. סרקו שוב את הקוד מ־Cuey.',none:'אין עוד קיואים',empty:'—',slow:'השלט עובד דרך האינטרנט — לחיצות עלולות להגיע לאט יותר',blk:'שחור',frz:'מוקפא',sent:'נשלח'}
+             :{live:'LIVE',next:'NEXT',back:'BACK',freeze:'FREEZE',resume:'RESUME',black:'BLACK',go:'GO',play:'PLAY',look:'Connecting to Cuey…',tip:'Keep Cuey open on the computer, with the Remote window shown there.',on:'Connected',off:'Connecting…',lost:'Connection lost — reconnecting…',end:'The remote was disconnected on the computer. To connect again, scan the new code in Cuey.',full:'3 phones are already connected to this show.',nocode:'This link has no code. Scan the code in Cuey again.',none:'No more cues',empty:'—',slow:'The remote is going through the internet — presses may arrive a bit slower',blk:'BLACK',frz:'FROZEN',sent:'Sent'};
+document.documentElement.lang=HE?'he':'en';document.body.dir=HE?'rtl':'ltr';
+document.querySelectorAll('[data-s]').forEach(e=>{e.textContent=S[e.dataset.s]});
+const $=id=>document.getElementById(id);
+const code=(q.get('c')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,32);
+if(!code){$('msg').textContent=S.nocode;$('tip').textContent='';return}
+history.replaceState(null,'',location.pathname+'?c='+code+(HE?'&l=he':'')); // tidy link, still saveable to the home screen
+const topic='cuey-r1-'+code, myId=(crypto.getRandomValues?Array.from(crypto.getRandomValues(new Uint8Array(6)),b=>b.toString(36)).join(''):Math.random().toString(36).slice(2,10));
+function post(o){return fetch('https://ntfy.sh/'+topic,{method:'POST',body:JSON.stringify(o)}).catch(()=>{})}
+async function body(d){if(d.attachment&&d.attachment.url){try{return await (await fetch(d.attachment.url)).text()}catch(e){return ''}}return d.message||''}
+let pc=null,dc=null,helloN='',ws=null,lastId='',seq=Date.now()%1e6,ended=false,helloT=0,slowShown=false;
+const dcOpen=()=>!!(dc&&dc.readyState==='open');
+function setConn(ok){$('conn').classList.toggle('ok',ok);$('connT').textContent=ok?S.on:S.off;$('wait').classList.toggle('off',ok)}
+function toast(s,ms){const t=$('toast');t.textContent=s;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),ms||1800)}
+function hello(){if(dcOpen()||ended)return;helloN=Math.random().toString(36).slice(2,12);post({t:'hello',id:myId,n:helloN})}
+function waitIce(p){return new Promise(r=>{if(p.iceGatheringState==='complete')return r();const f=()=>{if(p.iceGatheringState==='complete'){p.removeEventListener('icegatheringstatechange',f);r()}};p.addEventListener('icegatheringstatechange',f);setTimeout(r,2500)})}
+async function onOffer(m){
+  if(m.n!==undefined&&m.n!==helloN)return; if(dcOpen())return;
+  if(pc){try{pc.close()}catch(e){}}
+  pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});const me=pc;
+  pc.ondatachannel=e=>{dc=e.channel;dc.onopen=()=>{setConn(true);if(navigator.vibrate)navigator.vibrate(20)};dc.onclose=()=>{if(pc===me){setConn(false);$('msg').textContent=S.lost;setTimeout(hello,1200)}};dc.onmessage=ev=>{let x;try{x=JSON.parse(ev.data)}catch(er){return}onMsg(x)}};
+  pc.onconnectionstatechange=()=>{if(pc!==me)return;if(['failed','disconnected','closed'].includes(me.connectionState)&&!dcOpen()){setConn(false);$('msg').textContent=S.lost;setTimeout(hello,1500)}};
+  await pc.setRemoteDescription({type:'offer',sdp:m.sdp});await pc.setLocalDescription(await pc.createAnswer());await waitIce(pc);
+  post({t:'answer',id:myId,sdp:pc.localDescription.sdp});
+}
+function connect(){
+  ws=new WebSocket('wss://ntfy.sh/'+topic+'/ws?since='+(lastId||'30s'));
+  ws.onopen=()=>{hello()};
+  ws.onmessage=async e=>{let d;try{d=JSON.parse(e.data)}catch(x){return}if(d.event!=='message')return;if(d.id)lastId=d.id;let m;try{m=JSON.parse(await body(d))}catch(x){return}
+    if(m.t==='offer'&&m.to===myId)onOffer(m);
+    else if(m.t==='full'&&m.to===myId){ended=true;$('msg').textContent=S.full;$('tip').textContent=''}
+    else if(m.t==='bye'&&m.host){if(m.end){ended=true;setConn(false);$('msg').textContent=S.end;$('tip').textContent='';try{pc&&pc.close()}catch(x){}}else{setConn(false);$('msg').textContent=S.lost}}};
+  ws.onclose=()=>{if(!ended)setTimeout(connect,2000)};
+}
+// keep asking until Cuey answers (Cuey may open the Remote window after the phone scanned)
+helloT=setInterval(()=>{if(!dcOpen()&&!ended)hello()},5000);
+connect();
+// ---- state from Cuey
+let tm=null,tmRx=0;
+function fmt(s){s=Math.max(0,Math.round(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function onMsg(m){
+  if(m.t==='st'){
+    $('lnm').textContent=m.live?m.live.name:S.empty;$('nnm').textContent=m.next?m.next.name:(m.n?S.none:S.empty);
+    if('lt' in m)$('lth').style.backgroundImage=m.lt?'url('+m.lt+')':'none';if('nt' in m)$('nth').style.backgroundImage=m.nt?'url('+m.nt+')':'none';
+    $('tags').innerHTML=(m.black?'<span class="tag blk">'+S.blk+'</span>':'')+(m.frz?'<span class="tag frz">'+S.frz+'</span>':'');
+    $('blk').classList.toggle('on',!!m.black);$('frz').classList.toggle('on',!!m.frz);$('frzT').textContent=m.frz?S.resume:S.freeze;
+    $('go').classList.toggle('armed',!!m.armed);$('goT').textContent=m.armed?S.play:S.go;
+    $('back').disabled=!(m.i>0);$('go').disabled=!m.n;
+  } else if(m.t==='tm'){tm=m.d?m:null;tmRx=performance.now();drawTm()}
+  else if(m.t==='bye'){setConn(false);$('msg').textContent=S.lost}
+}
+function drawTm(){const el=$('tm');if(!tm){el.hidden=true;return}el.hidden=false;const at=Math.min(tm.d,tm.at+(tm.p?(performance.now()-tmRx)/1000:0));
+  $('tpos').textContent=fmt(at);$('trem').textContent='-'+fmt(tm.d-at);$('tbar').style.width=(100*at/tm.d).toFixed(1)+'%';el.classList.toggle('end',tm.d-at<10)}
+setInterval(drawTm,250);
+// ---- buttons: act on touch-down for zero delay; one press = one command
+function send(c){seq++;const o={t:'cmd',c,s:seq};if(navigator.vibrate)navigator.vibrate(c==='go'?35:20);
+  if(dcOpen()){try{dc.send(JSON.stringify(o));return}catch(e){}}
+  o.id=myId;post(o);if(!slowShown){slowShown=true;toast(S.slow,3000)}}
+function bind(id,c){const b=$(id);let lock=0;
+  b.addEventListener('pointerdown',e=>{e.preventDefault();if(b.disabled||Date.now()<lock)return;lock=Date.now()+250;b.classList.add('down');send(c);if(id==='go'){b.classList.remove('hit');void b.offsetWidth;b.classList.add('hit')}});
+  ['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,()=>b.classList.remove('down')));
+  b.addEventListener('click',e=>{if(e.detail===0&&!b.disabled)send(c)})} // keyboard / switch access
+bind('go','go');bind('back','back');bind('frz','freeze');bind('blk','black');
+// the screen stays on while the remote is open
+let wl=null;async function wake(){try{if('wakeLock' in navigator&&document.visibilityState==='visible')wl=await navigator.wakeLock.request('screen')}catch(e){}}
+wake();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){wake();if(!dcOpen())hello()}});
+addEventListener('pagehide',()=>{if(!ended)post({t:'bye',id:myId})});
+setConn(false);
+})();
+</script>
+</body>
+</html>

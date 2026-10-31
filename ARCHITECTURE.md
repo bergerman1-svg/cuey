@@ -554,3 +554,11 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 - Browser unchanged (Window Management API; guide when one screen) — browsers can't change display settings.
 - NOT yet tested on real hardware (Windows with a projector, Mac mirrored) — Avi to test.
 - Test: `tests/evs_e2e.py` (26); browser_suite updated (ask-before-close).
+
+## v0.50.0 — Cuey Remote (phone clicker), 31.10.2026
+- Header button "שלט / Remote" (phone icon; icon-only under 1180 px) + menu "Event screen → Cuey Remote (phone)…" open `#rmDlg`: QR + link `https://cuey.live/r/?c=CODE`.
+- Free for everyone (Avi). Code: 12 chars from `shNewCode()`, own ntfy topic `cuey-r1-CODE` (never the screen-share topic). Kept in localStorage `cuey.rm` so a phone that scanned once reconnects; "Disconnect phones" sends `bye{end}` and forgets the code (next time = new code).
+- Phone page `docs/r/index.html` ("Cuey Remote"): hello → app offers a WebRTC data channel → commands `{t:'cmd',c:'go'|'back'|'freeze'|'black',s}`; if the channel can't open the same command goes over ntfy (toast "slower"). Dedupe by phone id + seq. Unknown commands ignored. Commands click the same buttons as the operator (`#go/#back/#frz/#blk`).
+- App → phone state every 500 ms when changed: LIVE/NEXT names + 320×180 thumbs, black/freeze/armed, video time. Max 3 phones.
+- Phone: acts on pointerdown, 250 ms tap lock, vibration, wake lock, landscape layout, Hebrew/English (`&l=he`).
+- Test: `tests/remote_e2e.py` (28 checks) in the gate.
