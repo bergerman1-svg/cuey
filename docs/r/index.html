@@ -13,7 +13,6 @@
 <title>Cuey Remote</title>
 <link rel="icon" href="../favicon.png">
 <link rel="apple-touch-icon" href="../app/icon-192.png">
-<link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@500;700;800;900&family=Poppins:wght@600;800;900&display=swap">
 <style>
@@ -108,8 +107,8 @@ button:disabled{opacity:.35}
 (function(){
 const q=new URLSearchParams(location.search);
 let saved={};try{saved=JSON.parse(localStorage.getItem('cuey.remote')||'{}')||{}}catch(e){}
-const T={he:{live:'PROGRAM',next:'NEXT',back:'אחורה',freeze:'הקפאה',resume:'המשך',black:'מסך שחור',go:'GO',play:'הפעל',look:'מתחבר ל־Cuey…',tip:'השאירו את Cuey פתוח במחשב. בפעם הראשונה: לוחצים שם על 📱 שלט וסורקים את הקוד.',on:'מחובר',off:'מתחבר…',lost:'מתחבר מחדש… הכפתורים ממשיכים לעבוד',end:'השלט נותק מהמחשב. כדי לחבר שוב, לחצו ב־Cuey על 📱 שלט וסרקו את הקוד החדש.',full:'כבר מחוברים 3 טלפונים להופעה הזו.',nocode:'עוד אין שלט מחובר. ב־Cuey במחשב לוחצים על 📱 שלט וסורקים את הקוד.',none:'אין עוד קיואים',empty:'—',slow:'השלט עובד דרך האינטרנט — לחיצות עלולות להגיע לאט יותר',blk:'מסך שחור',frz:'הקפאה',inst:'שמרו את השלט במסך הבית',instGo:'שמירה',instIos:'בספארי: לוחצים על כפתור השיתוף ⬆︎ ואז "הוסף למסך הבית"'},
-         en:{live:'PROGRAM',next:'NEXT',back:'BACK',freeze:'FREEZE',resume:'PLAY',black:'BLACK',go:'GO',play:'PLAY',look:'Connecting to Cuey…',tip:'Keep Cuey open on the computer. First time: press 📱 Remote there and scan the code.',on:'Connected',off:'Connecting…',lost:'Reconnecting… the buttons still work',end:'The remote was disconnected on the computer. To connect again, press 📱 Remote in Cuey and scan the new code.',full:'3 phones are already connected to this show.',nocode:'No remote connected yet. In Cuey on the computer, press 📱 Remote and scan the code.',none:'No more cues',empty:'—',slow:'The remote is going through the internet — presses may arrive a bit slower',blk:'BLACK',frz:'FREEZE',inst:'Keep the remote on your home screen',instGo:'Add',instIos:'In Safari: tap Share ⬆︎, then “Add to Home Screen”'}};
+const T={he:{live:'PROGRAM',next:'NEXT',back:'אחורה',freeze:'הקפאה',resume:'המשך',black:'מסך שחור',go:'GO',play:'הפעל',look:'מתחבר ל־Cuey…',tip:'השאירו את Cuey פתוח במחשב. בפעם הראשונה: לוחצים שם על 📱 שלט וסורקים את הקוד.',on:'מחובר',off:'מתחבר…',lost:'מתחבר מחדש… הכפתורים ממשיכים לעבוד',end:'השלט נותק מהמחשב. כדי לחבר שוב, לחצו ב־Cuey על 📱 שלט וסרקו את הקוד החדש.',full:'כבר מחוברים 3 טלפונים להופעה הזו.',nocode:'עוד אין שלט מחובר. ב־Cuey במחשב לוחצים על 📱 שלט וסורקים את הקוד.',none:'אין עוד קיואים',empty:'—',slow:'השלט עובד דרך האינטרנט — לחיצות עלולות להגיע לאט יותר',blk:'מסך שחור',frz:'הקפאה',inst:'שמרו את השלט במסך הבית',instGo:'איך?',instIos:'בספארי: לוחצים על כפתור השיתוף ⬆︎ ואז "הוסף למסך הבית"',instAnd:'בתפריט של הדפדפן (⋮ או ☰): "הוספה למסך הבית" — נוצר קיצור דרך לשלט'},
+         en:{live:'PROGRAM',next:'NEXT',back:'BACK',freeze:'FREEZE',resume:'PLAY',black:'BLACK',go:'GO',play:'PLAY',look:'Connecting to Cuey…',tip:'Keep Cuey open on the computer. First time: press 📱 Remote there and scan the code.',on:'Connected',off:'Connecting…',lost:'Reconnecting… the buttons still work',end:'The remote was disconnected on the computer. To connect again, press 📱 Remote in Cuey and scan the new code.',full:'3 phones are already connected to this show.',nocode:'No remote connected yet. In Cuey on the computer, press 📱 Remote and scan the code.',none:'No more cues',empty:'—',slow:'The remote is going through the internet — presses may arrive a bit slower',blk:'BLACK',frz:'FREEZE',inst:'Keep the remote on your home screen',instGo:'How?',instIos:'In Safari: tap Share ⬆︎, then “Add to Home Screen”',instAnd:'In the browser menu (⋮ or ☰): “Add to Home screen” — it makes a shortcut to the remote'}};
 let HE=((q.get('l')||saved.l||'')||(navigator.language||'')).toLowerCase().startsWith('he'),S=T[HE?'he':'en'];
 function applyLang(){S=T[HE?'he':'en'];document.documentElement.lang=HE?'he':'en';document.body.dir=HE?'rtl':'ltr';document.querySelectorAll('[data-s]').forEach(e=>{e.textContent=S[e.dataset.s]});
   const c=document.getElementById('conn');if(c)document.getElementById('connT').textContent=c.classList.contains('ok')?S.on:S.off;document.getElementById('lostT').textContent=S.lost;document.getElementById('instT').textContent=S.inst;document.getElementById('instGo').textContent=S.instGo}
@@ -173,21 +172,24 @@ setInterval(drawTm,250);
 function send(c){seq++;const o={t:'cmd',c,s:seq};if(navigator.vibrate)navigator.vibrate(c==='go'?35:20);
   if(dcOpen()){try{dc.send(JSON.stringify(o));return}catch(e){}}
   o.id=myId;post(o);if(!slowShown){slowShown=true;toast(S.slow,3000)}}
-function bind(id,c){const b=$(id);let lock=0;
-  b.addEventListener('pointerdown',e=>{e.preventDefault();if(b.disabled||Date.now()<lock)return;lock=Date.now()+250;b.classList.add('down');send(c);if(id==='go'){b.classList.remove('hit');void b.offsetWidth;b.classList.add('hit')}});
+/* one touch = one command. A tap fires pointerdown AND (on some phones, e.g. Samsung) a click with detail 0 —
+   that click used to send the command a second time: GO jumped two cues, BLACK/FREEZE switched on and straight off.
+   Now the click is used only when no touch/mouse press came just before it (keyboard / switch access). */
+function bind(id,c){const b=$(id);let lock=0,lastDown=0;
+  b.addEventListener('pointerdown',e=>{e.preventDefault();lastDown=Date.now();if(b.disabled||Date.now()<lock)return;lock=Date.now()+350;b.classList.add('down');send(c);if(id==='go'){b.classList.remove('hit');void b.offsetWidth;b.classList.add('hit')}});
   ['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,()=>b.classList.remove('down')));
-  b.addEventListener('click',e=>{if(e.detail===0&&!b.disabled)send(c)})} // keyboard / switch access
+  b.addEventListener('click',e=>{e.preventDefault();if(Date.now()-lastDown<1500||b.disabled||Date.now()<lock)return;lock=Date.now()+350;send(c)})}
 bind('go','go');bind('back','back');bind('frz','freeze');bind('blk','black');
 // the screen stays on while the remote is open
 let wl=null;async function wake(){try{if('wakeLock' in navigator&&document.visibilityState==='visible')wl=await navigator.wakeLock.request('screen')}catch(e){}}
 wake();function revive(){if(ended)return;if(!ws||ws.readyState>1){try{ws&&(ws.onclose=null)}catch(e){}connect()}else if(!dcOpen())hello()}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){wake();revive()}});addEventListener('online',revive);addEventListener('pageshow',revive);
 // save to home screen: Android asks with its own prompt; iPhone gets the two-tap hint. Shown once it works, until closed.
-let bip=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();bip=e;instShow()});
+let bip=null;
 function standalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone}
 function instShow(){let no=false;try{no=localStorage.getItem('cuey.remote.inst')==='no'}catch(e){}const ios=/iPhone|iPad|iPod/.test(navigator.userAgent);
-  $('inst').classList.toggle('on',everOk&&!standalone()&&!no&&(!!bip||ios))}
-$('instGo').onclick=async()=>{if(bip){bip.prompt();try{await bip.userChoice}catch(e){}bip=null;$('inst').classList.remove('on')}else toast(S.instIos,5000)};
+  $('inst').classList.toggle('on',everOk&&!standalone()&&!no)}
+$('instGo').onclick=()=>toast(/iPhone|iPad|iPod/.test(navigator.userAgent)?S.instIos:S.instAnd,6000);
 $('instX').onclick=()=>{try{localStorage.setItem('cuey.remote.inst','no')}catch(e){}$('inst').classList.remove('on')};
 addEventListener('pagehide',()=>{if(!ended)post({t:'bye',id:myId})});
 setConn(false);
