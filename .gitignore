@@ -2,3 +2,4 @@ node_modules/
 release/
 docs/app/index.html
 win-shots/
+__pycache__/
