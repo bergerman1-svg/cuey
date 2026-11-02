@@ -306,6 +306,8 @@ details.cmp .ptable{margin-top:12px}
 footer .legal .em{margin:0 10px;white-space:nowrap}
 @media (max-width:600px){.btn{white-space:normal;text-align:center;line-height:1.3}.mbox .btn,.sheet .btn{font-size:16px;padding:14px 16px}}
 
+/* small 'how do I install it?' button under the download buttons */
+.howto{display:flex;align-items:center;gap:7px;margin:14px auto 0;background:none;border:0;padding:6px 2px;color:var(--mut,#9A9AA8);font:inherit;font-size:15px;cursor:pointer;text-decoration:underline;text-underline-offset:4px}.howto:hover{color:var(--go)}
 /* after a download: how to install, with the short animation (Avi, 31.10) */
 .inst .chbox{width:min(760px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:24px}
 .inst h3{margin:0 0 4px;font-size:22px}.inst .isub{margin:0 0 14px;color:var(--mut,#999);font-size:15px}
@@ -425,8 +427,8 @@ footer .legal .em{margin:0 10px;white-space:nowrap}
       <a class="btn big" id="dlMain" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-arm64.dmg" download>⬇ Download Cuey for desktop <small id="dlOs">Mac</small></a>
       <a class="btn sec" href="app/?lang=en">▶ Or try it now in the browser <small>no install</small></a>
     </div>
+    <button type="button" class="howto" id="howInst"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M10 8.5l6 3.5-6 3.5z"/></svg>How do I install it? Show me</button>
     <p class="dlo">Other versions: <a id="dlArm" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-arm64.dmg" download>Mac · Apple Silicon</a> · <a id="dlIntel" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-mac-x64.dmg" download>Mac · Intel</a> · <a id="dlWin" href="https://github.com/bergerman1-svg/cuey/releases/latest/download/Cuey-windows.exe" download>Windows</a></p>
-    <details class="note"><summary>Mac: opening it the first time</summary>early builds aren't notarized by Apple yet, so macOS may say the app "is damaged". It isn't. Drag Cuey to Applications, open Terminal and paste <code>xattr -cr /Applications/Cuey.app</code>, then open it normally.</details>
   </section>
 
   <footer>
@@ -588,7 +590,7 @@ function cueyMailForm(a,he,fallback,done){
   <button class="chx" id="inX" aria-label="Close">×</button>
   <h3 id="inT">Your download has started — here’s how to install</h3><p class="isub">Once, about a minute.</p>
   <video id="inV" muted loop playsinline autoplay preload="none"></video>
-  <ol id="inMac"><li>Open the downloaded file and drag Cuey into <b>Applications</b>.</li><li>Open Cuey. A warning appears — click <b>“Done”</b>. That’s expected: Cuey isn’t signed with Apple yet.</li><li><b>System Settings → Privacy &amp; Security</b>, scroll down and click <b>“Open Anyway”</b>.</li><li>Confirm with your computer password. From now on Cuey opens normally.</li></ol><p class="ifb" id="inMacFb">It says the app “is damaged”? It isn’t (older builds do this). Open Terminal and paste: <code>xattr -cr /Applications/Cuey.app</code></p>
+  <ol id="inMac"><li>Open the downloaded file and drag Cuey into <b>Applications</b>.</li><li>Open Cuey. A warning appears — click <b>“Done”</b>. That’s expected: Cuey isn’t signed with Apple yet.</li><li><b>System Settings → Privacy &amp; Security</b>, scroll all the way down to <b>Security</b>. It says “Cuey was blocked…” — click <b>“Open Anyway”</b>. (The button only shows after you have tried to open Cuey.)</li><li>Confirm with your computer password. From now on Cuey opens normally.</li></ol><p class="ifb" id="inMacFb"><b>Updating?</b> Quit Cuey, drag the new one into Applications, choose “Replace” — then steps 2–4.<br>Can’t find “Open Anyway”, or it says the app “is damaged”? Open Terminal and paste: <code>xattr -cr /Applications/Cuey.app</code></p>
   <ol id="inWin"><li>Open <b>Cuey-windows.exe</b> from your Downloads folder.</li><li>“Windows protected your PC” appears — click <b>“More info”</b>, then <b>“Run anyway”</b>. That’s expected: Cuey isn’t signed with Microsoft yet.</li><li>Install and click <b>“Finish”</b>. Cuey opens, and there’s a shortcut on your desktop.</li></ol>
   <button class="btn" id="inOk">Got it</button>
 </div></div>
@@ -596,10 +598,13 @@ function cueyMailForm(a,he,fallback,done){
 /* any Mac / Windows download → show how to install it (the file still downloads) */
 (function(){const d=document.getElementById('instDlg'),v=document.getElementById('inV');if(!d)return;
   const close=()=>{d.hidden=true;v.pause()};
-  document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href]');if(!a)return;const h=a.getAttribute('href');const os=/\.dmg$/i.test(h)?'mac':/\.exe$/i.test(h)?'win':'';if(!os)return;
+  const openInst=os=>{
     document.getElementById('inMac').hidden=document.getElementById('inMacFb').hidden=os!=='mac';document.getElementById('inWin').hidden=os!=='win';
     v.poster='install-'+os+'-en.jpg?v=1';v.src='install-'+os+'-en.mp4?v=1';d.hidden=false;const pp=v.play();if(pp&&pp.catch)pp.catch(()=>{})
-    setTimeout(()=>document.getElementById('inOk').focus(),50)});
+    setTimeout(()=>document.getElementById('inOk').focus(),50)};
+  document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href]');if(!a)return;const h=a.getAttribute('href');const os=/\.dmg$/i.test(h)?'mac':/\.exe$/i.test(h)?'win':'';if(os)openInst(os)});
+  /* "how do I install it?" under the download button (Avi, 2.11): Windows on a PC, else the Mac steps */
+  const hb=document.getElementById('howInst');if(hb)hb.onclick=()=>openInst(/Win/i.test(navigator.userAgent)?'win':'mac');
   document.getElementById('inX').onclick=close;document.getElementById('inOk').onclick=close;
   d.addEventListener('click',e=>{if(e.target===d)close()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!d.hidden)close()});
 })();
