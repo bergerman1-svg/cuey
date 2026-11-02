@@ -1,0 +1,54 @@
+name: Windows check
+# Cuey for Windows on a real Windows machine, every change (Avi, 2.11.2026: a Windows PC is less available to him).
+# Builds the installer, installs it silently like a user, runs the app (tests/win_desktop_e2e.js), uninstalls.
+# Screenshots of the Windows app are kept as the "windows-shots" artifact.
+on:
+  push:
+    branches: [main]
+    paths: ['app/**', 'main.js', 'preload.js', 'package.json', 'build/**', 'tests/win_desktop_e2e.js', 'tests/fixtures/**', '.github/workflows/windows-check.yml']
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm i --no-save playwright@1.48.2
+      - name: Build the installer
+        shell: bash
+        env: { CSC_IDENTITY_AUTO_DISCOVERY: 'false' }
+        run: npm run dist:win -- --publish never
+      - name: Install it (silent, like a user's first install)
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem release\*.exe | Select-Object -First 1
+          Write-Host "installer: $($exe.Name)  $([math]::Round($exe.Length/1MB,1)) MB"
+          Start-Process $exe.FullName -ArgumentList '/S' -Wait
+          $app = @("$env:LOCALAPPDATA\Programs\Cuey\Cuey.exe", "$env:ProgramFiles\Cuey\Cuey.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $app) { Write-Error "Cuey.exe not found after install"; exit 1 }
+          Write-Host "installed: $app"
+          $lnk = @("$env:USERPROFILE\Desktop\Cuey.lnk", "$env:PUBLIC\Desktop\Cuey.lnk") | Where-Object { Test-Path $_ }
+          Write-Host "desktop shortcut: $([bool]$lnk)"
+          $start = Get-ChildItem "$env:APPDATA\Microsoft\Windows\Start Menu\Programs" -Recurse -Filter "Cuey*.lnk" -ErrorAction SilentlyContinue
+          Write-Host "start menu shortcut: $([bool]$start)"
+          if (-not $lnk) { Write-Error "no desktop shortcut"; exit 1 }
+          "CUEY_EXE=$app" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Use the installed app
+        shell: bash
+        run: node tests/win_desktop_e2e.js "$CUEY_EXE"
+      - name: Uninstall
+        if: always()
+        shell: pwsh
+        run: |
+          $u = @("$env:LOCALAPPDATA\Programs\Cuey\Uninstall Cuey.exe", "$env:ProgramFiles\Cuey\Uninstall Cuey.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if ($u) { Start-Process $u -ArgumentList '/S' -Wait; Start-Sleep 3 }
+          Write-Host "still installed: $(Test-Path "$env:LOCALAPPDATA\Programs\Cuey\Cuey.exe")"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-shots
+          path: win-shots/
