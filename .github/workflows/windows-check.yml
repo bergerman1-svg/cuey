@@ -28,7 +28,12 @@ jobs:
           $exe = Get-ChildItem release\*.exe | Select-Object -First 1
           Write-Host "installer: $($exe.Name)  $([math]::Round($exe.Length/1MB,1)) MB"
           Start-Process $exe.FullName -ArgumentList '/S' -Wait
-          $app = @("$env:LOCALAPPDATA\Programs\Cuey\Cuey.exe", "$env:ProgramFiles\Cuey\Cuey.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1
+          # the installer can hand over to a second process and return early — wait up to 60 s for the app to land
+          $app = $null
+          for ($i = 0; $i -lt 30 -and -not $app; $i++) {
+            $app = @("$env:LOCALAPPDATA\Programs\Cuey\Cuey.exe", "$env:ProgramFiles\Cuey\Cuey.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1
+            if (-not $app) { Start-Sleep 2 }
+          }
           if (-not $app) { Write-Error "Cuey.exe not found after install"; exit 1 }
           Write-Host "installed: $app"
           $lnk = @("$env:USERPROFILE\Desktop\Cuey.lnk", "$env:PUBLIC\Desktop\Cuey.lnk") | Where-Object { Test-Path $_ }
