@@ -70,6 +70,12 @@ ipcMain.handle('read-media', async (_e, o) => {
   const f = path.join(mediaDir(o.showPath), safeName(o.name));
   try { return await fs.promises.readFile(f); } catch (e) { return null; }
 });
+// a reopened show reads its own files from where they were on this computer (only picture / video / sound files)
+const MEDIA_EXT = /\.(mp4|m4v|mov|webm|jpe?g|png|gif|webp|mp3|wav|m4a|aac|ogg|flac)$/i;
+ipcMain.handle('read-path', async (_e, p) => {
+  if (typeof p !== 'string' || !path.isAbsolute(p) || !MEDIA_EXT.test(p)) return null;
+  try { const st = await fs.promises.stat(p); if (!st.isFile()) return null; return await fs.promises.readFile(p); } catch (e) { return null; }
+});
 ipcMain.handle('show-open', async () => {
   const r = await dialog.showOpenDialog(win, { properties: ['openFile'], filters: SHOW_F });
   if (r.canceled || !r.filePaths[0]) return null;

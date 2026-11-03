@@ -1004,7 +1004,7 @@ function addFiles(files,g){if(files&&files.length){track1('files-added');trackEv
   render();
 }
 async function pickFiles(){
-  if(window.showOpenFilePicker){
+  if(pickFSA()){
     try{const hs=await showOpenFilePicker({multiple:true,types:[{description:'Video & images',accept:{'video/*':['.mp4','.mov','.webm','.m4v'],'image/*':['.png','.jpg','.jpeg','.gif','.webp'],'audio/*':['.mp3','.wav','.m4a','.aac','.ogg'],'application/pdf':['.pdf'],'application/vnd.openxmlformats-officedocument.presentationml.presentation':['.pptx','.ppsx'],'application/vnd.ms-powerpoint':['.ppt','.pps'],'application/x-iwork-keynote-sffkey':['.key'],'application/vnd.oasis.opendocument.presentation':['.odp']}}]});
       const fs=[];for(const h of hs){const f=await h.getFile();f._handle=h;fs.push(f)}addFiles(fs);return}
     catch(e){if(e.name==='AbortError'){pkHelp();return}}
@@ -1285,7 +1285,7 @@ async function mkLogoSet(f){const im=new Image();const u=URL.createObjectURL(f);
   const k=Math.min(1,640/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.naturalWidth*k));c.height=Math.max(1,Math.round(im.naturalHeight*k));c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);
   Object.assign(mk.T,{logo:c.toDataURL('image/png'),logoName:f.name,logoPos:mk.T.logoPos||'tr',logoSize:mk.T.logoSize||0.14});mkLogoShow();mkDraw()}
 function mkMusShow(){const n=mk.audio?mk.audio.name:(mk.keepAudio&&mk.it&&mk.it.audio?mk.it.audio.file.name:'');$('#mkMusName').textContent=n?'♪ '+n:'';$('#mkMusX').hidden=!n}
-async function mkPick(accept,desc){if(window.showOpenFilePicker){try{const [h]=await showOpenFilePicker({types:[{description:desc,accept}]});const f=await h.getFile();f._handle=h;return f}catch(e){if(e.name==='AbortError')return null}}
+async function mkPick(accept,desc){if(pickFSA()){try{const [h]=await showOpenFilePicker({types:[{description:desc,accept}]});const f=await h.getFile();f._handle=h;return f}catch(e){if(e.name==='AbortError')return null}}
   return await new Promise(res=>{const inp=document.createElement('input');inp.type='file';inp.accept=Object.keys(accept).join(',');inp.onchange=()=>res(inp.files[0]||null);inp.click()})}
 async function mkCreate(){const T=mk.T;let it=mk.it;
   T.title=$('#mkTitle').value;T.body=$('#mkBody').value;
@@ -1334,7 +1334,7 @@ $('#addText').onclick=()=>openCard(null);
 /* ---------- slide audio ---------- */
 let audTarget=null;
 async function pickAudio(it){
-  if(window.showOpenFilePicker){
+  if(pickFSA()){
     try{const [h]=await showOpenFilePicker({types:[{description:'Audio',accept:{'audio/*':['.mp3','.wav','.m4a','.aac','.ogg']}}]});const f=await h.getFile();f._handle=h;setAudio(it,f);return}
     catch(e){if(e.name==='AbortError')return}
   }
@@ -1749,7 +1749,7 @@ function startRename(d,it){
 /* ---------- relink a missing file: keep every setting of the cue, swap the file ---------- */
 async function relinkCue(it){
   let f=null;
-  if(window.showOpenFilePicker){try{const [h]=await showOpenFilePicker({multiple:false});f=await h.getFile();f._handle=h}catch(e){if(e.name==='AbortError')return}}
+  if(pickFSA()){try{const [h]=await showOpenFilePicker({multiple:false});f=await h.getFile();f._handle=h}catch(e){if(e.name==='AbortError')return}}
   if(!f)f=await new Promise(res=>{const inp=document.createElement('input');inp.type='file';inp.accept='video/*,image/*,audio/*';inp.onchange=()=>res(inp.files[0]||null);inp.oncancel=()=>res(null);inp.click()});
   if(!f)return;
   if(it.url)try{URL.revokeObjectURL(it.url)}catch(e){}
@@ -2433,7 +2433,12 @@ const DB='cuey',ST='handles';
 function idb(){return new Promise((res,rej)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(ST);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbPut(k,v){const d=await idb();return new Promise((res,rej)=>{const t=d.transaction(ST,'readwrite');t.objectStore(ST).put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
 async function idbGet(k){const d=await idb();return new Promise((res,rej)=>{const t=d.transaction(ST,'readonly');const q=t.objectStore(ST).get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
-function showData(){return {app:'cuey',v:1,saved:new Date().toISOString(),groups:JSON.parse(JSON.stringify(groups)),cues:items.map(i=>({web:i.web?{p:i.web.p,id:i.web.id,h:i.web.h||'',t:i.web.t||0,url:i.web.url,thumb:i.web.thumb||''}:null,file:i.file.name,type:i.type,text:i.text?{title:i.text.title,body:i.text.body,color:i.text.color,bg:i.text.bg,size:i.text.size,bgName:(i.text.bgKind||(i.text.bgImg?'image':'color'))==='color'?'':(i.text.bgName||''),dim:i.text.dim,bgKind:i.text.bgKind||(i.text.bgImg?'image':'color'),x:i.text.x==null?.5:i.text.x,y:i.text.y==null?.5:i.text.y,box:!!i.text.box,kicker:i.text.kicker||'',accent:i.text.accent||'',vig:i.text.vig||0,look:i.text.look||'',font:i.text.font||'',caps:!!i.text.caps,anim:i.text.anim||'',glow:!!i.text.glow,br:i.text.br||0,kind:i.text.kind||'',tab:i.text.tab||'',brand:i.text.brand||null,logo:i.text.logo||'',logoName:i.text.logoName||'',logoPos:i.text.logoPos||'',logoSize:i.text.logoSize||0}:null,name:i.name,renamed:!!i.renamed,grp:i.grp||null,size:i.file&&i.file.size||0,mtime:i.file&&i.file.lastModified||0,loop:i.loop,trans:i.trans,dur:i.dur,onEnd:i.onEnd,scale:i.scale,standby:!!i.standby,hold:i.hold,fadeT:i.fadeT||undefined,in:i.in||0,out:i.out||0,vol:i.vol,avol:i.avol==null?1:i.avol,audio:i.audio?i.audio.file.name:null}))}}
+/* desktop: where each file sits on this computer — a reopened show finds its files by itself (Mac debug, 3.11: every own file came back "missing") */
+/* desktop picks files with the plain file window: those files carry their place on disk, so a saved show reopens with them (3.11) */
+function pickFSA(){return !!window.showOpenFilePicker&&!window.cueyNative}
+let keptPaths={};
+function showPaths(){const o={...keptPaths};if(!(window.cueyNative&&cueyNative.filePath))return o;for(const [n,f] of showFileList()){if(!f)continue;let q='';try{q=cueyNative.filePath(f)||''}catch(e){}q=q||f._path||'';if(q)o[n]=q}return o}
+function showData(){return {app:'cuey',v:1,saved:new Date().toISOString(),paths:showPaths(),groups:JSON.parse(JSON.stringify(groups)),cues:items.map(i=>({web:i.web?{p:i.web.p,id:i.web.id,h:i.web.h||'',t:i.web.t||0,url:i.web.url,thumb:i.web.thumb||''}:null,file:i.file.name,type:i.type,text:i.text?{title:i.text.title,body:i.text.body,color:i.text.color,bg:i.text.bg,size:i.text.size,bgName:(i.text.bgKind||(i.text.bgImg?'image':'color'))==='color'?'':(i.text.bgName||''),dim:i.text.dim,bgKind:i.text.bgKind||(i.text.bgImg?'image':'color'),x:i.text.x==null?.5:i.text.x,y:i.text.y==null?.5:i.text.y,box:!!i.text.box,kicker:i.text.kicker||'',accent:i.text.accent||'',vig:i.text.vig||0,look:i.text.look||'',font:i.text.font||'',caps:!!i.text.caps,anim:i.text.anim||'',glow:!!i.text.glow,br:i.text.br||0,kind:i.text.kind||'',tab:i.text.tab||'',brand:i.text.brand||null,logo:i.text.logo||'',logoName:i.text.logoName||'',logoPos:i.text.logoPos||'',logoSize:i.text.logoSize||0}:null,name:i.name,renamed:!!i.renamed,grp:i.grp||null,size:i.file&&i.file.size||0,mtime:i.file&&i.file.lastModified||0,loop:i.loop,trans:i.trans,dur:i.dur,onEnd:i.onEnd,scale:i.scale,standby:!!i.standby,hold:i.hold,fadeT:i.fadeT||undefined,in:i.in||0,out:i.out||0,vol:i.vol,avol:i.avol==null?1:i.avol,audio:i.audio?i.audio.file.name:null}))}}
 let savedFp='',showName='',showPath=null; // the open show: its name, and (desktop) where it lives on disk
 function setShowName(n){showName=(n||'').replace(/\.cuey$/i,'');updateShowTitle()}
 function updateShowTitle(){const el=$('#showName');if(!el)return;const d=isDirty(),nm=showName||(items.length?t('untitled'):'');el.textContent=nm;el.classList.toggle('dirty',d&&!!nm);el.title=d?t('unsaved'):(showPath||nm);document.title=(d?'● ':'')+(nm?nm+' — ':'')+'Cuey'}
@@ -2493,6 +2498,9 @@ async function loadShowFromText(txt){
   const wanted=data.cues.flatMap(c=>[c.web?null:c.text?(c.text.bgKind==='color'?null:c.text.bgName):c.file,c.audio]).filter(Boolean);
   // pages made from a PDF / videos pulled out of a PowerPoint live in this browser's storage
   for(const n of new Set(wanted))if(!files.has(n)){try{const gf=await idbGet('gen:'+n);if(gf)files.set(n,gf)}catch(e){}}
+  // desktop: the file is still where it was on this computer
+  const P=data.paths&&typeof data.paths==='object'?data.paths:{};keptPaths={...P};
+  if(window.cueyNative&&cueyNative.readPath)for(const n of new Set(wanted))if(!files.has(n)&&P[n]){try{const b=await cueyNative.readPath(P[n]);if(b){const c=data.cues.find(x=>x.file===n);const f=new File([b],n,{type:MIME[(n.split('.').pop()||'').toLowerCase()]||'',lastModified:c&&c.mtime||Date.now()});f._path=P[n];files.set(n,f)}}catch(e){}}
   // desktop: the show's media folder next to the .cuey (made by Save / Save with all media)
   if(window.cueyNative&&cueyNative.readMedia&&showPath)for(const n of new Set(wanted))if(!files.has(n)){try{const b=await cueyNative.readMedia(showPath,n);if(b){const f=new File([b],n,{type:MIME[(n.split('.').pop()||'').toLowerCase()]||''});files.set(n,f);try{await keepGen(f)}catch(e){}}}catch(e){}}
   const missing=[...new Set(wanted.filter(n=>!files.has(n)))];
@@ -2879,7 +2887,7 @@ function openGrpEdit(g){const G=groups[g];if(!G)return;
 function grpAdd(g){
   const z=document.createElement('div');z.className='gadd';z.textContent=t('ss_add');
   z.onclick=async()=>{let fs=[];
-    if(window.showOpenFilePicker){try{const hs=await showOpenFilePicker({multiple:true});for(const h of hs){const f=await h.getFile();f._handle=h;fs.push(f)}}catch(e){return}}
+    if(pickFSA()){try{const hs=await showOpenFilePicker({multiple:true});for(const h of hs){const f=await h.getFile();f._handle=h;fs.push(f)}}catch(e){return}}
     else fs=await new Promise(res=>{const inp=document.createElement('input');inp.type='file';inp.multiple=true;inp.accept='video/*,image/*,audio/*';inp.onchange=()=>res([...inp.files]);inp.oncancel=()=>res([]);inp.click()});
     if(fs.length)addFiles(fs,g)};
   z.ondragover=e=>{e.preventDefault();e.stopPropagation();z.classList.add('over')};

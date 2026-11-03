@@ -17,6 +17,7 @@ contextBridge.exposeInMainWorld('cueyNative', {
   filePath: (f) => { try { return webUtils.getPathForFile(f) || ''; } catch (e) { return ''; } },
   packMedia: (showPath, files) => ipcRenderer.invoke('pack-media', { showPath, files }),
   readMedia: (showPath, name) => ipcRenderer.invoke('read-media', { showPath, name }),
+  readPath: (p) => ipcRenderer.invoke('read-path', p),
   // Continue with Google: opens the browser, resolves with the session (or {error})
   googleSignIn: (lang) => ipcRenderer.invoke('google-signin', { lang }),
   googleCancel: () => ipcRenderer.invoke('google-cancel'),
