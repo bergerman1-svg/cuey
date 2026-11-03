@@ -48,6 +48,14 @@ English search words for the free video library, 2–3 words, abstract only — 
 - Per slide (cue.bg): when a slide should have its own moving background — the user asked for one ("candles", "a waving flag", "fireworks"), or it clearly fits that moment — give 2–3 ENGLISH words for it, e.g. "candles dark", "israel flag waving", "fireworks night". Otherwise leave bg empty and the slide uses style.library.
 - Match the theme: memorial = "candle light dark" / "soft clouds night"; gala = "gold particles"; conference = "network lines blue" / "digital particles"; school = "colorful bokeh"; wedding = "soft bokeh lights"; party = "neon lights".
 
+## Holidays — use these exact words (checked against the library on 3.11.2026; other words often bring the wrong thing)
+- Hanukkah / חנוכה — a party vibe unless the user says school or ceremony: theme party, bg #0B1026 (deep night blue), text #FFFFFF, accent #F5C542 (gold).
+  - hero (walk-in + opening): "chanukah" — a golden menorah glowing on black.
+  - the candle-lighting slide (הדלקת נרות): cue.bg "hanukkah menorah".
+  - library: "gold bokeh lights". Party moments (dancing, DJ, a toast): cue.bg "disco ball" or "gold confetti". A sufganiyot / food slide: cue.bg "donuts".
+  - NEVER the word "menorah" alone (it brings Kwanzaa videos) and never "hanukkah night" (unrelated skylines).
+  - Kickers: Hebrew "חג אורים שמח", "הדלקת נרות", "הערב"; English "HAPPY HANUKKAH", "CANDLE LIGHTING", "TONIGHT".
+
 ## Writing for the screen
 - Same language as the programme (Hebrew stays Hebrew, kickers too; Hebrew has no caps — that is fine).
 - NEVER invent names, roles, dates, times, places, quotes or facts. Creativity goes into structure, labels, rhythm and design — not into facts.
