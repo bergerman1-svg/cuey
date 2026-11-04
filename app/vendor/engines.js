@@ -13,15 +13,15 @@ const META={
 };
 const hex=(c,d)=>/^#[0-9a-f]{6}$/i.test(String(c||''))?c:d;
 /* shared: stage + footage + the hero block (logo / kicker / title / sub) laid out to fit the frame */
-function core(canvas,F,A,{bloom={s:.9,r:.55,th:.78},fov=36,grade={},titleColor='#ffffff',titleColor2=null,glow=null,camZ=15}={}){
+function core(canvas,F,A,{bloom={s:.75,r:.5,th:.9},fov=36,grade={},titleColor='#ffffff',titleColor2=null,glow=null,camZ=15}={}){
   const st=K.stage(canvas,{bg:'#000000',fov,bloom,shadows:false,exposure:1}),{S,C}=st;C.position.set(0,0,camZ);C.lookAt(0,0,0);
   const fg=K.footage(S,{dark:.42,vig:.6,...grade});const ac=hex(F.accent,'#ffd27a'),ac2=hex(F.accent2,'#7cf5ff');
   const H=new THREE.Group();S.add(H);const vw=2*camZ*Math.tan(fov*Math.PI/360)*16/9;let y=0;const items={};
   const fit=(g,maxW)=>{if(g.width>maxW){const s=maxW/g.width;g.scale.setScalar(s);g.width*=s;g.height*=s}return g};
   const logo=A.logo?fit(K.logoFX(A.logo,{h:3.4,glow:ac}),vw*.5):null;
-  const kick=F.kicker?fit(K.type(F.kicker,{px:120,h:.42,weight:500,color:ac,glow:null,ls:K.he(F.kicker)?0:34,emissive:1.05}),vw*.7):null;
-  const title=F.title?fit(K.type(F.title,{px:260,h:logo?1.35:2.35,color:titleColor,color2:titleColor2||titleColor,glow:glow||ac,emissive:.95}),vw*(logo?.72:.82)):null;
-  const sub=F.sub?fit(K.type(F.sub,{px:130,h:logo?.48:.58,weight:500,color:'#ffffff',ls:K.he(F.sub)?0:26,emissive:.9}),vw*.75):null;
+  const kick=F.kicker?fit(K.type(F.kicker,{px:130,h:.55,weight:700,color:ac,glow:null,ls:K.he(F.kicker)?0:40,emissive:1}),vw*.7):null;
+  const title=F.title?fit(K.type(F.title,{px:260,h:logo?1.35:2.35,color:titleColor,color2:titleColor2||titleColor,glow:glow||ac,emissive:.82}),vw*(logo?.72:.82)):null;
+  const sub=F.sub?fit(K.type(F.sub,{px:130,h:logo?.5:.62,weight:500,color:'#ffffff',ls:K.he(F.sub)?0:30,emissive:.85}),vw*.75):null;
   const stack=[logo&&[logo,.55],kick&&[kick,.42],title&&[title,.5],sub&&[sub,0]].filter(Boolean);let tot=0;stack.forEach(([g,gap])=>tot+=g.height+gap);y=tot/2;
   stack.forEach(([g,gap])=>{g.position.y=y-g.height/2;y-=g.height+gap;H.add(g)});Object.assign(items,{logo,kick,title,sub});
   return {st,S,C,fg,H,ac,ac2,vw,...items,feed(){fg.feed(A)}}}
@@ -29,7 +29,7 @@ function core(canvas,F,A,{bloom={s:.9,r:.55,th:.78},fov=36,grade={},titleColor='
 function soft(g,u){if(!g)return;g.u.op.value=E.o3(u);g.position.x=0;g.scale.x=g.scale.y*(1+.06*(1-E.o3(u)))}
 const lp=(t,A)=>{const I=A.intro,L=A.loop;return {I,L,ph:TAU*(t-I)/L,u:t<I?0:((t-I)%L)/L,on:t>=I}};
 /* floating dust in light — periodic with the loop (whole multiples of the phase) */
-function dust(S,n,{spread=[26,15,10],size=2.2,color='#ffe9c4',seed=11,op=.55}={}){const p=K.points(n,{size,color}),R=K.rng(seed),b=[];const pos=p.geometry.attributes.position.array,al=p.geometry.attributes.al.array,sz=p.geometry.attributes.sz.array;
+function dust(S,n,{spread=[26,15,10],size=1,color='#ffe9c4',seed=11,op=.4}={}){const p=K.points(n,{size,color}),R=K.rng(seed),b=[];const pos=p.geometry.attributes.position.array,al=p.geometry.attributes.al.array,sz=p.geometry.attributes.sz.array;
   for(let i=0;i<n;i++){b.push([(R()-.5)*spread[0],(R()-.5)*spread[1],(R()-.5)*spread[2]-2,1+Math.floor(R()*2),R()*TAU,.2+R()*.8]);sz[i]=.3+R()*1.2}p.material.uniforms.op.value=op;S.add(p);
   p.tick=ph=>{for(let i=0;i<n;i++){const q=b[i];pos[i*3]=q[0]+Math.sin(ph*q[3]+q[4])*.6;pos[i*3+1]=q[1]+Math.cos(ph*q[3]+q[4]*1.3)*.45;pos[i*3+2]=q[2];al[i]=q[5]*(.55+.45*Math.sin(ph*q[3]*2+q[4]*2))}
     p.geometry.attributes.position.needsUpdate=true;p.geometry.attributes.al.needsUpdate=true};return p}
@@ -38,19 +38,19 @@ function dust(S,n,{spread=[26,15,10],size=2.2,color='#ffe9c4',seed=11,op=.55}={}
 async function light(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.5,blur:2}}),{st,S,C,fg,H,ac,ac2}=c;
   const rays=K.rays(16,{color:ac,len:34,width:2.6,op:.16});rays.position.set(0,12,-4);S.add(rays);
   const streak=K.flare(ac2,{w:30,h:.32});streak.position.set(0,c.title?c.title.position.y:0,.4);S.add(streak);
-  const edgeF=K.flare('#ffffff',{w:12,h:.8});S.add(edgeF);const ds=dust(S,900,{color:'#fff1d6'});
+  const edgeF=K.flare('#ffffff',{w:12,h:.8});S.add(edgeF);const ds=dust(S,450,{color:'#fff1d6'});
   const halo=K.glow(ac,22,0);halo.position.set(0,0,-3);S.add(halo);
   const heros=[c.logo,c.title].filter(Boolean);
   return t=>{const L=lp(t,A);c.feed();const f=fg.u;
     f.dark.value=.5+.5*(1-E.o3(k(t,0,1.6)));f.zoom.value=1.16-.1*E.io3(k(t,0,L.I))+(L.on?.012*Math.sin(L.ph):0);f.blur.value=2.6-1.2*E.o3(k(t,2.5,5));
     C.position.set(Math.sin(L.ph)*.25,Math.cos(L.ph)*.12,15.6-1.2*E.io3(k(t,0,L.I)));C.lookAt(0,0,0);
-    rays.sway(t);rays.children.forEach(m=>m.material.opacity*=E.o3(k(t,.8,3)));ds.tick(L.ph);ds.material.uniforms.op.value=.55*E.o3(k(t,.5,2.5));
+    rays.sway(t);rays.children.forEach(m=>m.material.opacity*=E.o3(k(t,.8,3)));ds.tick(L.ph);ds.material.uniforms.op.value=.4*E.o3(k(t,.5,2.5));
     const s1=E.io3(k(t,2,3.2));streak.scale.x=Math.max(.001,s1);streak.material.opacity=s1*(1-.75*E.o3(k(t,3.4,5)))*(L.on?1+.15*Math.sin(L.ph*2):1);
-    const rv=E.io3(k(t,3,4.7));heros.forEach(g=>{g.u.rev.value=rv;g.u.glow.value=.25*E.o3(k(t,4.2,5.4))*(1-.6*E.o3(k(t,5.4,6.8)))});
+    const rv=E.io3(k(t,3,4.7));heros.forEach(g=>{g.u.rev.value=rv;g.u.glow.value=.12*E.o3(k(t,4.2,5.4))*(1-.6*E.o3(k(t,5.4,6.8)))});
     const he=c.title&&c.title.he,ex=c.title?(he?1:-1)*(c.title.width/2-c.title.width*rv):0;edgeF.position.set(ex,c.title?c.title.position.y:0,.6);edgeF.material.opacity=rv>0&&rv<1?1:0;
     soft(c.kick,k(t,4.3,5.6));soft(c.sub,k(t,4.7,6));
     const sh=L.on?k(L.u,.25,.55):k(t,5.6,6.9);heros.forEach(g=>g.u.shine.value=sh>0&&sh<1?-.2+1.4*E.io3(sh):-1);
-    halo.material.opacity=.32*E.o3(k(t,3.4,5))*(1+.12*Math.sin(L.ph));H.position.y=.06*Math.sin(L.ph);st.bloom.strength=.85+.2*Math.sin(L.ph)+.6*Math.exp(-Math.pow((t-4)/.6,2));st.render()}}
+    halo.material.opacity=.32*E.o3(k(t,3.4,5))*(1+.12*Math.sin(L.ph));H.position.y=.06*Math.sin(L.ph);st.bloom.strength=.7+.12*Math.sin(L.ph)+.5*Math.exp(-Math.pow((t-4)/.6,2));st.render()}}
 
 /* 2 · PARTICLES — thousands of sparks fly in from depth and assemble the logo / title, then the crisp letters light up */
 async function particles(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.55,blur:2.5}}),{st,S,C,fg,H,ac,ac2}=c;
