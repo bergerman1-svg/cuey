@@ -37,6 +37,7 @@ LOOK — the design, built from Cuey's blocks:
 - tag: true/false — the kicker sits in a solid accent-colour box, like a label (conferences, launches, modern corporate, festivals). Not for memorial or elegant galas.
 - grade: natural (default) | duotone (the footage becomes two-tone in the accent colour — bold modern conferences, tech, sport, brand events).
 - hold: how the slide lives while waiting for GO — breath (the whole block breathes gently — default) | wave (the letters ripple in a slow wave in reading order — party, kids, fun, music) | none (perfectly still — memorial, formal).
+- bg: footage (default — real stock video, picked by looking) | aurora (ribbons of light flowing across a night sky in the accent colours — conferences, launches, airlines, travel, night events) | silk (flowing metallic silk folds — galas, awards, luxury brands) | nebula (deep-space clouds and stars — tech, vision, future, innovation) | liquid (slow liquid gradient in the brand colours — corporate, brand events). Cuey draws these live: pin-sharp on any wall, perfect loop, exactly the brand colours. Prefer them when the brand/feeling matters more than a real place or object, or when the user asks for Cuey's own background; prefer footage when the idea needs something real (a candle, balloons, the sea).
 - camera: push (slow push-in) | drift | still.
 - dark: 0.2–0.7 how much the footage is darkened; blur: 0–4 how defocused the footage is (more blur = text pops).
 - Memorial / remembrance: energy ≤ 0.15, no confetti/fireworks/flash/spots, a serif (frankLight / bellefair / david), veil, often rule:true and embers or none.
@@ -82,7 +83,7 @@ const DIRECT_TOOL = {
         font: { type: "string", enum: ["heebo", "heeboLight", "assistant", "rubik", "rubikBlack", "karantina", "suez", "secular", "frank", "frankLight", "bellefair", "notoSerif", "david", "amatic", "fredoka"] },
         reveal: { type: "string", enum: ["veil", "rise", "maskWords", "maskChars", "blur", "slam", "pop", "light", "type", "center", "scramble", "glitch", "snap", "count"] },
         energy: { type: "number" }, light: { type: "string", enum: ["none", "halo", "rays", "spots", "sweep", "ripple"] }, fx: { type: "string" }, hold: { type: "string", enum: ["breath", "wave", "none"] },
-        rule: { type: "boolean" }, fill: { type: "string", enum: ["white", "gold", "silver", "accent"] }, ornament: { type: "string", enum: ["none", "stars"] }, tag: { type: "boolean" }, grade: { type: "string", enum: ["natural", "duotone"] }, camera: { type: "string", enum: ["push", "drift", "still"] }, dark: { type: "number" }, blur: { type: "number" } },
+        rule: { type: "boolean" }, fill: { type: "string", enum: ["white", "gold", "silver", "accent"] }, ornament: { type: "string", enum: ["none", "stars"] }, tag: { type: "boolean" }, grade: { type: "string", enum: ["natural", "duotone"] }, bg: { type: "string", enum: ["footage", "aurora", "silk", "nebula", "liquid"] }, camera: { type: "string", enum: ["push", "drift", "still"] }, dark: { type: "number" }, blur: { type: "number" } },
         required: ["layout", "font", "reveal", "energy", "light", "fx", "rule"] },
       footage: { type: "array", minItems: 1, maxItems: 3, items: { type: "string" } },
       title: { type: "string", description: "short name for the slide in the user's language" },
@@ -206,7 +207,7 @@ Deno.serve(async (req) => {
   o.fields = (o.fields || []).filter((f: any) => keep.includes(f.k) && !seen.has(f.k) && seen.add(f.k)).map((f: any) => ({ k: f.k, label: String(f.label || f.k).slice(0, 40), type: f.k.startsWith("accent") ? "color" : "text", value: String(f.value || "").slice(0, f.k === "sub" ? 60 : 44) }));
   for (const k of keep) if (!seen.has(k)) o.fields.push({ k, label: k, type: k.startsWith("accent") ? "color" : "text", value: k === "accent" ? "#ffcf6b" : k === "accent2" ? "#7cf5ff" : "" });
   console.log("direct", r.model, Date.now() - T0, "ms", o.concept, JSON.stringify(o.look), JSON.stringify(o.footage), JSON.stringify(r.usage));
-  if (body?.pick !== false) { try { o.pick = await pickFootage(key, (o.footage || []).map(String), o, T0); } catch (e) { console.error("pick", String(e)); } }
+  if (body?.pick !== false && (!L.bg || L.bg === "footage")) { try { o.pick = await pickFootage(key, (o.footage || []).map(String), o, T0); } catch (e) { console.error("pick", String(e)); } }
   await db.from("ai_builds").insert({ user_id: user.id, chars: prompt.length + (logo ? 1 : 0), cues: -1, ok: true });
   return json({ direct: o, model: r.model, left: cap - (count || 0) - 1 });
 });
