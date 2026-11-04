@@ -53,7 +53,7 @@
   var CUES = HE ? [
     { nm: 'לופ כניסה', tg: 'Loop · Dissolve 0.8s', kick: 'ערב השקה · 2026', title: 'ברוכים הבאים', line: 'פתיחת דלתות · 19:00', bg: ['#16204f', '#05071a'], acc: '#C8FF00', look: 'frame' },
     { nm: 'דברי פתיחה', tg: 'Dissolve 0.8s · GO', kick: 'דברי פתיחה', title: 'נועה אברהם', line: 'מנכ"לית', bg: ['#3a1f6b', '#0b0620'], acc: '#FF751F', look: 'words' },
-    { nm: 'השנה במספרים.mp4', tg: 'Video · Next', kind: 'numbers', label: 'אירועים השנה', bg: ['#0b0b0e', '#000'], acc: '#C8FF00' },
+    { nm: 'השנה במספרים', tg: 'Video · Next', kind: 'numbers', label: 'אירועים השנה', bg: ['#0b0b0e', '#000'], acc: '#C8FF00' },
     { nm: 'פרס', tg: 'Dissolve 0.8s · GO', kick: 'עובד השנה', title: 'יונתן כהן', line: 'הצלחת לקוחות', bg: ['#5a3a06', '#120a00'], acc: '#F5C542', look: 'words' },
     { nm: 'תודה', tg: 'Hold · Fade', kick: 'נתראה בשנה הבאה', title: 'תודה רבה!', line: 'ערב השקה 2026', bg: ['#0f3b3a', '#03100f'], acc: '#C8FF00', look: 'shine' }
   ] : [
