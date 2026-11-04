@@ -106,7 +106,7 @@
     '<div class="cmg"><div class="cml"></div><div class="cmr"><div class="cmm"><div class="cmo p"><canvas width="640" height="360"></canvas><span class="tag">PROGRAM</span></div><div class="cmo x"><canvas width="400" height="225"></canvas><span class="tag">NEXT</span></div></div>' +
     '<div class="cmk"><button type="button" data-a="back">◀ BACK</button><button type="button" class="go pulse" data-a="go">GO ▶</button><button type="button" data-a="freeze">FREEZE</button><button type="button" data-a="black">BLACK</button></div></div></div>' +
     '<div class="cmf"></div></div>';
-  var anchor = hero.querySelector('#vid') || hero.querySelector('.who');
+  var anchor = hero.querySelector('.who');
   hero.insertBefore(box, anchor);
   var list = box.querySelector('.cml'), cvs = box.querySelectorAll('.cmo canvas'), pgm = cvs[0], nxt = cvs[1], px = pgm.getContext('2d'), nx = nxt.getContext('2d'), foot = box.querySelector('.cmf'), goBtn = box.querySelector('.go');
   CUES.forEach(function (c, i) { var b = document.createElement('button'); b.type = 'button'; b.className = 'cmc'; b.innerHTML = '<span class="n">0' + (i + 1) + '</span><canvas width="128" height="72"></canvas><span style="min-width:0"><div class="nm"></div><div class="tg"></div></span>'; b.querySelector('.nm').textContent = c.nm; b.querySelector('.tg').textContent = c.tg; b.addEventListener('click', function () { take(); set(i); }); list.appendChild(b); });
