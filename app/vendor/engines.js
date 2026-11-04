@@ -209,10 +209,10 @@ async function compose(canvas,F,A){
   const tf=(s,o)=>K.typeFX(s,{font:o.font||FT[0],weight:o.weight||FT[1],...o});
   const titleC=calm?'#f4efe4':'#ffffff';
   const kick=F.kicker?tf(F.kicker,{px:120,h:.64,font:kf[0],weight:Math.min(700,kf[1]),color:ac,shadow:'rgba(0,0,0,.6)',ls:K.he(F.kicker)?0:120*.22,emissive:.95,unit:'line'}):null;
-  const title=F.title?tf(F.title,{px:260,h:2.1+.9*e,color:titleC,color2:calm?'#e6dfd0':titleC,glow:null,shadow,ls:K.he(F.title)?0:-260*.015,emissive:calm?.9:.86,unit:unitOf(RC0)}):null;
+  const title=F.title?tf(F.title,{px:260,h:(lk.reveal==='count'?3.6:2.1+.9*e),color:titleC,color2:calm?'#e6dfd0':titleC,glow:null,shadow,ls:K.he(F.title)?0:-260*.015,emissive:calm?.9:.86,unit:unitOf(RC0)}):null;
   const RC=WAVE&&RC0.unit!=='char'?{...RC0,unit:'char',st:Math.min(.05,(RC0.st*Math.max(1,String(F.title||'').split(/\s+/).length))/Math.max(1,(title&&title.n)||1)+.012)}:RC0;
   /* scramble / counter: ghost glyphs from a pool rendered in the same face and size, swapped per frame */
-  const tOpt={px:260,h:2.1+.9*e,color:titleC,shadow,emissive:calm?.9:.86,unit:'char'};
+  const tOpt={px:260,h:(CNT?3.6:2.1+.9*e),color:titleC,shadow,emissive:calm?.9:.86,unit:'char'};
   const mkPool=chars=>{const g=tf(chars,tOpt);return g};
   const gOff=pm=>pm.userData.gc-pm.userData.x0,ghostOf=pg=>{const m0=pg.parts[0],mat=m0.material.clone();mat.uniforms.map.value=m0.material.uniforms.map.value;mat.uniforms.mode.value=1;mat.uniforms.p.value=1;const m=new THREE.Mesh(m0.geometry,mat);m.renderOrder=21;m.visible=false;return m};
   let pool=null,ghosts=null;const hsh=(a,b)=>{let x=Math.sin(a*127.1+b*311.7)*43758.5453;return x-Math.floor(x)};
