@@ -90,7 +90,7 @@ async function particles(canvas,F,A){const c=core(canvas,F,A,{mood:'tech',grade:
 /* 3 · CINEMA — a deep, extruded title; the camera glides from a low side angle to the hero frame; light sweeps across the face */
 async function cinema(canvas,F,A){const c=core(canvas,F,A,{mood:'corporate',grade:{dark:.5,blur:4.5},titleColor:'#ffffff',titleColor2:'#d9dde6',camZ:15}),{st,S,C,fg,H,ac,ac2}=c;
   const T=c.title||c.logo;const layers=[];if(T&&c.title){for(let i=1;i<=22;i++){const g=c.tf(F.title,{px:260,h:A.logo?1.35:2.2,color:'#2a2f3a',color2:'#0d0f14',emissive:.55,ls:-260*.015,unit:'line'});
-    g.scale.copy(T.scale);g.position.set(T.position.x,T.position.y,-i*.035);g.u.op.value=1;layers.push(g);H.add(g)}}
+    g.scale.copy(T.scale);g.position.set(T.position.x,T.position.y,-i*.035);g.parts.forEach(m=>m.renderOrder=-i);g.u.op.value=1;layers.push(g);H.add(g)}}
   const flare=K.flare(ac2,{w:36,h:.5});flare.position.set(0,T?T.position.y:0,.5);S.add(flare);const ds=dust(S,600,{color:'#dfe8ff',op:.4});
   const back=K.glow(ac,30,0);back.position.set(0,T?T.position.y:0,-6);S.add(back);
   const cam=K.camera(C,[{t:0,p:[-9,-2.6,7],look:[0,-.3,0],fov:30},{t:2.6,p:[-6,-1.4,9.5],look:[0,0,0],fov:32},{t:5.2,p:[-1.2,.1,14],look:[0,0,0],fov:35},{t:A.intro,p:[0,0,15],look:[0,0,0],fov:36,e:'o3'}]);

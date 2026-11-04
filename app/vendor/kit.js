@@ -193,7 +193,7 @@ K.typeFX=(str,{font=null,px=240,h=2,color='#ffffff',color2=null,glow=null,weight
   const mw=s=>{setf();return x.measureText(s).width};let acc='';const rngs=units.map(u=>{const a=mw(acc);acc+=u;const b=mw(acc);return he?[x0+W-b,x0+W-a]:[x0+a,x0+b]});
   const sorted=rngs.map((r,i)=>[r,i]).sort((p,q)=>p[0][0]-q[0][0]);const cut=new Array(rngs.length);sorted.forEach(([r,i],j)=>{const L=j===0?0:(sorted[j-1][0][1]+r[0])/2,R=j===sorted.length-1?cv.width:(r[1]+sorted[j+1][0][0])/2;cut[i]=[L,R]});
   const tex=new THREE.CanvasTexture(cv);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=8;tex.generateMipmaps=true;tex.minFilter=THREE.LinearMipmapLinearFilter;
-  const S={map:{value:tex},op:{value:1},shine:{value:-1},glow:{value:0},edge:{value:new THREE.Color(glow||'#ffffff')},dir:{value:he?-1:1},em:{value:emissive},rev:{value:1},soft:{value:.06},rise:{value:(px*1.15)/cv.height},b0:{value:.5-px*(he?.95:.78)/cv.height},b1:{value:.5+px*(he?.95:.78)/cv.height}};
+  const S={map:{value:tex},op:{value:1},shine:{value:-1},glow:{value:0},edge:{value:new THREE.Color(glow||'#ffffff')},dir:{value:he?-1:1},em:{value:emissive},rev:{value:1},soft:{value:.06},rise:{value:2*px*(he?.95:.78)/cv.height+.03},b0:{value:.5-px*(he?.95:.78)/cv.height},b1:{value:.5+px*(he?.95:.78)/cv.height}};
   const sc=h/(px*1.25),G=new THREE.Group(),parts=[];
   cut.forEach(([L,R],i)=>{const u={...S,p:{value:1},mode:{value:0},bl:{value:0}};const w=(R-L)*sc,ht=cv.height*sc,geo=new THREE.PlaneGeometry(w,ht),uv=geo.attributes.uv;
     for(let k=0;k<uv.count;k++)uv.setX(k,(uv.getX(k)?R:L)/cv.width);
@@ -203,7 +203,7 @@ K.typeFX=(str,{font=null,px=240,h=2,color='#ffffff',color2=null,glow=null,weight
       void main(){vec2 q=v;float a=1.;if(mode<.5){q.y+=(1.-p)*rise;float inb=smoothstep(b0-.008,b0+.008,v.y)*(1.-smoothstep(b1-.008,b1+.008,v.y));a=mix(inb,1.,step(.999,p));}else{a=p;}vec4 c=texture2D(map,q,mode>1.5&&mode<2.5?bl:0.);
       float px=dir>0.?v.x:1.-v.x;float r=smoothstep(rev,rev-soft,px);float e=exp(-pow((px-rev)/.02,2.))*step(.0001,rev)*step(rev,.9999);
       float s=exp(-pow((px+(v.y-.5)*.3-shine)/.05,2.));vec3 col=c.rgb*em+edge*(s*.9*c.a+glow*c.a+e*2.);gl_FragColor=vec4(col,(c.a*r+e*.8*c.a)*a*op);}`}));
-    m.position.x=((L+R)/2-cv.width/2)*sc;m.userData={i,x0:m.position.x};G.add(m);parts.push(m)});
+    m.position.x=((L+R)/2-cv.width/2)*sc;m.userData={i,x0:m.position.x};m.renderOrder=20;G.add(m);parts.push(m)});
   G.u=S;G.parts=parts;G.width=W*sc;G.height=h;G.he=he;G.n=parts.length;G.mesh=parts[0];
   G.set=v=>parts.forEach(m=>{m.material.uniforms.p.value=v;m.scale.setScalar(1);m.position.x=m.userData.x0});
   /* animate the reveal: returns overall progress 0..1 */
