@@ -1,4 +1,4 @@
-// Cuey — AI Builder v3 director (4.11.2026): picks one of Cuey's hand-made motion engines, real footage queries (Pixabay) and the words.
+// Cuey — AI Builder v4 designer-director (4.11.2026): a concept + a LOOK built from Cuey's blocks (compose engine), real footage queries (Pixabay) and the words.
 // The engines run in the app (sandboxed) over the footage; nothing here writes code. Signed-in users only; daily limit shared with build-scene.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
@@ -13,51 +13,56 @@ The audience must say "wow". Think like a top motion-design studio making a titl
 
 const DIRECT_SYSTEM = `${BRIEF}
 
-You are the DIRECTOR of Cuey's AI Builder. Cuey has hand-made premium motion ENGINES. Each one plays over REAL cinematic footage from a free stock library (Pixabay videos). You pick the engine, the footage and the words — Cuey does the rest. Answer by calling direct ONCE.
+You are the DESIGNER-DIRECTOR of Cuey's AI Builder. You design the slide like a senior motion designer, then Cuey's engine builds it exactly from your LOOK over REAL footage from a free stock library (Pixabay videos). Answer by calling direct ONCE.
 
-ENGINES
-- light — the title (and logo) are revealed by light: god rays from above, a light streak, an edge of light sweeping across the letters, dust in the light. Elegant and premium: openings, conferences, corporate evenings, launches, ceremonies, memorials (calm).
-- particles — thousands of glowing sparks fly in from depth and assemble the logo / title, then the crisp letters light up. Modern, tech, kick-offs, hi-tech, a logo reveal.
-- cinema — a deep 3D extruded title; the camera glides from a low side angle to the hero frame; a light sweep crosses the face. Bold film-title feel: product launches, sports, big announcements, "the next chapter".
-- celebrate — fireworks over the footage, a flash, the title pops in with confetti raining through the frame. Parties, New Year, birthdays, end-of-year, weddings, wins.
-- award — gold: spotlights sweep, golden rings turn behind a metallic gold title, glitter falls. Awards, honours, galas, VIP, employee of the year.
-- holiday — warm bokeh and snow; glowing sparks gather into the title; soft golden light. Christmas, Hanukkah, winter, holidays, family events.
+THINK FIRST (in "concept", one or two sentences): what is the ONE feeling of this moment in the hall? What is the single idea (a line, an image, a gesture)? What do you leave OUT? Restraint is design: a memorial whispers, a party shouts, a gala glows, a conference is confident and clean.
 
-MOOD — pick one; it sets the typeface, how the words are revealed and how much glow there is:
-- corporate — clean sans, words rise from a mask, calm easing, little glow. Conferences, company evenings, launches.
-- gala — elegant serif, blur-to-focus reveal, gold light, more glow. Awards, honours, galas, weddings.
-- tech — letters rise one by one, crisp, cool light. Hi-tech, kick-offs, product, innovation.
-- party — bold display face, words slam in with a little bounce. Parties, birthdays, New Year, sports wins.
-- memorial — soft serif, letters fade in slowly, no flash, no confetti, no shake. Memorials, remembrance, solemn moments.
-Choose a calm engine (light / particles / cinema) for memorial — never celebrate.
+WORDS (fields) — in the user's language (Hebrew stays Hebrew).
+- title: the hero line, SHORT (1–4 words, ≤ 22 chars). When the user only names the occasion, you may write a meaningful line that a real designer would put on the screen for it — a well-known motto, blessing or phrase of that occasion (e.g. Holocaust Remembrance Day → "לכל איש יש שם"; Rosh Hashana → "שנה טובה ומתוקה"; New Year → "Here's to 2027"), and move the occasion's name to the kicker.
+- kicker: the small line above — usually the event / occasion / organiser name, ≤ 36 chars.
+- sub: a quiet line below (a short echo of the idea, the date or place ONLY if given), ≤ 44 chars; may be "".
+- Never invent names, dates, places, numbers or facts the user did not give.
+- accent, accent2: two hex colours (accent = the kicker, the thin rule and any glow; from the brand/logo or the mood).
 
-FOOTAGE — 2–3 Pixabay VIDEO search queries in ENGLISH, best first. 2–4 words each, concrete and visual, landscape, atmospheric, with no faces as the subject. Good backgrounds are steady or slow (tripod, time-lapse, slow motion), defocused or bokeh, with no clear subject and empty space in the middle; avoid fine patterns and fast camera moves. Words like "bokeh", "abstract", "dark", "timelapse", "slow motion" help. They must fit the mood AND the engine:
-  sky/clouds/sunset/aerial for airlines & openings; city night lights / bokeh for tech & corporate; concert crowd lights / fireworks for parties; stage spotlight / gold particles for awards; christmas lights bokeh / snow falling / candles for holidays; ocean waves sunset for calm; memorial candle for memorials.
-  Prefer footage that is dark or medium-dark (text sits on top).
+LOOK — the design, built from Cuey's blocks:
+- layout: auto (Cuey reads the footage and puts the words in the empty side — best default) | center | right | left | top | bottom.
+- font: heebo (clean bold sans) | heeboLight (thin modern sans) | assistant (ultra-thin minimal luxury) | rubik / rubikBlack (round, strong, friendly) | karantina (tall condensed display, huge poster impact — sports, tech, big statements) | suez (heavy classic serif display — festive, holidays) | secular (bold friendly display — parties) | frank (classic serif bold — galas, heritage) | frankLight (classic serif — ceremonies, remembrance) | bellefair (refined thin serif — luxury, gala, weddings) | notoSerif (light literary serif) | david (traditional book serif — heritage, Jewish holidays) | amatic (hand-drawn — kids, casual fun) | fredoka (rounded playful — kids, birthdays).
+- reveal: veil (whole line slowly comes into focus — solemn, elegant) | rise (words rise from a mask, slow — premium) | maskWords (words rise, brisk — corporate) | maskChars (letter by letter — tech) | blur (blur-to-focus — gala) | slam (words land with a bounce — party) | pop (words pop with spring — kids/fun) | light (an edge of light wipes the title in — openings).
+- energy: 0–1. 0–0.2 = still and quiet (memorial, prayer), 0.3–0.5 = calm confident (conference, ceremony), 0.6–0.8 = festive (gala, launch), 0.9–1 = party. Energy drives glow, bloom, camera motion and flashes.
+- light: none | halo (a soft glow behind the words) | rays (god rays from above) | spots (two stage spotlights) | sweep (one light sweep across the title).
+- fx: none | dust | embers (slow rising sparks — candles, memory, warmth) | snow | glitter (falling gold) | bokeh | confetti (bursts when the title lands, then rains) | fireworks. Combine at most two with "+", e.g. "bokeh+glitter".
+- rule: true/false — a thin accent line between title and sub (elegant, ceremonial, editorial).
+- camera: push (slow push-in) | drift | still.
+- dark: 0.2–0.7 how much the footage is darkened; blur: 0–4 how defocused the footage is (more blur = text pops).
+- Memorial / remembrance: energy ≤ 0.15, no confetti/fireworks/flash/spots, a serif (frankLight / bellefair / david), veil, often rule:true and embers or none.
 
-WORDS (fields) — in the user's language (Hebrew stays Hebrew). Never invent names, dates or facts the user did not give; leave a field empty ("") rather than invent.
-- kicker: small line above (event type / organiser), ≤ 30 chars.
-- title: the hero words, SHORT (1–3 words, ≤ 18 chars) — the name, brand or the big message.
-- sub: the line below (event name / date / place), ≤ 40 chars.
-- accent, accent2: two hex colours from the brand/logo or the mood (accent = main glow).
-If a logo is attached, the logo becomes the hero above the title (the title may be the event name).
-Less but motivated: the slide makes ONE point. If in doubt, keep the title shorter.
-captions: 3 very short lines in the user's language, shown while the slide is built (e.g. "🎬 Real sunset sky footage", "✨ The title is revealed by light").`;
+MOOD — the closest of: corporate | gala | tech | party | memorial.
+
+FOOTAGE — 2–3 Pixabay VIDEO search queries in ENGLISH, best first, 2–4 words each, concrete and visual. Steady or slow (tripod, time-lapse, slow motion), defocused/bokeh or with ONE simple subject off to the side (a candle, a flag, a horizon) and lots of empty dark space; no faces, no fine patterns, no fast moves. Prefer dark or medium-dark. Match the concept, not just the occasion.
+
+captions: 3 very short lines in the user's language, shown while the slide is built, that tell the user your idea (e.g. "🕯️ נר אחד בחושך", "✍️ 'לכל איש יש שם' נחשף לאט").`;
 
 const DIRECT_TOOL = {
   name: "direct",
-  description: "Pick the engine, footage and words for the slide.",
+  description: "Design the slide: concept, look, footage and words.",
   input_schema: {
     type: "object",
     properties: {
-      engine: { type: "string", enum: ["light", "particles", "cinema", "celebrate", "award", "holiday"] },
+      concept: { type: "string", description: "1–2 sentences: the feeling, the single idea, what you leave out" },
       mood: { type: "string", enum: ["corporate", "gala", "tech", "party", "memorial"] },
+      look: { type: "object", properties: {
+        layout: { type: "string", enum: ["auto", "center", "right", "left", "top", "bottom"] },
+        font: { type: "string", enum: ["heebo", "heeboLight", "assistant", "rubik", "rubikBlack", "karantina", "suez", "secular", "frank", "frankLight", "bellefair", "notoSerif", "david", "amatic", "fredoka"] },
+        reveal: { type: "string", enum: ["veil", "rise", "maskWords", "maskChars", "blur", "slam", "pop", "light"] },
+        energy: { type: "number" }, light: { type: "string", enum: ["none", "halo", "rays", "spots", "sweep"] }, fx: { type: "string" },
+        rule: { type: "boolean" }, camera: { type: "string", enum: ["push", "drift", "still"] }, dark: { type: "number" }, blur: { type: "number" } },
+        required: ["layout", "font", "reveal", "energy", "light", "fx", "rule"] },
       footage: { type: "array", minItems: 1, maxItems: 3, items: { type: "string" } },
       title: { type: "string", description: "short name for the slide in the user's language" },
       fields: { type: "array", items: { type: "object", properties: { k: { type: "string", enum: ["kicker", "title", "sub", "accent", "accent2"] }, label: { type: "string", description: "label in the user's language" }, type: { type: "string", enum: ["text", "color"] }, value: { type: "string" } }, required: ["k", "label", "type", "value"] } },
       captions: { type: "array", maxItems: 4, items: { type: "string" } },
     },
-    required: ["engine", "mood", "footage", "title", "fields", "captions"],
+    required: ["concept", "mood", "look", "footage", "title", "fields", "captions"],
   },
 };
 
@@ -121,13 +126,17 @@ Deno.serve(async (req) => {
   if ((count || 0) >= cap) return json({ error: "limit", cap }, 429);
   const img = logo ? [{ type: "image", source: { type: "base64", media_type: logo.media_type, data: logo.data } }] : [];
   const logoLine = logo ? "Attached: the user's logo / brand picture (it will be the hero of the slide)." : "No logo attached.";
-  const r = await run(key, [env("DIRECT_MODEL"), "claude-sonnet-5-5", "claude-opus-5-5"].filter(Boolean), DIRECT_SYSTEM, DIRECT_TOOL, [...img, { type: "text", text: `${logoLine}\nUser's language: ${lang}.\n\nThe request:\n${prompt}\n\nCall direct now.` }],
-    { max_tokens: 2500, thinking: { type: "between_tools" }, output_config: { effort: "medium" } }, (i) => typeof i.engine === "string" && Array.isArray(i.fields), T0);
+  const r = await run(key, (body?.model === "opus" ? ["claude-opus-5-5", "claude-sonnet-5-5"] : [env("DIRECT_MODEL"), "claude-sonnet-5-5", "claude-opus-5-5"]).filter(Boolean), DIRECT_SYSTEM, DIRECT_TOOL, [...img, { type: "text", text: `${logoLine}\nUser's language: ${lang}.\n\nThe request:\n${prompt}\n\nCall direct now.` }],
+    { max_tokens: 4000, thinking: { type: "between_tools" }, output_config: { effort: "medium" } }, (i) => i.look && typeof i.look === "object" && Array.isArray(i.fields), T0);
   if (!r.out) { await db.from("ai_builds").insert({ user_id: user.id, chars: prompt.length, cues: -1, ok: false }); return json({ error: "ai", status: r.status, detail: r.detail }, 502); }
-  const o = r.out, keep = ["kicker", "title", "sub", "accent", "accent2"], seen = new Set();
-  o.fields = (o.fields || []).filter((f: any) => keep.includes(f.k) && !seen.has(f.k) && seen.add(f.k)).map((f: any) => ({ k: f.k, label: String(f.label || f.k).slice(0, 40), type: f.k.startsWith("accent") ? "color" : "text", value: String(f.value || "").slice(0, f.k === "sub" ? 60 : 40) }));
+  const o = r.out; o.engine = "compose"; const L = o.look, FX = ["dust", "embers", "snow", "glitter", "bokeh", "confetti", "fireworks"];
+  L.energy = Math.max(0, Math.min(1, +L.energy || 0)); L.fx = String(L.fx || "none").split(/[+, ]+/).filter((f: string) => FX.includes(f)).slice(0, 2).join("+") || "none";
+  if (o.mood === "memorial") { L.energy = Math.min(L.energy, .15); L.fx = L.fx.split("+").filter((f: string) => !["confetti", "fireworks", "glitter"].includes(f)).join("+") || "none"; if (L.light === "spots" || L.light === "rays") L.light = "none"; }
+  L.dark = Math.max(.15, Math.min(.75, L.dark == null ? .45 : +L.dark)); L.blur = Math.max(0, Math.min(4, L.blur == null ? 1.5 : +L.blur));
+  const keep = ["kicker", "title", "sub", "accent", "accent2"], seen = new Set();
+  o.fields = (o.fields || []).filter((f: any) => keep.includes(f.k) && !seen.has(f.k) && seen.add(f.k)).map((f: any) => ({ k: f.k, label: String(f.label || f.k).slice(0, 40), type: f.k.startsWith("accent") ? "color" : "text", value: String(f.value || "").slice(0, f.k === "sub" ? 60 : 44) }));
   for (const k of keep) if (!seen.has(k)) o.fields.push({ k, label: k, type: k.startsWith("accent") ? "color" : "text", value: k === "accent" ? "#ffcf6b" : k === "accent2" ? "#7cf5ff" : "" });
-  console.log("direct", r.model, Date.now() - T0, "ms", o.engine, JSON.stringify(o.footage), JSON.stringify(r.usage));
+  console.log("direct", r.model, Date.now() - T0, "ms", o.concept, JSON.stringify(o.look), JSON.stringify(o.footage), JSON.stringify(r.usage));
   await db.from("ai_builds").insert({ user_id: user.id, chars: prompt.length + (logo ? 1 : 0), cues: -1, ok: true });
   return json({ direct: o, model: r.model, left: cap - (count || 0) - 1 });
 });
