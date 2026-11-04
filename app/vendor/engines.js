@@ -198,14 +198,14 @@ async function compose(canvas,F,A){
   const e=K.cl(+lk.energy||0,0,1),I=A.intro,ac=hex(F.accent,'#e8d9b0'),ac2=hex(F.accent2,'#8a8f9c'),calm=e<.35;
   const FT=FONTS[lk.font]||FONTS.heebo,kf=calm?FT:(FT[0]==='Karantina'||FT[0]==='Amatic SC'?['Heebo',700]:FT);
   await loadFonts([FT,kf,['Heebo',500]],[F.title,F.kicker,F.sub].filter(Boolean).join(' ')+' Aa');
-  const camZ=15,fov=36,st=K.stage(canvas,{bg:'#000000',fov,bloom:{s:.15+.6*e,r:.45,th:.88},shadows:false,exposure:1}),{S,C}=st;C.position.set(0,0,camZ);C.lookAt(0,0,0);
+  const camZ=15,fov=36,st=K.stage(canvas,{bg:'#000000',fov,bloom:{s:.12+.45*e,r:.38,th:.9},shadows:false,exposure:1}),{S,C}=st;C.position.set(0,0,camZ);C.lookAt(0,0,0);
   const fg=K.footage(S,{dark:1,vig:.55+.2*(1-e),blur:+lk.blur||0,sat:lk.sat==null?1:+lk.sat,tint:hex(lk.tint,'#000000'),tintA:lk.tint?.22:0});
   const vw=2*camZ*Math.tan(fov*Math.PI/360)*16/9,vh=vw*9/16;
-  const RC=rec(lk.reveal),unitOf=r=>r.unit==='char'?'char':r.unit==='line'?'line':'word',shadow=e<.6?'rgba(0,0,0,.55)':null;
+  const RC=rec(lk.reveal),unitOf=r=>r.unit==='char'?'char':r.unit==='line'?'line':'word',shadow='rgba(0,0,0,.55)';
   const tf=(s,o)=>K.typeFX(s,{font:o.font||FT[0],weight:o.weight||FT[1],...o});
   const titleC=calm?'#f4efe4':'#ffffff';
   const kick=F.kicker?tf(F.kicker,{px:120,h:.64,font:kf[0],weight:Math.min(700,kf[1]),color:ac,shadow:'rgba(0,0,0,.6)',ls:K.he(F.kicker)?0:120*.22,emissive:.95,unit:'line'}):null;
-  const title=F.title?tf(F.title,{px:260,h:2.3,color:titleC,color2:calm?'#e6dfd0':titleC,glow:e>.6?ac:null,shadow,ls:K.he(F.title)?0:-260*.015,emissive:calm?.9:.86,unit:unitOf(RC)}):null;
+  const title=F.title?tf(F.title,{px:260,h:2.3,color:titleC,color2:calm?'#e6dfd0':titleC,glow:null,shadow,ls:K.he(F.title)?0:-260*.015,emissive:calm?.9:.8,unit:unitOf(RC)}):null;
   const sub=F.sub?tf(F.sub,{px:130,h:.68,font:calm?FT[0]:'Heebo',weight:calm?Math.min(500,FT[1]):500,color:'#ffffff',shadow:'rgba(0,0,0,.7)',ls:K.he(F.sub)?0:130*.06,emissive:.86,unit:'line'}):null;
   const logo=A.logo?K.logoFX(A.logo,{h:2.4,glow:ac}):null;
   const ruleM=lk.rule?new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:ac,transparent:true,opacity:0,depthWrite:false,toneMapped:false})):null;
@@ -252,7 +252,7 @@ async function compose(canvas,F,A){
     if(logo){logo.u.rev.value=E.io3(K.k(t,logoT,logoT+1.4*sp));logo.u.glow.value=0}
     if(kick)kick.at(t,kickT,'soft'===lk.reveal||calm?rec('veil'):rec('maskLines'));
     if(title){if(lk.reveal==='light'){const rv=E.io3(K.k(t,titleT,titleT+1.6));title.u.rev.value=rv;if(flare){flare.position.x=blk.x+(title.he?1:-1)*(title.width/2-title.width*rv);flare.material.opacity=rv>0&&rv<1?.9:0}}else title.at(t,titleT,RC);
-      title.u.glow.value=e>.6?.05+.03*Math.sin(ph*2)*amp:0;const sw=K.k(t,tEnd+.5,tEnd+1.4);title.u.shine.value=(lk.light==='sweep'||e>.55)&&sw>0&&sw<1?-.2+1.4*E.sine(sw):-1}
+      title.u.glow.value=0;const sw=K.k(t,tEnd+.5,tEnd+1.4);title.u.shine.value=(lk.light==='sweep'||e>.55)&&sw>0&&sw<1?-.2+1.4*E.sine(sw):-1}
     if(ruleM){const r=E.io3(K.k(t,ruleT,ruleT+.9*sp)),u=ruleM.userData;ruleM.scale.x=Math.max(.001,u.w*r);ruleM.position.x=u.x+u.dir*(u.w-u.w*r)/2;ruleM.material.opacity=.9*r}
     if(sub)sub.at(t,subT,calm?rec('veil'):rec('maskLines'));
     B.scale.setScalar(1+(.004+.008*e)*Math.sin(ph)*amp);B.position.y=.04*Math.sin(ph)*amp;
@@ -268,7 +268,7 @@ async function compose(canvas,F,A){
     if(fw){const cyc=((t-I)/A.loop%1+1)%1;fw.forEach(s=>{const age=((cyc-s.off)%1+1)%1*A.loop*.5,pos=s.p.geometry.attributes.position.array,al=s.p.geometry.attributes.al.array,a=age,dd=(1-Math.exp(-2.2*a))/2.2,on=E.o3(K.k(t,1,2.5));
       for(let i=0;i<s.N;i++){pos[i*3]=s.o[0]+s.v[i][0]*dd*1.6;pos[i*3+1]=s.o[1]+s.v[i][1]*dd*1.6-.35*a*a;pos[i*3+2]=s.o[2]+s.v[i][2]*dd*1.6;al[i]=on*Math.max(0,1-a/2)*(.6+.4*Math.sin(a*30+i))}
       s.p.geometry.attributes.position.needsUpdate=true;s.p.geometry.attributes.al.needsUpdate=true;fl+=on*Math.max(0,.05-a*.1)})}
-    f.flash.value=fl;f.fcol.value.set(ac);st.bloom.strength=.15+.6*e+.3*fl;st.render()}}
+    f.flash.value=fl;f.fcol.value.set(ac);st.bloom.strength=.12+.45*e+.3*fl;st.render()}}
 
 return {META,light,particles,cinema,celebrate,award,holiday,compose}}
 window.__ENG_SRC='self.ENG=('+CueyEngines.toString()+')(self.THREE,self.K);';
