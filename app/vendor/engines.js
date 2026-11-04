@@ -293,7 +293,7 @@ async function compose(canvas,F,A){
     if(fw){const cyc=((t-I)/A.loop%1+1)%1;fw.forEach(s=>{const age=((cyc-s.off)%1+1)%1*A.loop*.5,pos=s.p.geometry.attributes.position.array,al=s.p.geometry.attributes.al.array,a=age,dd=(1-Math.exp(-2.2*a))/2.2,on=E.o3(K.k(t,1,2.5));
       for(let i=0;i<s.N;i++){pos[i*3]=s.o[0]+s.v[i][0]*dd*1.6;pos[i*3+1]=s.o[1]+s.v[i][1]*dd*1.6-.35*a*a;pos[i*3+2]=s.o[2]+s.v[i][2]*dd*1.6;al[i]=on*Math.max(0,1-a/2)*(.6+.4*Math.sin(a*30+i))}
       s.p.geometry.attributes.position.needsUpdate=true;s.p.geometry.attributes.al.needsUpdate=true;fl+=on*Math.max(0,.05-a*.1)})}
-    let gfl=0;if(GL){[titleT+.05,titleT+.32,titleT+.6,tEnd+.35].forEach(t0=>{if(t>=t0&&t<t0+.12)gfl=.07})}
+    let gfl=0;if(GL){[titleT+.05,titleT+.32,titleT+.6,tEnd+.35].forEach(t0=>{if(t>=t0&&t<t0+.12)gfl=.04})}
     f.flash.value=fl+gfl;if(!gfl)f.fcol.value.set(ac);st.bloom.strength=.12+.45*e+.3*fl;st.render()}}
 
 return {META,light,particles,cinema,celebrate,award,holiday,compose}}
