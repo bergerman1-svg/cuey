@@ -19,15 +19,15 @@ function core(canvas,F,A,{bloom={s:.75,r:.5,th:.9},fov=36,grade={},titleColor='#
   const H=new THREE.Group();S.add(H);const vw=2*camZ*Math.tan(fov*Math.PI/360)*16/9;let y=0;const items={};
   const fit=(g,maxW)=>{if(g.width>maxW){const s=maxW/g.width;g.scale.setScalar(s);g.width*=s;g.height*=s}return g};
   const logo=A.logo?fit(K.logoFX(A.logo,{h:3.4,glow:ac}),vw*.5):null;
-  const kick=F.kicker?fit(K.type(F.kicker,{px:130,h:.55,weight:700,color:ac,glow:null,ls:K.he(F.kicker)?0:40,emissive:1}),vw*.7):null;
+  const kick=F.kicker?fit(K.type(F.kicker,{px:130,h:.55,weight:700,color:'#ffffff',color2:ac,glow:'rgba(0,0,0,.6)',ls:K.he(F.kicker)?0:40,emissive:1}),vw*.7):null;
   const title=F.title?fit(K.type(F.title,{px:260,h:logo?1.35:2.35,color:titleColor,color2:titleColor2||titleColor,glow:glow||ac,emissive:.82}),vw*(logo?.72:.82)):null;
-  const sub=F.sub?fit(K.type(F.sub,{px:130,h:logo?.5:.62,weight:500,color:'#ffffff',ls:K.he(F.sub)?0:30,emissive:.85}),vw*.75):null;
+  const sub=F.sub?fit(K.type(F.sub,{px:130,h:logo?.5:.62,weight:500,color:'#ffffff',glow:'rgba(0,0,0,.7)',ls:K.he(F.sub)?0:30,emissive:.95}),vw*.75):null;
   const stack=[logo&&[logo,.55],kick&&[kick,.42],title&&[title,.5],sub&&[sub,0]].filter(Boolean);let tot=0;stack.forEach(([g,gap])=>tot+=g.height+gap);y=tot/2;
   stack.forEach(([g,gap])=>{g.position.y=y-g.height/2;y-=g.height+gap;H.add(g)});Object.assign(items,{logo,kick,title,sub});
   /* scrim: a soft dark pool of shade behind the words so they read on any footage */
   const sv=(()=>{const cv=new OffscreenCanvas(256,128),x=cv.getContext('2d'),g=x.createRadialGradient(128,64,0,128,64,128);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(.55,'rgba(0,0,0,.75)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,256,128);return new THREE.CanvasTexture(cv)})();
   const scrim=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:sv,transparent:true,depthWrite:false,opacity:0,toneMapped:false}));scrim.scale.set(Math.min(vw*1.1,Math.max(...stack.map(([g])=>g.width))*1.6+4),tot*1.9+2.5,1);scrim.position.z=-1.5;scrim.renderOrder=-10;S.add(scrim);
-  return {st,S,C,fg,H,ac,ac2,vw,...items,scrim,sc(v,a=.62){scrim.material.opacity=a*v},feed(){fg.feed(A)}}}
+  return {st,S,C,fg,H,ac,ac2,vw,...items,scrim,sc(v,a=.72){scrim.material.opacity=a*v},feed(){fg.feed(A)}}}
 /* standard type-in for kicker/sub: fade + tracking */
 function soft(g,u){if(!g)return;g.u.op.value=E.o3(u);g.position.x=0;g.scale.x=g.scale.y*(1+.06*(1-E.o3(u)))}
 const lp=(t,A)=>{const I=A.intro,L=A.loop;return {I,L,ph:TAU*(t-I)/L,u:t<I?0:((t-I)%L)/L,on:t>=I}};
