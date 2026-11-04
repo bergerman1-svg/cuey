@@ -93,6 +93,48 @@ const DIRECT_TOOL = {
   },
 };
 
+const PICK_TOOL = {
+  name: "pick",
+  description: "Pick the best background video for the slide.",
+  input_schema: { type: "object", properties: {
+    index: { type: "integer", description: "number of the chosen candidate (1-based)" },
+    why: { type: "string", description: "one short sentence" } }, required: ["index"] },
+};
+const PICK_SYSTEM = `You are the art director of Cuey's AI Builder. You see still frames of candidate stock videos (numbered) that could play behind a live-event title slide. Pick the ONE that will look best behind the words, by these rules, in order:
+1. It fits the concept and the feeling (a memorial is never festive; a party is never gloomy). Reject anything off-topic, odd or cheesy (cartoons, clocks, random objects, stock-photo people posing).
+2. It leaves calm, empty space for the words (dark or soft areas); one simple subject off to the side is great; busy, high-contrast, finely patterned or cluttered frames are bad.
+3. It looks premium and cinematic: shallow depth of field, bokeh, beautiful light, rich but not garish colour, no watermark-like text, no faces as the subject.
+4. Medium-dark is better than bright.
+Call pick once.`;
+
+// search Pixabay for candidates and let the model look at them (vision) — returns the chosen hit or null
+async function pickFootage(key: string, qs: string[], o: any, T0: number) {
+  const pk = env("PIXABAY_KEY"); if (!pk) return null;
+  const seen = new Set(), cands: any[] = [];
+  for (const q of qs.slice(0, 3)) {
+    try {
+      const p = new URLSearchParams({ key: pk, q: String(q).toLowerCase().slice(0, 90), safesearch: "true", per_page: "20" });
+      const r = await fetch("https://pixabay.com/api/videos/?" + p.toString()); if (!r.ok) continue;
+      const d = await r.json(); let k = 0;
+      for (const h of (d.hits || [])) {
+        const v = h.videos || {}, w = v.medium?.width || 0, ht = v.medium?.height || 0, thumb = v.medium?.thumbnail || v.small?.thumbnail;
+        if (!thumb || w < ht || (h.duration && h.duration < 8) || seen.has(h.id)) continue;
+        seen.add(h.id); cands.push({ id: h.id, q, thumb, full: w >= 1280 ? v.medium.url : (v.large?.url || v.medium?.url), dur: h.duration, w, h: ht });
+        if (++k >= 3) break;
+      }
+    } catch { /* */ }
+  }
+  if (cands.length < 2) return cands[0] || null;
+  const content: any[] = [];
+  cands.forEach((c, i) => { content.push({ type: "text", text: `Candidate ${i + 1} (search "${c.q}", ${c.dur || "?"} s):` }); content.push({ type: "image", source: { type: "url", url: c.thumb } }); });
+  const title = (o.fields || []).find((f: any) => f.k === "title")?.value || "";
+  content.push({ type: "text", text: `Concept: ${o.concept}\nMood: ${o.mood}. Title on screen: "${title}". Layout: ${o.look?.layout}.\nCall pick now.` });
+  const r = await run(key, ["claude-sonnet-5-5", "claude-opus-5-5"], PICK_SYSTEM, PICK_TOOL, content, { max_tokens: 1500, thinking: { type: "between_tools" }, output_config: { effort: "low" } }, (i) => Number.isInteger(i.index), T0);
+  const i = r.out ? Math.max(1, Math.min(cands.length, r.out.index)) - 1 : 0;
+  console.log("pick", cands.length, "cands ->", i + 1, r.out?.why || "", JSON.stringify(r.usage || {}));
+  return { ...cands[i], why: r.out?.why || "", n: cands.length };
+}
+
 function call(key: string, model: string, system: string, tool: any, content: any[], opts: any) {
   return fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -164,6 +206,7 @@ Deno.serve(async (req) => {
   o.fields = (o.fields || []).filter((f: any) => keep.includes(f.k) && !seen.has(f.k) && seen.add(f.k)).map((f: any) => ({ k: f.k, label: String(f.label || f.k).slice(0, 40), type: f.k.startsWith("accent") ? "color" : "text", value: String(f.value || "").slice(0, f.k === "sub" ? 60 : 44) }));
   for (const k of keep) if (!seen.has(k)) o.fields.push({ k, label: k, type: k.startsWith("accent") ? "color" : "text", value: k === "accent" ? "#ffcf6b" : k === "accent2" ? "#7cf5ff" : "" });
   console.log("direct", r.model, Date.now() - T0, "ms", o.concept, JSON.stringify(o.look), JSON.stringify(o.footage), JSON.stringify(r.usage));
+  if (body?.pick !== false) { try { o.pick = await pickFootage(key, (o.footage || []).map(String), o, T0); } catch (e) { console.error("pick", String(e)); } }
   await db.from("ai_builds").insert({ user_id: user.id, chars: prompt.length + (logo ? 1 : 0), cues: -1, ok: true });
   return json({ direct: o, model: r.model, left: cap - (count || 0) - 1 });
 });
