@@ -172,10 +172,11 @@ async function loadFonts(list,sample){try{const fam=[...new Set(list.map(f=>f[0]
   if(!document.querySelector('link[data-cf="'+href+'"]')){const l=document.createElement('link');l.rel='stylesheet';l.href=href;l.dataset.cf=href;document.head.appendChild(l);await new Promise(r=>{l.onload=r;l.onerror=r;setTimeout(r,2500)})}
   await Promise.race([Promise.all(list.map(([f,w])=>document.fonts.load(w+' 100px "'+f+'"',sample))),new Promise(r=>setTimeout(r,3000))])}catch(e){}}
 /* where is the subject? brightness/contrast centroid of the first footage frame (16x9 grid) */
-function readFrame(bm){try{const c=new OffscreenCanvas(32,18),x=c.getContext('2d');x.drawImage(bm,0,0,32,18);const d=x.getImageData(0,0,32,18).data,L=[];let m=0;
-  for(let i=0;i<32*18;i++){const l=(.2126*d[i*4]+.7152*d[i*4+1]+.0722*d[i*4+2])/255;L.push(l);m+=l}m/=576;let sx=0,sy=0,sw=0;
+function readFrame(bm){try{const c=new OffscreenCanvas(32,18),x=c.getContext('2d');x.drawImage(bm,0,0,32,18);const d=x.getImageData(0,0,32,18).data,L=[];
+  for(let i=0;i<576;i++)L.push((.2126*d[i*4]+.7152*d[i*4+1]+.0722*d[i*4+2])/255);return L}catch(e){return null}}
+function subject(L){if(!L)return null;let m=0;for(const v of L)m+=v;m/=576;let sx=0,sy=0,sw=0;
   for(let y=0;y<18;y++)for(let x0=0;x0<32;x0++){const w=Math.max(0,L[y*32+x0]-m);sx+=w*x0;sy+=w*y;sw+=w}
-  return {L,mean:m,cx:sw>1e-3?sx/sw/31:.5,cy:sw>1e-3?sy/sw/17:.5,str:sw/576}}catch(e){return null}}
+  return {L,mean:m,cx:sw>1e-3?sx/sw/31:.5,cy:sw>1e-3?sy/sw/17:.5,str:sw/576}}
 const lin=v=>v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4);
 function region(fr,x0,x1,y0,y1){if(!fr)return .3;let s=0,n=0;for(let y=Math.max(0,Math.floor(y0*18));y<Math.min(18,Math.ceil(y1*18));y++)for(let x=Math.max(0,Math.floor(x0*32));x<Math.min(32,Math.ceil(x1*32));x++){s+=lin(fr.L[y*32+x]);n++}return n?s/n:.3}
 /* periodic particle fields (all motion in whole cycles of the loop) */
@@ -224,8 +225,9 @@ async function compose(canvas,F,A){
   if(fxs.includes('fireworks')){const N=320;fw=[[-6,3.5,-7,0,0],[5.5,4.2,-8,.25,1],[-2,5.2,-9,.5,2],[7,2,-8,.75,3]].map(([x,y,z,o,ci],j)=>{const p=K.points(N,{size:2.4,color:'#ffffff'}),R=K.rng(40+j),v=[],cc=new THREE.Color(cols[ci]),c=p.geometry.attributes.color.array;
     for(let i=0;i<N;i++){const th=R()*TAU,ph=Math.acos(2*R()-1),s=2.1+R()*.6;v.push([Math.sin(ph)*Math.cos(th)*s,Math.cos(ph)*s,Math.sin(ph)*Math.sin(th)*s]);c.set([cc.r,cc.g,cc.b],i*3)}p.geometry.attributes.color.needsUpdate=true;S.add(p);return {p,v,o:[x,y,z],off:o,N}})}
   /* layout: decided on the first frame that has footage (or immediately when there is none) */
-  let laid=false,need=.5,blk={x:0,y:0,w:0,h:0};
-  const lay=fr=>{laid=true;let L=lk.layout;if(L==='auto'){if(!fr||fr.str<.003)L='center';else if(fr.cx>.6)L='left';else if(fr.cx<.4)L='right';else L=fr.cy>.55?'top':'bottom'}
+  let laid=false,need=.5,blk={x:0,y:0,w:0,h:0},acc=null,accN=0,pan=0,panT=0;const zoomR=1.42;
+  const lay=fr=>{laid=true;let L=lk.layout;if(L==='auto'){if(!fr||fr.str<.003)L='center';else if(fr.cx>.6)L='left';else if(fr.cx<.4)L='right';
+      else{/* subject in the middle: reframe it to one third (eased camera move) and put the words on the other side */const to=fr.cx>=.5?.32:.68;pan=K.cl(fr.cx-.5-(to-.5)/zoomR,-.5+.5/zoomR+.01,.5-.5/zoomR-.01);L=to<.5?'right':'left';const sh=(to-fr.cx);fr={...fr,L:fr.L.map((v,i)=>{const x=i%32,sx=Math.round(x-sh*31);return sx>=0&&sx<32?fr.L[(i-x)+sx]:0})}}}
     const side=L==='left'||L==='right',maxW=side?vw*.46:vw*.84,items=[logo,kick,title,sub].filter(Boolean);
     items.forEach(g=>{const s0=g.userData.s0||(g.userData.s0=1);const w=g.width/s0;const s=w>maxW?maxW/w:1;g.scale.setScalar(s);g.userData.s0=s;g.width=w*s;g.height=(g.height/s0)*s});
     const gap=g=>g===logo?.55:g===kick?.34:g===title?(ruleM?.62:.44):0,tot=items.reduce((a,g)=>a+g.height+gap(g),0)+(ruleM?.0:0);
@@ -244,7 +246,7 @@ async function compose(canvas,F,A){
   const POP=titleT+.25,dark=K.cl(+lk.dark||.45,0,.9),zoom0=1.04+.1*e;
   return t=>{const ph=TAU*(t-I)/A.loop,amp=K.k(t,I-2.2,I-.2),f=fg.u;fg.feed(A);if(!laid)lay(A.bg?readFrame(A.bg):null);
     /* up from black, push in (settles before the hold) */
-    f.dark.value=dark+(1-dark)*(1-K.ez.calmIn(K.k(t,0,1.8*sp)));f.zoom.value=zoom0-(zoom0-1.02)*E.io3(K.k(t,0,I-.3))+.006*e*Math.sin(ph)*amp;
+    f.dark.value=dark+(1-dark)*(1-K.ez.calmIn(K.k(t,0,1.8*sp)));const rf=pan?E.io3(K.k(t,panT,panT+1.6)):0,zr=1+(zoomR-1)*rf;f.zoom.value=(zoom0-(zoom0-1.02)*E.io3(K.k(t,0,I-.3))+.006*e*Math.sin(ph)*amp)*zr;f.pan.value.set(pan*rf,0);
     if(lk.camera!=='still'){C.position.set(.22*e*Math.sin(ph)*amp,.1*e*Math.cos(ph)*amp-.1*e*amp,camZ+(lk.camera==='push'?.9*(1-E.io3(K.k(t,0,I-.3))):0));C.lookAt(blk.x*.04,0,0)}
     if(logo){logo.u.rev.value=E.io3(K.k(t,logoT,logoT+1.4*sp));logo.u.glow.value=0}
     if(kick)kick.at(t,kickT,'soft'===lk.reveal||calm?rec('veil'):rec('maskLines'));
