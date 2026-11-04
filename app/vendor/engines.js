@@ -240,10 +240,10 @@ async function compose(canvas,F,A){
     blk={x:cx,y:top-tot/2,w:bw,h:tot};scrim.scale.set(Math.min(vw*1.1,bw*1.5+4),tot*1.8+2.4,1);scrim.position.set(cx,blk.y,-1.5);
     if(halo)halo.position.set(cx,title?title.position.y:blk.y,-3);if(flare)flare.position.set(cx,title?title.position.y:0,.5);
     const u0=(cx-bw/2)/vw+.5,u1=(cx+bw/2)/vw+.5,v0=.5-(top)/vh,v1=.5-(top-tot)/vh,lum=fr?region(fr,u0,u1,v0,v1):(typeof A.lum==='number'?A.lum:.3);
-    need=K.cl(1-.16/Math.max(lum*(1-(+lk.dark||.45)),.02),.2,.85)};
+    if(fr&&fr.mean>.3)dark=Math.min(.75,dark+(fr.mean-.3)*.9);need=K.cl(1-.16/Math.max(lum*(1-dark),.02),.2,.85)};
   /* timeline (calm slides breathe slower) */
   const sp=calm?1.35:1,T0=.9*sp,kickT=T0,titleT=T0+(kick?.45*sp:0),tEnd=titleT+RC.dur+RC.st*Math.max(0,((title&&title.n)||1)-1),ruleT=tEnd-.2,subT=tEnd+.05,logoT=T0-.1;
-  const POP=titleT+.25,dark=K.cl(+lk.dark||.45,0,.9),zoom0=1.04+.1*e;
+  const POP=titleT+.25;let dark=K.cl(+lk.dark||.45,0,.9);const zoom0=1.04+.1*e;
   return t=>{const ph=TAU*(t-I)/A.loop,amp=K.k(t,I-2.2,I-.2),f=fg.u;if(!laid){const Tdec=T0-.15,L0=A.bg?readFrame(A.bg):null;if(L0){if(!acc)acc=L0.map(()=>0);L0.forEach((v,i)=>acc[i]+=v);accN++}
       if(t>=Tdec||lk.layout!=='auto'){panT=t;lay(accN?subject(acc.map(v=>v/accN)):null)}}fg.feed(A);
     /* up from black, push in (settles before the hold) */

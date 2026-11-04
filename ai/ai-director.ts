@@ -40,6 +40,28 @@ MOOD — the closest of: corporate | gala | tech | party | memorial.
 
 FOOTAGE — 2–3 Pixabay VIDEO search queries in ENGLISH, best first, 2–4 words each, concrete and visual. Steady or slow (tripod, time-lapse, slow motion), defocused/bokeh or with ONE simple subject off to the side (a candle, a flag, a horizon) and lots of empty dark space; no faces, no fine patterns, no fast moves. Prefer dark or medium-dark. Match the concept, not just the occasion.
 
+DESIGN BIBLE (from Cuey's motion-design research — follow it):
+- One idea per slide. The audience reads it in 3 seconds from the back of the hall. Hierarchy: kicker : title : sub ≈ 1 : 4 : 1.3; the title is the largest and brightest thing; nothing else competes.
+- Restraint wins ties: at most two effects (one light + one fx), one reveal family, one accent colour plus one support colour. A slide that whispers can be more powerful than one that shouts.
+- Match energy to the room: what will people FEEL when this appears? (silence, pride, excitement, warmth, joy). Pick energy, font, reveal and fx from that feeling — not from the occasion's clichés.
+- Type: at most two families. Hebrew is never wide-tracked; mark the kicker with colour or weight. Thin luxury faces (assistant, heeboLight, bellefair) only for calm, elegant moments; heavy faces (rubikBlack, karantina, suez, secular) for energy. No hand-drawn faces (amatic) except kids/casual.
+- Colour: accents from the brand or the feeling (memory = warm candle gold / ivory; gala = gold / champagne; tech = cyan / electric blue; party = gold + a hot pink or violet; kids = sunny yellow + sky blue; nature = sage / sand). Never pure white backgrounds; text must keep contrast.
+- Composition: the footage carries the atmosphere, the words sit in the empty space (layout auto). A single subject (candle, flag, horizon, glass) is better than busy footage. Push-in camera for drama, still for solemnity.
+- Light is motivated: rays come from above like a stage or a window; a halo sits behind words; spots for awards and parties. Never a flash in a memorial.
+- Words: short, human, in the room's voice. The title is what you would want the whole hall to say together. If the user gave a name/brand/event name, it is the hero or the kicker. Never invent facts.
+
+GALLERY — how a great designer thinks (learn the THINKING, never copy these words):
+1. "ערב יום הזיכרון לשואה ולגבורה" → concept: silence; one candle being lit in the dark; a single line. look {layout:auto, font:frankLight, reveal:veil, energy:.1, light:none, fx:embers, rule:true, camera:push, dark:.55, blur:1.5}; kicker "ערב יום הזיכרון לשואה ולגבורה", title "לכל איש יש שם", sub "נזכור ולא נשכח"; footage "lighting memorial candle dark", "single candle flame black background".
+2. "end of year party for the company" (Hebrew) → concept: the moment everyone raises a glass; gold and warmth, loud but clean. look {layout:center, font:rubikBlack, reveal:slam, energy:.85, light:spots, fx:"bokeh+confetti", rule:false, camera:push}; kicker "מסיבת סוף שנה", title "מרימים כוסית!", sub "".
+3. "awards night for our sales team" → concept: the stage before the first name is called; gold light, anticipation. look {layout:center, font:bellefair, reveal:blur, energy:.65, light:spots, fx:glitter, rule:true}; kicker "Sales Awards", title "And the winner is…".
+4. "opening of a medical conference" → concept: calm authority, clean and confident, like a keynote. look {layout:auto, font:heebo, reveal:rise, energy:.35, light:halo, fx:dust, rule:false, camera:push, blur:3}; footage "abstract blue light bokeh slow".
+5. "launch of our new app" → concept: the reveal of something new; letters arrive one by one like code compiling. look {layout:center, font:karantina, reveal:maskChars, energy:.7, light:sweep, fx:dust}; footage "dark blue digital particles", "city night lights bokeh".
+6. "wedding welcome screen for Noa and Itay" → concept: two names, soft light, romance without kitsch. look {layout:auto, font:bellefair, reveal:veil, energy:.4, light:halo, fx:bokeh, rule:true}; kicker "ברוכים הבאים", title "נועה & איתי"; footage "warm fairy lights bokeh".
+7. "kids birthday, Yali turns 6" → concept: pure joy, a pop of colour. look {layout:center, font:fredoka, reveal:pop, energy:.95, light:none, fx:confetti}; title "יאלי בת 6!"; accents sunny yellow + sky blue; footage "colorful balloons bokeh".
+8. "Hanukkah party" → concept: eight small lights growing; warmth. look {layout:auto, font:suez, reveal:rise, energy:.6, light:halo, fx:"embers+bokeh"}; title "חג אורים שמח"; footage "hanukkah candles bokeh dark".
+9. "farewell evening for Dalia after 30 years" → concept: gratitude, a smile, a little tear. look {layout:auto, font:frank, reveal:veil, energy:.3, light:halo, fx:dust, rule:true}; kicker "ערב פרידה", title "תודה, דליה"; footage "sunset golden hour slow".
+10. "football club season kickoff" → concept: stadium roar, power. look {layout:center, font:karantina, reveal:slam, energy:1, light:spots, fx:fireworks}; footage "stadium lights night".
+
 captions: 3 very short lines in the user's language, shown while the slide is built, that tell the user your idea (e.g. "🕯️ נר אחד בחושך", "✍️ 'לכל איש יש שם' נחשף לאט").`;
 
 const DIRECT_TOOL = {

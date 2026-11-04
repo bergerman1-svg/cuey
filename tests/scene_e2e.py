@@ -64,7 +64,7 @@ async def main():
         calls = []; FOOT = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fixtures', 'footage.webm'), 'rb').read()
         async def fake(route):
             b = json.loads(route.request.post_data or '{}'); calls.append(b.get('step'))
-            body = {'direct': {'engine': 'light', 'footage': ['sunset clouds'], 'title': 'Test', 'captions': ['🎬 one', '✨ two'],
+            body = {'direct': {'engine': 'compose', 'mood': 'corporate', 'look': {'layout': 'auto', 'font': 'heebo', 'reveal': 'rise', 'energy': .5, 'light': 'halo', 'fx': 'dust', 'rule': True, 'camera': 'push', 'dark': .45, 'blur': 1.5}, 'footage': ['sunset clouds'], 'title': 'Test', 'captions': ['🎬 one', '✨ two'],
                     'fields': [{'k': 'kicker', 'label': 'Kicker', 'type': 'text', 'value': 'NORTHWIND'}, {'k': 'title', 'label': 'Title', 'type': 'text', 'value': 'WELCOME'},
                                {'k': 'sub', 'label': 'Sub', 'type': 'text', 'value': 'TEL AVIV 2026'}, {'k': 'accent', 'label': 'Accent', 'type': 'color', 'value': '#ffcf6b'}, {'k': 'accent2', 'label': 'Accent 2', 'type': 'color', 'value': '#7cf5ff'}]}}
             await route.fulfill(status=200, body=json.dumps(body), headers={'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'})
@@ -82,7 +82,7 @@ async def main():
         ok('the director\'s words fill the fields', await pg.evaluate("$('#dirF_title').value==='WELCOME'&&$('#dirF_kicker').value==='NORTHWIND'"))
         await pg.click('#dirAdd'); await pg.wait_for_function("$('#dirDlg').hidden", timeout=240000)
         eng = await pg.evaluate("(()=>{const x=items[items.length-1];return {n:items.length,t:x.type,sz:x.file.size,eng:x.scene&&x.scene.src.engine,ff:!!(x.scene&&x.scene.footFile),nm:x.name}})()")
-        ok('Add records the engine slide over the footage into a video cue', eng['n'] == n0 + 1 and eng['t'] == 'video' and eng['eng'] == 'light' and eng['ff'] and eng['sz'] > 50000, eng)
+        ok('Add records the engine slide over the footage into a video cue', eng['n'] == n0 + 1 and eng['t'] == 'video' and eng['eng'] == 'compose' and eng['ff'] and eng['sz'] > 50000, eng)
         ok('it is named after the title', eng['nm'] == 'WELCOME', eng)
         ok('no page errors', not errs, errs)
         await b.close()
