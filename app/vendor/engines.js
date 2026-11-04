@@ -264,9 +264,9 @@ async function compose(canvas,F,A){
     scrim.material.opacity=need*E.o3(K.k(t,T0-.6,T0+1));
     if(rays){rays.children.forEach(m=>{m.rotation.z=m.userData.r0+Math.sin(ph+m.userData.ph)*.06;m.material.opacity=m.userData.o*(.75+.25*Math.sin(ph*2+m.userData.ph*2))*E.o3(K.k(t,.6,3))})}
     if(spots)spots.forEach((r,i)=>{r.rotation.z=(i?-1:1)*(.55-.5*E.io3(K.k(t,.4,3.2)))+(i?-1:1)*.05*Math.sin(ph+i)*amp;r.children.forEach(m=>m.material.opacity=m.userData.o*E.o3(K.k(t,.2,1.5))*(.85+.15*Math.sin(ph*2+i)))});
-    if(rings){const on=E.o3(K.k(t,titleT,tEnd+.8)),cyc=((t-I)/A.loop%1+1)%1;rings.forEach((m,j)=>{const u=((cyc*2+j/3)%1+1)%1;m.position.set(blk.x,title?title.position.y:blk.y,-2.5);m.scale.setScalar((title?title.width:6)*(.5+1.1*u));m.material.opacity=on*(.1+.3*e)*Math.sin(Math.PI*u)})}
+    if(rings){const on=E.o3(K.k(t,titleT,tEnd+.8)),cyc=((t-I)/A.loop%1+1)%1;rings.forEach((m,j)=>{const u=((cyc*2+j/3)%1+1)%1;m.position.set(blk.x,title?title.position.y:blk.y,-2.5);m.scale.setScalar((title?title.width:6)*(.5+1.1*u));m.material.opacity=on*(.05+.14*e)*Math.sin(Math.PI*u)})}
     if(halo)halo.material.opacity=(.04+.26*e)*E.o3(K.k(t,titleT,tEnd+.6))*(1+.12*Math.sin(ph)*amp);
-    if(flare&&lk.reveal!=='light'){const s1=K.k(t,tEnd+.5,tEnd+1.4);flare.material.opacity=e>.55?.5*Math.sin(Math.PI*s1):0;flare.position.x=blk.x+(s1-.5)*(title?title.width:6)}
+    if(flare&&lk.reveal!=='light'){const s1=K.k(t,tEnd+.5,tEnd+1.4);flare.material.opacity=e>.55?.28*Math.sin(Math.PI*s1):0;flare.position.x=blk.x+(s1-.5)*(title?title.width:6)}
     fields.forEach(p=>p.tick(ph,E.o3(K.k(t,.4,2.4))));
     let fl=0;if(conf){conf.burst(t-POP,[blk.x,title?title.position.y:0,-1],1);conf.visible=t<I;const o=new THREE.Object3D(),cyc=(t-I)/A.loop;
       for(let i=0;i<rp.length;i++){const q=rp[i],yy=((q[1]-cyc*q[3]*16)%16+16)%16-7;o.position.set(q[0]+Math.sin(ph+q[4]*9)*.4,yy,q[2]);o.rotation.set(ph*2+q[4]*7,ph*3+q[4]*5,q[4]*6);o.scale.setScalar(E.o3(K.k(t,POP,POP+1.2)));o.updateMatrix();rain.setMatrixAt(i,o.matrix)}rain.instanceMatrix.needsUpdate=true;

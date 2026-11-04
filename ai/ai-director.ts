@@ -27,11 +27,12 @@ WORDS (fields) — in the user's language (Hebrew stays Hebrew).
 LOOK — the design, built from Cuey's blocks:
 - layout: auto (Cuey reads the footage and puts the words in the empty side — best default) | center | right | left | top | bottom.
 - font: heebo (clean bold sans) | heeboLight (thin modern sans) | assistant (ultra-thin minimal luxury) | rubik / rubikBlack (round, strong, friendly) | karantina (tall condensed display, huge poster impact — sports, tech, big statements) | suez (heavy classic serif display — festive, holidays) | secular (bold friendly display — parties) | frank (classic serif bold — galas, heritage) | frankLight (classic serif — ceremonies, remembrance) | bellefair (refined thin serif — luxury, gala, weddings) | notoSerif (light literary serif) | david (traditional book serif — heritage, Jewish holidays) | amatic (hand-drawn — kids, casual fun) | fredoka (rounded playful — kids, birthdays).
-- reveal: veil (whole line slowly comes into focus — solemn, elegant) | rise (words rise from a mask, slow — premium) | maskWords (words rise, brisk — corporate) | maskChars (letter by letter — tech) | blur (blur-to-focus — gala) | slam (words land with a bounce — party) | pop (words pop with spring — kids/fun) | light (an edge of light wipes the title in — openings).
+- reveal: veil (whole line slowly comes into focus — solemn, elegant) | rise (words rise from a mask, slow — premium) | maskWords (words rise, brisk — corporate) | maskChars (letter by letter — tech) | blur (blur-to-focus — gala) | slam (words land with a bounce — party) | pop (words pop with spring — kids/fun) | light (an edge of light wipes the title in — openings) | type (letters appear one by one like a typewriter — a quote, a personal message, a speaker's line) | center (letters rise from the middle outward — symmetric, short powerful titles).
 - energy: 0–1. 0–0.2 = still and quiet (memorial, prayer), 0.3–0.5 = calm confident (conference, ceremony), 0.6–0.8 = festive (gala, launch), 0.9–1 = party. Energy drives glow, bloom, camera motion and flashes.
-- light: none | halo (a soft glow behind the words) | rays (god rays from above) | spots (two stage spotlights) | sweep (one light sweep across the title).
+- light: none | halo (a soft glow behind the words) | rays (god rays from above) | spots (two stage spotlights) | sweep (one light sweep across the title) | ripple (soft rings of light pulse out from behind the title — launches, tech, a heartbeat).
 - fx: none | dust | embers (slow rising sparks — candles, memory, warmth) | snow | glitter (falling gold) | bokeh | confetti (bursts when the title lands, then rains) | fireworks. Combine at most two with "+", e.g. "bokeh+glitter".
 - rule: true/false — a thin accent line between title and sub (elegant, ceremonial, editorial).
+- hold: how the slide lives while waiting for GO — breath (the whole block breathes gently — default) | wave (the letters ripple in a slow wave in reading order — party, kids, fun, music) | none (perfectly still — memorial, formal).
 - camera: push (slow push-in) | drift | still.
 - dark: 0.2–0.7 how much the footage is darkened; blur: 0–4 how defocused the footage is (more blur = text pops).
 - Memorial / remembrance: energy ≤ 0.15, no confetti/fireworks/flash/spots, a serif (frankLight / bellefair / david), veil, often rule:true and embers or none.
@@ -75,8 +76,8 @@ const DIRECT_TOOL = {
       look: { type: "object", properties: {
         layout: { type: "string", enum: ["auto", "center", "right", "left", "top", "bottom"] },
         font: { type: "string", enum: ["heebo", "heeboLight", "assistant", "rubik", "rubikBlack", "karantina", "suez", "secular", "frank", "frankLight", "bellefair", "notoSerif", "david", "amatic", "fredoka"] },
-        reveal: { type: "string", enum: ["veil", "rise", "maskWords", "maskChars", "blur", "slam", "pop", "light"] },
-        energy: { type: "number" }, light: { type: "string", enum: ["none", "halo", "rays", "spots", "sweep"] }, fx: { type: "string" },
+        reveal: { type: "string", enum: ["veil", "rise", "maskWords", "maskChars", "blur", "slam", "pop", "light", "type", "center"] },
+        energy: { type: "number" }, light: { type: "string", enum: ["none", "halo", "rays", "spots", "sweep", "ripple"] }, fx: { type: "string" }, hold: { type: "string", enum: ["breath", "wave", "none"] },
         rule: { type: "boolean" }, camera: { type: "string", enum: ["push", "drift", "still"] }, dark: { type: "number" }, blur: { type: "number" } },
         required: ["layout", "font", "reveal", "energy", "light", "fx", "rule"] },
       footage: { type: "array", minItems: 1, maxItems: 3, items: { type: "string" } },
@@ -153,7 +154,7 @@ Deno.serve(async (req) => {
   if (!r.out) { await db.from("ai_builds").insert({ user_id: user.id, chars: prompt.length, cues: -1, ok: false }); return json({ error: "ai", status: r.status, detail: r.detail }, 502); }
   const o = r.out; o.engine = "compose"; const L = o.look, FX = ["dust", "embers", "snow", "glitter", "bokeh", "confetti", "fireworks"];
   L.energy = Math.max(0, Math.min(1, +L.energy || 0)); L.fx = String(L.fx || "none").split(/[+, ]+/).filter((f: string) => FX.includes(f)).slice(0, 2).join("+") || "none";
-  if (o.mood === "memorial") { L.energy = Math.min(L.energy, .15); L.fx = L.fx.split("+").filter((f: string) => !["confetti", "fireworks", "glitter"].includes(f)).join("+") || "none"; if (L.light === "spots" || L.light === "rays") L.light = "none"; }
+  if (o.mood === "memorial") { L.energy = Math.min(L.energy, .15); L.fx = L.fx.split("+").filter((f: string) => !["confetti", "fireworks", "glitter"].includes(f)).join("+") || "none"; if (L.light === "spots" || L.light === "rays" || L.light === "ripple") L.light = "none"; if (L.hold === "wave") L.hold = "none"; }
   L.dark = Math.max(.15, Math.min(.75, L.dark == null ? .45 : +L.dark)); L.blur = Math.max(0, Math.min(4, L.blur == null ? 1.5 : +L.blur));
   const keep = ["kicker", "title", "sub", "accent", "accent2"], seen = new Set();
   o.fields = (o.fields || []).filter((f: any) => keep.includes(f.k) && !seen.has(f.k) && seen.add(f.k)).map((f: any) => ({ k: f.k, label: String(f.label || f.k).slice(0, 40), type: f.k.startsWith("accent") ? "color" : "text", value: String(f.value || "").slice(0, f.k === "sub" ? 60 : 44) }));
