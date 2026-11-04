@@ -166,7 +166,8 @@ async function holiday(canvas,F,A){const c=core(canvas,F,A,{mood:'gala',grade:{d
    the slide fades up from black; text sits where the footage is empty ('auto' reads the first frame). */
 const FONTS={heebo:['Heebo',800],heeboLight:['Heebo',300],rubik:['Rubik',800],rubikBlack:['Rubik',900],karantina:['Karantina',700],suez:['Suez One',400],secular:['Secular One',400],
   frank:['Frank Ruhl Libre',700],frankLight:['Frank Ruhl Libre',400],bellefair:['Bellefair',400],notoSerif:['Noto Serif Hebrew',300],david:['David Libre',500],amatic:['Amatic SC',700],fredoka:['Fredoka',600],assistant:['Assistant',200]};
-const XREC={veil:{unit:'line',dur:1.7,st:0,ez:'calmIn',mode:2,s0:1.025},rise:{unit:'word',dur:1.1,st:.12,ez:'heroIn',mode:0},pop:{unit:'word',dur:.55,st:.06,ez:'settle',mode:1,s0:.6}};
+const XREC={veil:{unit:'line',dur:1.7,st:0,ez:'calmIn',mode:2,s0:1.025},rise:{unit:'word',dur:1.1,st:.12,ez:'heroIn',mode:0},pop:{unit:'word',dur:.55,st:.06,ez:'settle',mode:1,s0:.6},
+  type:{unit:'char',dur:.42,st:.11,ez:'calmIn',mode:1},center:{unit:'char',dur:.55,st:.05,ez:'heroIn',mode:0,from:'center'}};
 const rec=n=>XREC[n]||K.recipes[n]||K.recipes.maskWords;
 async function loadFonts(list,sample){try{const fam=[...new Set(list.map(f=>f[0]))];const href='https://fonts.googleapis.com/css2?'+fam.map(f=>'family='+f.replace(/ /g,'+')+':wght@200;300;400;500;600;700;800;900').join('&')+'&display=block';
   if(!document.querySelector('link[data-cf="'+href+'"]')){const l=document.createElement('link');l.rel='stylesheet';l.href=href;l.dataset.cf=href;document.head.appendChild(l);await new Promise(r=>{l.onload=r;l.onerror=r;setTimeout(r,2500)})}
@@ -218,6 +219,8 @@ async function compose(canvas,F,A){
   let rays=null,spots=null,halo=null,flare=null;
   if(lk.light==='rays'){rays=K.rays(e<.4?9:16,{color:ac,len:34,width:2.6,op:.05+.12*e});rays.position.set(0,12,-4);S.add(rays)}
   if(lk.light==='spots'){spots=[-1,1].map(s=>{const r=K.rays(5,{color:'#fff1c9',len:40,width:3.2,op:.08+.08*e,seed:s>0?3:8});r.position.set(s*11,13,-5);S.add(r);return r})}
+  let rings=null;if(lk.light==='ripple'){const rt=(()=>{const c=new OffscreenCanvas(256,256),x=c.getContext('2d');x.strokeStyle='#fff';x.lineWidth=5;x.shadowColor='#fff';x.shadowBlur=14;x.beginPath();x.arc(128,128,108,0,TAU);x.stroke();return new THREE.CanvasTexture(c)})();
+    rings=[0,1,2].map(()=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:rt,color:ac,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}));m.position.z=-2.5;S.add(m);return m})}
   if(lk.light==='halo'||lk.light==='rays'){halo=K.glow(ac,18,0);halo.position.z=-3;S.add(halo)}
   if(lk.light==='sweep'||e>.55){flare=K.flare(ac2,{w:26,h:.3});S.add(flare)}
   const fxs=String(lk.fx||'').split(/[,+ ]+/).filter(Boolean);const fields=fxs.map((f,i)=>field(S,f,{n:Math.round(260+400*e),ac,ac2,e,seed:7+i})).filter(Boolean);
@@ -261,6 +264,7 @@ async function compose(canvas,F,A){
     scrim.material.opacity=need*E.o3(K.k(t,T0-.6,T0+1));
     if(rays){rays.children.forEach(m=>{m.rotation.z=m.userData.r0+Math.sin(ph+m.userData.ph)*.06;m.material.opacity=m.userData.o*(.75+.25*Math.sin(ph*2+m.userData.ph*2))*E.o3(K.k(t,.6,3))})}
     if(spots)spots.forEach((r,i)=>{r.rotation.z=(i?-1:1)*(.55-.5*E.io3(K.k(t,.4,3.2)))+(i?-1:1)*.05*Math.sin(ph+i)*amp;r.children.forEach(m=>m.material.opacity=m.userData.o*E.o3(K.k(t,.2,1.5))*(.85+.15*Math.sin(ph*2+i)))});
+    if(rings){const on=E.o3(K.k(t,titleT,tEnd+.8)),cyc=((t-I)/A.loop%1+1)%1;rings.forEach((m,j)=>{const u=((cyc*2+j/3)%1+1)%1;m.position.set(blk.x,title?title.position.y:blk.y,-2.5);m.scale.setScalar((title?title.width:6)*(.5+1.1*u));m.material.opacity=on*(.1+.3*e)*Math.sin(Math.PI*u)})}
     if(halo)halo.material.opacity=(.04+.26*e)*E.o3(K.k(t,titleT,tEnd+.6))*(1+.12*Math.sin(ph)*amp);
     if(flare&&lk.reveal!=='light'){const s1=K.k(t,tEnd+.5,tEnd+1.4);flare.material.opacity=e>.55?.5*Math.sin(Math.PI*s1):0;flare.position.x=blk.x+(s1-.5)*(title?title.width:6)}
     fields.forEach(p=>p.tick(ph,E.o3(K.k(t,.4,2.4))));

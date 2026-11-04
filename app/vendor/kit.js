@@ -209,7 +209,7 @@ K.typeFX=(str,{font=null,px=240,h=2,color='#ffffff',color2=null,glow=null,weight
   /* animate the reveal: returns overall progress 0..1 */
   G.at=(t,start,rec='maskWords')=>{const R=typeof rec==='string'?K.recipes[rec]||K.recipes.maskWords:rec,ez=K.ez[R.ez]||K.ez.heroIn,n=parts.length;let all=1;
     const st=R.unit==='char'&&n>40?Math.min(R.st,1.2/n):R.st;
-    parts.forEach(m=>{const i=m.userData.i,pe=ez((t-start-i*st)/R.dur),pr=cl((t-start-i*st)/R.dur);all=Math.min(all,pr);const U=m.material.uniforms;U.p.value=R.mode===0?pe:Math.min(1,pr*1.6);U.mode.value=R.mode;U.bl.value=(1-pr)*5;
+    parts.forEach(m=>{const i=R.from==='center'?Math.abs(m.userData.i-(n-1)/2):m.userData.i,pe=ez((t-start-i*st)/R.dur),pr=cl((t-start-i*st)/R.dur);all=Math.min(all,pr);const U=m.material.uniforms;U.p.value=R.mode===0?pe:Math.min(1,pr*1.6);U.mode.value=R.mode;U.bl.value=(1-pr)*5;
       const s=R.s0?R.s0+(1-R.s0)*pe:1;m.scale.setScalar(Math.max(.001,s));m.position.x=m.userData.x0*(1+(R.track||0)*(1-pe))});return all};
   return G};
 
