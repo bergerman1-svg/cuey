@@ -160,7 +160,7 @@ K.sample=(src,{n=9000,h=3,font=null,weight=900,seed=4}={})=>{let cv,x,W,H;if(typ
 /* soft round additive points with per-point size/colour; update positions yourself (attribute 'position') */
 K.points=(n,{size=6,color='#ffffff',additive=true}={})=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(n*3),3));g.setAttribute('color',new THREE.BufferAttribute(new Float32Array(n*3).fill(1),3));g.setAttribute('sz',new THREE.BufferAttribute(new Float32Array(n).fill(1),1));g.setAttribute('al',new THREE.BufferAttribute(new Float32Array(n).fill(1),1));
   const m=new THREE.ShaderMaterial({uniforms:{s:{value:size},c:{value:new THREE.Color(color)},op:{value:1}},transparent:true,depthWrite:false,blending:additive?THREE.AdditiveBlending:THREE.NormalBlending,toneMapped:false,vertexColors:true,
-    vertexShader:'attribute float sz,al;uniform float s;varying vec3 vc;varying float va;void main(){vc=color;va=al;vec4 mv=modelViewMatrix*vec4(position,1.);gl_PointSize=s*sz*(300./-mv.z);gl_Position=projectionMatrix*mv;}',
+    vertexShader:'attribute float sz,al;uniform float s;varying vec3 vc;varying float va;void main(){vc=color;va=al;vec4 mv=modelViewMatrix*vec4(position,1.);gl_PointSize=s*sz*(60./-mv.z);gl_Position=projectionMatrix*mv;}',
     fragmentShader:'uniform vec3 c;uniform float op;varying vec3 vc;varying float va;void main(){float d=length(gl_PointCoord-.5);float a=smoothstep(.5,0.,d);a*=a;gl_FragColor=vec4(c*vc,a*va*op);}'});
   const p=new THREE.Points(g,m);p.frustumCulled=false;return p};
 /* light rays from a point (additive fan of soft beams) */

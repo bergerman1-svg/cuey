@@ -55,7 +55,7 @@ async function light(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.5,blur:2}
 /* 2 · PARTICLES — thousands of sparks fly in from depth and assemble the logo / title, then the crisp letters light up */
 async function particles(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.55,blur:2.5}}),{st,S,C,fg,H,ac,ac2}=c;
   const tgt=c.logo||c.title,src=A.logo||F.title||'Cuey';const n=A.logo?14000:11000;const smp=K.sample(src,{n,h:tgt?tgt.height*(A.logo?1:.78):2,seed:5});
-  const p=K.points(n,{size:2.6,color:'#ffffff'}),R=K.rng(21),pos=p.geometry.attributes.position.array,col=p.geometry.attributes.color.array,sz=p.geometry.attributes.sz.array,al=p.geometry.attributes.al.array;
+  const p=K.points(n,{size:1.15,color:'#ffffff'}),R=K.rng(21),pos=p.geometry.attributes.position.array,col=p.geometry.attributes.color.array,sz=p.geometry.attributes.sz.array,al=p.geometry.attributes.al.array;
   const ca=new THREE.Color(ac),cb=new THREE.Color(ac2),st0=[],dl=[];for(let i=0;i<n;i++){const r=8+R()*26,a=R()*TAU,b=(R()-.5)*2;st0.push([Math.cos(a)*r,b*r*.5,-10-R()*40+Math.sin(a)*8]);dl.push(R());
     const m=A.logo?null:(R());if(A.logo){col[i*3]=smp.C[i*3];col[i*3+1]=smp.C[i*3+1];col[i*3+2]=smp.C[i*3+2]}else{const q=ca.clone().lerp(cb,m);col[i*3]=q.r;col[i*3+1]=q.g;col[i*3+2]=q.b}sz[i]=.5+R()*1.1}
   p.geometry.attributes.color.needsUpdate=true;H.add(p);const ty=tgt?tgt.position.y:0;const ds=dust(S,500,{color:ac,op:.4});
@@ -65,13 +65,13 @@ async function particles(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.55,bl
     for(let i=0;i<n;i++){const d=dl[i],u=E.io3(k(t,1+d*1.6,3.6+d*1.6)),s=st0[i],sw=(1-u)*(1-u),ang=sw*3.2+d*TAU,cx=Math.cos(ang),sx=Math.sin(ang);
       const x0=s[0]*cx-s[2]*sx*.2,z0=s[2];const tx=smp.P[i*2],tyy=smp.P[i*2+1]+ty;
       const br=L.on||t>5.5?.035*Math.sin(L.ph*2+d*TAU):0;pos[i*3]=x0+(tx-x0)*u+br;pos[i*3+1]=s[1]+(tyy-s[1])*u+br*.6;pos[i*3+2]=z0*(1-u)+.02*Math.sin(L.ph*3+d*20);
-      al[i]=(.25+.75*E.o3(k(t,.2+d*1.4,1+d*1.4)))*(1-.55*E.o3(k(t,5.6,6.8)))*(.75+.25*Math.sin(L.ph*4+d*31))}
+      al[i]=.42*(.25+.75*E.o3(k(t,.2+d*1.4,1+d*1.4)))*(1-.6*E.o3(k(t,5.6,6.8)))*(.75+.25*Math.sin(L.ph*4+d*31))}
     p.geometry.attributes.position.needsUpdate=true;p.geometry.attributes.al.needsUpdate=true;ds.tick(L.ph);
     const rv=E.o3(k(t,5.1,6.2));[c.logo,c.title].filter(Boolean).forEach(g=>{g.u.op.value=rv;g.u.rev.value=1;g.u.glow.value=.35*(1-rv)+.08});
     const sh=L.on?k(L.u,.3,.6):k(t,6.2,7.3);[c.logo,c.title].filter(Boolean).forEach(g=>g.u.shine.value=sh>0&&sh<1?-.2+1.4*E.io3(sh):-1);
     if(!c.logo&&c.title){}soft(c.kick,k(t,5.6,6.8));soft(c.sub,k(t,5.9,7.1));
-    ring.material.opacity=.4*Math.exp(-Math.pow((t-4.9)/.7,2))+.12*E.o3(k(t,5,6.5))*(1+.2*Math.sin(L.ph));ring.scale.setScalar(16+10*E.o3(k(t,4.4,6)));
-    st.bloom.strength=1+.6*Math.exp(-Math.pow((t-5)/.6,2))+.15*Math.sin(L.ph);st.render()}}
+    ring.material.opacity=.22*Math.exp(-Math.pow((t-4.9)/.7,2))+.08*E.o3(k(t,5,6.5))*(1+.2*Math.sin(L.ph));ring.scale.setScalar(14+6*E.o3(k(t,4.4,6)));
+    st.bloom.strength=.75+.35*Math.exp(-Math.pow((t-5)/.6,2))+.1*Math.sin(L.ph);st.render()}}
 
 /* 3 · CINEMA — a deep, extruded title; the camera glides from a low side angle to the hero frame; light sweeps across the face */
 async function cinema(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.5,blur:4.5},titleColor:'#ffffff',titleColor2:'#d9dde6',camZ:15}),{st,S,C,fg,H,ac,ac2}=c;
@@ -90,7 +90,7 @@ async function cinema(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.5,blur:4
 /* 4 · CELEBRATE — fireworks bloom over real footage, a flash, the title pops in with confetti raining through the frame */
 async function celebrate(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.45,blur:1.2},bloom:{s:1.05,r:.6,th:.7}}),{st,S,C,fg,H,ac,ac2}=c;
   const cols=[ac,ac2,'#ffffff','#ff5c8a','#ffd166'];const shells=[[-6,3.5,-6,1.0,0],[5.5,4.2,-7,1.7,1],[-2,5.4,-9,2.6,2],[7,1.8,-8,3.4,3],[-7.5,1,-7,4.1,4],[1.5,4.8,-6,4.7,1]];
-  const N=360,fw=shells.map(([x,y,z,t0,ci],j)=>{const p=K.points(N,{size:3.2,color:'#ffffff'}),R=K.rng(40+j),v=[];const cc=new THREE.Color(cols[ci]),col=p.geometry.attributes.color.array;
+  const N=360,fw=shells.map(([x,y,z,t0,ci],j)=>{const p=K.points(N,{size:1.7,color:'#ffffff'}),R=K.rng(40+j),v=[];const cc=new THREE.Color(cols[ci]),col=p.geometry.attributes.color.array;
     for(let i=0;i<N;i++){const th=R()*TAU,ph=Math.acos(2*R()-1),s=2.2+R()*.6;v.push([Math.sin(ph)*Math.cos(th)*s,Math.cos(ph)*s,Math.sin(ph)*Math.sin(th)*s]);col.set([cc.r,cc.g,cc.b],i*3)}
     p.geometry.attributes.color.needsUpdate=true;S.add(p);return {p,v,o:[x,y,z],t0}});
   const conf=K.confetti(900,{colors:cols,size:.16,gravity:2.2});S.add(conf);const rain=K.confetti(500,{colors:cols,size:.13,gravity:0,seed:31});S.add(rain);
@@ -119,7 +119,7 @@ async function award(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.6,blur:3,
   const ty=c.title?c.title.position.y:0,ring=new THREE.Mesh(new THREE.TorusGeometry(5.2,.09,24,180),gm),ring2=new THREE.Mesh(new THREE.TorusGeometry(5.6,.035,16,180),gm);ring.position.set(0,ty,-3);ring2.position.copy(ring.position);S.add(ring,ring2);
   S.add(new THREE.AmbientLight('#ffffff',.4));const kl=new THREE.DirectionalLight('#fff0d0',2.2);kl.position.set(4,6,8);S.add(kl);
   const spots=[-1,1].map(s=>{const r=K.rays(5,{color:'#fff1c9',len:40,width:3.2,op:.14,seed:s>0?3:8});r.position.set(s*11,13,-5);S.add(r);return r});
-  const gl=K.points(1400,{size:2.4,color:gold}),R=K.rng(9),gp=[];for(let i=0;i<1400;i++)gp.push([(R()-.5)*26,R()*16,(R()-.5)*8-1,.25+R()*.5,R()*TAU]);S.add(gl);const halo=K.glow(gold,24,0);halo.position.set(0,ty,-4);S.add(halo);
+  const gl=K.points(1400,{size:1.1,color:gold}),R=K.rng(9),gp=[];for(let i=0;i<1400;i++)gp.push([(R()-.5)*26,R()*16,(R()-.5)*8-1,.25+R()*.5,R()*TAU]);S.add(gl);const halo=K.glow(gold,24,0);halo.position.set(0,ty,-4);S.add(halo);
   return t=>{const L=lp(t,A);c.feed();const f=fg.u;f.dark.value=.6+.4*(1-E.o3(k(t,0,1.4)));f.zoom.value=1.15-.08*E.io3(k(t,0,L.I));
     C.position.set(Math.sin(L.ph)*.35,.2+Math.cos(L.ph)*.1,16.5-1.5*E.io3(k(t,0,L.I)));C.lookAt(0,0,0);
     spots.forEach((r,i)=>{r.rotation.z=(i?-1:1)*(.55-.5*E.io3(k(t,.4,3.2)))+(i?-1:1)*.06*Math.sin(L.ph+i);r.children.forEach(m=>m.material.opacity=m.userData.o*E.o3(k(t,.2,1.5))*(.85+.15*Math.sin(L.ph*2+i)))});
@@ -131,9 +131,9 @@ async function award(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.6,blur:3,
 
 /* 6 · HOLIDAY — warm bokeh and snow; glowing sparks gather into the title / logo; soft golden light breathes */
 async function holiday(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.45,blur:2.2},titleColor:'#ffffff',glow:hex(F.accent,'#ffcf6b')}),{st,S,C,fg,H,ac,ac2}=c;
-  const sn=K.points(1600,{size:2.6,color:'#ffffff'}),R=K.rng(14),sp=[];for(let i=0;i<1600;i++){sp.push([(R()-.5)*30,R()*18,(R()-.5)*14-2,.35+R()*.6,R()*TAU]);sn.geometry.attributes.sz.array[i]=.4+R()*1.3}S.add(sn);
-  const bk=K.points(70,{size:60,color:ac}),bp=[];for(let i=0;i<70;i++){bp.push([(R()-.5)*30,(R()-.5)*16,-8-R()*10,R()*TAU]);const q=new THREE.Color(i%3?ac:ac2);bk.geometry.attributes.color.array.set([q.r,q.g,q.b],i*3)}bk.geometry.attributes.color.needsUpdate=true;bk.material.uniforms.op.value=.18;S.add(bk);
-  const tgt=c.logo||c.title,n=7000,smp=K.sample(A.logo||F.title||'Cuey',{n,h:tgt?tgt.height*(A.logo?1:.78):2,seed:3});const p=K.points(n,{size:2.2,color:'#ffffff'}),pos=p.geometry.attributes.position.array,al=p.geometry.attributes.al.array;
+  const sn=K.points(1600,{size:1.5,color:'#ffffff'}),R=K.rng(14),sp=[];for(let i=0;i<1600;i++){sp.push([(R()-.5)*30,R()*18,(R()-.5)*14-2,.35+R()*.6,R()*TAU]);sn.geometry.attributes.sz.array[i]=.4+R()*1.3}S.add(sn);
+  const bk=K.points(70,{size:38,color:ac}),bp=[];for(let i=0;i<70;i++){bp.push([(R()-.5)*30,(R()-.5)*16,-8-R()*10,R()*TAU]);const q=new THREE.Color(i%3?ac:ac2);bk.geometry.attributes.color.array.set([q.r,q.g,q.b],i*3)}bk.geometry.attributes.color.needsUpdate=true;bk.material.uniforms.op.value=.18;S.add(bk);
+  const tgt=c.logo||c.title,n=7000,smp=K.sample(A.logo||F.title||'Cuey',{n,h:tgt?tgt.height*(A.logo?1:.78):2,seed:3});const p=K.points(n,{size:1.1,color:'#ffffff'}),pos=p.geometry.attributes.position.array,al=p.geometry.attributes.al.array;
   const s0=[],dl=[];for(let i=0;i<n;i++){s0.push([(R()-.5)*30,10+R()*10,(R()-.5)*10]);dl.push(R())}const cc=new THREE.Color(ac);for(let i=0;i<n;i++)p.geometry.attributes.color.array.set([1,.9+.1*cc.g,.75+.25*cc.b],i*3);p.geometry.attributes.color.needsUpdate=true;H.add(p);
   const ty=tgt?tgt.position.y:0,halo=K.glow(ac,22,0);halo.position.set(0,ty,-3);S.add(halo);
   return t=>{const L=lp(t,A);c.feed();const f=fg.u;f.dark.value=.45+.55*(1-E.o3(k(t,0,1.4)));f.zoom.value=1.14-.1*E.io3(k(t,0,L.I))+(L.on?.01*Math.sin(L.ph):0);
@@ -141,7 +141,7 @@ async function holiday(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.45,blur
     const a=sn.geometry.attributes,sx=a.position.array,sa=a.al.array;for(let i=0;i<1600;i++){const q=sp[i],yy=((q[1]-(t-L.I)*q[3]*1.2)%18+18)%18-8;sx[i*3]=q[0]+Math.sin(L.ph*2+q[4])*.5;sx[i*3+1]=yy;sx[i*3+2]=q[2];sa[i]=E.o3(k(t,.2,1.8))*.8}a.position.needsUpdate=true;a.al.needsUpdate=true;
     const b=bk.geometry.attributes.position.array;for(let i=0;i<70;i++){const q=bp[i];b[i*3]=q[0]+Math.sin(L.ph+q[3])*.8;b[i*3+1]=q[1]+Math.cos(L.ph+q[3])*.5;b[i*3+2]=q[2]}bk.geometry.attributes.position.needsUpdate=true;bk.material.uniforms.op.value=.2*E.o3(k(t,.3,2))*(1+.2*Math.sin(L.ph*2));
     for(let i=0;i<n;i++){const d=dl[i],u=E.io3(k(t,1.2+d*2,3.8+d*2)),q=s0[i],x0=q[0]+Math.sin(t*1.3+d*30)*.6*(1-u),y0=q[1]-(t*1.4)*(1-u)*.5;
-      pos[i*3]=x0+(smp.P[i*2]-x0)*u;pos[i*3+1]=y0+(smp.P[i*2+1]+ty-y0)*u+.03*Math.sin(L.ph*2+d*20);pos[i*3+2]=q[2]*(1-u);al[i]=E.o3(k(t,.8+d*2,1.6+d*2))*(1-.6*E.o3(k(t,5.6,6.8)))*(.7+.3*Math.sin(L.ph*4+d*40))}
+      pos[i*3]=x0+(smp.P[i*2]-x0)*u;pos[i*3+1]=y0+(smp.P[i*2+1]+ty-y0)*u+.03*Math.sin(L.ph*2+d*20);pos[i*3+2]=q[2]*(1-u);al[i]=.5*E.o3(k(t,.8+d*2,1.6+d*2))*(1-.6*E.o3(k(t,5.6,6.8)))*(.7+.3*Math.sin(L.ph*4+d*40))}
     p.geometry.attributes.position.needsUpdate=true;p.geometry.attributes.al.needsUpdate=true;
     const rv=E.o3(k(t,5.2,6.4));[c.title,c.logo].filter(Boolean).forEach(g=>{g.u.op.value=rv;g.u.glow.value=.15+.05*Math.sin(L.ph*2)});const sh=L.on?k(L.u,.35,.65):-1;[c.title,c.logo].filter(Boolean).forEach(g=>g.u.shine.value=sh>0&&sh<1?-.2+1.4*E.io3(sh):-1);
     soft(c.kick,k(t,5.6,6.8));soft(c.sub,k(t,6,7.2));halo.material.opacity=.3*E.o3(k(t,4.5,6.5))*(1+.15*Math.sin(L.ph));st.bloom.strength=.95+.15*Math.sin(L.ph);st.render()}}
