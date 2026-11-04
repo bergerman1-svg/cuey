@@ -201,11 +201,12 @@ async function compose(canvas,F,A){
   const camZ=15,fov=36,st=K.stage(canvas,{bg:'#000000',fov,bloom:{s:.12+.45*e,r:.38,th:.93},shadows:false,exposure:1}),{S,C}=st;C.position.set(0,0,camZ);C.lookAt(0,0,0);
   const fg=K.footage(S,{dark:1,vig:.55+.2*(1-e),blur:+lk.blur||0,sat:lk.sat==null?1:+lk.sat,tint:hex(lk.tint,'#000000'),tintA:lk.tint?.22:0});
   const vw=2*camZ*Math.tan(fov*Math.PI/360)*16/9,vh=vw*9/16;
-  const RC=rec(lk.reveal),unitOf=r=>r.unit==='char'?'char':r.unit==='line'?'line':'word',shadow='rgba(0,0,0,.55)';
+  const WAVE=lk.hold==='wave'&&e>.15,RC0=rec(lk.reveal),unitOf=r=>WAVE?'char':r.unit==='char'?'char':r.unit==='line'?'line':'word',shadow='rgba(0,0,0,.55)';
   const tf=(s,o)=>K.typeFX(s,{font:o.font||FT[0],weight:o.weight||FT[1],...o});
   const titleC=calm?'#f4efe4':'#ffffff';
   const kick=F.kicker?tf(F.kicker,{px:120,h:.64,font:kf[0],weight:Math.min(700,kf[1]),color:ac,shadow:'rgba(0,0,0,.6)',ls:K.he(F.kicker)?0:120*.22,emissive:.95,unit:'line'}):null;
-  const title=F.title?tf(F.title,{px:260,h:2.1+.9*e,color:titleC,color2:calm?'#e6dfd0':titleC,glow:null,shadow,ls:K.he(F.title)?0:-260*.015,emissive:calm?.9:.86,unit:unitOf(RC)}):null;
+  const title=F.title?tf(F.title,{px:260,h:2.1+.9*e,color:titleC,color2:calm?'#e6dfd0':titleC,glow:null,shadow,ls:K.he(F.title)?0:-260*.015,emissive:calm?.9:.86,unit:unitOf(RC0)}):null;
+  const RC=WAVE&&RC0.unit!=='char'?{...RC0,unit:'char',st:Math.min(.05,(RC0.st*Math.max(1,String(F.title||'').split(/\s+/).length))/Math.max(1,(title&&title.n)||1)+.012)}:RC0;
   const sub=F.sub?tf(F.sub,{px:130,h:.68,font:calm?FT[0]:'Heebo',weight:calm?Math.min(500,FT[1]):500,color:'#ffffff',shadow:'rgba(0,0,0,.7)',ls:K.he(F.sub)?0:130*.06,emissive:.86,unit:'line'}):null;
   const logo=A.logo?K.logoFX(A.logo,{h:2.4,glow:ac}):null;
   const ruleM=lk.rule?new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:ac,transparent:true,opacity:0,depthWrite:false,toneMapped:false})):null;
@@ -255,7 +256,8 @@ async function compose(canvas,F,A){
       title.u.glow.value=0;const sw=K.k(t,tEnd+.5,tEnd+1.4);title.u.shine.value=(lk.light==='sweep'||e>.55)&&sw>0&&sw<1?-.2+1.4*E.sine(sw):-1}
     if(ruleM){const r=E.io3(K.k(t,ruleT,ruleT+.9*sp)),u=ruleM.userData;ruleM.scale.x=Math.max(.001,u.w*r);ruleM.position.x=u.x+u.dir*(u.w-u.w*r)/2;ruleM.material.opacity=.9*r}
     if(sub)sub.at(t,subT,calm?rec('veil'):rec('maskLines'));
-    B.scale.setScalar(1+(.004+.008*e)*Math.sin(ph)*amp);B.position.y=.04*Math.sin(ph)*amp;
+    if(WAVE&&title){const A0=title.height*(.03+.05*e)*amp;title.parts.forEach(m=>{m.position.y=A0*Math.sin(ph*3-m.userData.i*.42)})}
+    B.scale.setScalar(1+(lk.hold==='none'||WAVE?0:.004+.008*e)*Math.sin(ph)*amp);B.position.y=.04*Math.sin(ph)*amp;
     scrim.material.opacity=need*E.o3(K.k(t,T0-.6,T0+1));
     if(rays){rays.children.forEach(m=>{m.rotation.z=m.userData.r0+Math.sin(ph+m.userData.ph)*.06;m.material.opacity=m.userData.o*(.75+.25*Math.sin(ph*2+m.userData.ph*2))*E.o3(K.k(t,.6,3))})}
     if(spots)spots.forEach((r,i)=>{r.rotation.z=(i?-1:1)*(.55-.5*E.io3(K.k(t,.4,3.2)))+(i?-1:1)*.05*Math.sin(ph+i)*amp;r.children.forEach(m=>m.material.opacity=m.userData.o*E.o3(K.k(t,.2,1.5))*(.85+.15*Math.sin(ph*2+i)))});
