@@ -111,6 +111,66 @@ K.gift=({box='#e63946',ribbon='#ffd166',s=1}={})=>{const G=new THREE.Group(),b=n
 K.trophy=({color='#ffcf5a',s=1}={})=>{const G=new THREE.Group(),m=mat(color,{metalness:1,roughness:.22});const cup=new THREE.Mesh(new THREE.LatheGeometry([[0,.25],[.16,.27],[.09,.4],[.09,.85],[.3,.95],[.55,1.15],[.62,1.55],[.6,1.8],[.56,1.8],[.5,1.2],[0,1.05]].map(p=>new THREE.Vector2(p[0],p[1])),48),m);const base=new THREE.Mesh(new THREE.BoxGeometry(.9,.25,.9),mat('#1b1b22',{metalness:.3,roughness:.4}));base.position.y=.12;G.add(cup,base);G.scale.setScalar(s);G.traverse(o=>{if(o.isMesh)o.castShadow=true});return G};
 /* ground with soft shadows */
 K.ground=({color='#0b0d14',size=400,rough=.95}={})=>{const g=new THREE.Mesh(new THREE.PlaneGeometry(size,size),new THREE.MeshStandardMaterial({color,roughness:rough}));g.rotation.x=-Math.PI/2;g.receiveShadow=true;return g};
+/* ---------- footage + premium type (AI Builder engines) ---------- */
+K.he=s=>/[֐-׿]/.test(String(s||''));
+/* full-screen real footage behind everything: A.bg / A.bg2 (ImageBitmaps) and A.mix (crossfade for the seamless loop).
+   grade: {dark 0..1, tint '#hex', tintA 0..1, sat 0..2, blur 0..6 (soft focus), vig 0..1}; zoom/pan for camera moves. */
+K.footage=(S,{dark=.35,tint='#000000',tintA=0,sat=1,blur=0,vig=.55}={})=>{const mk=()=>{const t=new THREE.Texture();t.colorSpace=THREE.SRGBColorSpace;t.generateMipmaps=true;t.minFilter=THREE.LinearMipmapLinearFilter;return t};
+  const ta=mk(),tb=mk(),u={a:{value:ta},b:{value:tb},m:{value:0},has:{value:0},dark:{value:dark},tint:{value:new THREE.Color(tint)},tintA:{value:tintA},sat:{value:sat},blur:{value:blur},vig:{value:vig},zoom:{value:1},pan:{value:new THREE.Vector2()},aspect:{value:16/9},flash:{value:0},fcol:{value:new THREE.Color('#ffffff')}};
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(2,2),new THREE.ShaderMaterial({uniforms:u,depthTest:false,depthWrite:false,fog:false,toneMapped:false,
+    vertexShader:'varying vec2 v;void main(){v=uv;gl_Position=vec4(position.xy,1.,1.);}',
+    fragmentShader:`uniform sampler2D a,b;uniform float m,has,dark,tintA,sat,blur,vig,zoom,aspect,flash;uniform vec3 tint,fcol;uniform vec2 pan;varying vec2 v;
+    vec2 cov(vec2 p){float r=aspect/(16./9.);vec2 q=p-.5;if(r>1.)q.y/=r;else q.x*=r;return q/zoom+.5+pan;}
+    void main(){vec2 q=cov(v);vec3 c=texture2D(a,q,blur).rgb;if(m>0.)c=mix(c,texture2D(b,q,blur).rgb,m);if(has<.5)c=vec3(.02,.025,.05);
+    float l=dot(c,vec3(.299,.587,.114));c=mix(vec3(l),c,sat);c=mix(c,tint*l*1.6,tintA);c*=1.-dark;
+    float d=distance(v,vec2(.5));c*=1.-vig*smoothstep(.35,.85,d);c+=fcol*flash;gl_FragColor=vec4(c,1.);}`}));
+  m.frustumCulled=false;m.renderOrder=-1000;S.add(m);let la=null,lb=null;
+  m.feed=A=>{if(A.bg&&A.bg!==la){ta.image=A.bg;ta.needsUpdate=true;la=A.bg;u.aspect.value=A.bg.width/A.bg.height;u.has.value=1}
+    if(A.bg2&&A.bg2!==lb){tb.image=A.bg2;tb.needsUpdate=true;lb=A.bg2}u.m.value=A.bg2?(A.mix||0):0};m.u=u;return m};
+/* premium text: canvas texture + shader with light reveal (rev 0..1 along reading direction), a moving shine, edge glow, gradient fill.
+   Returns Group: .u uniforms {rev, shine, glow, op, edge}, .width, .height */
+K.type=(str,{font=null,px=240,h=2,color='#ffffff',color2=null,glow=null,ls=null,weight=900,stroke=0,emissive=1}={})=>{
+  const he=K.he(str),fam=font||(he?'Heebo':'Poppins'),f=weight+' '+px+'px '+fam,sp=he?0:(ls==null?px*.06:ls);
+  const cv=new OffscreenCanvas(4,4),x=cv.getContext('2d');x.font=f;if('letterSpacing'in x)x.letterSpacing=sp+'px';const w=Math.ceil(x.measureText(String(str)).width)+(he?0:sp),pad=Math.ceil(px*.45);
+  cv.width=Math.max(8,w+pad*2);cv.height=Math.ceil(px*1.3+pad*2);x.font=f;if('letterSpacing'in x)x.letterSpacing=sp+'px';x.direction=he?'rtl':'ltr';x.textAlign='center';x.textBaseline='middle';
+  const g=x.createLinearGradient(0,pad,0,cv.height-pad);g.addColorStop(0,color);g.addColorStop(1,color2||color);x.fillStyle=g;
+  if(glow){x.shadowColor=glow;x.shadowBlur=px*.28}x.fillText(String(str),cv.width/2+(he?0:sp/2),cv.height/2+px*.04);
+  if(stroke){x.shadowBlur=0;x.lineWidth=stroke;x.strokeStyle=color2||color;x.strokeText(String(str),cv.width/2,cv.height/2)}
+  const tex=new THREE.CanvasTexture(cv);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=8;tex.generateMipmaps=true;
+  const u={map:{value:tex},rev:{value:1},shine:{value:-1},glow:{value:0},op:{value:1},edge:{value:new THREE.Color(glow||'#ffffff')},dir:{value:he?-1:1},em:{value:emissive},soft:{value:.06}};
+  const mat=new THREE.ShaderMaterial({uniforms:u,transparent:true,depthWrite:false,toneMapped:false,
+    vertexShader:'varying vec2 v;void main(){v=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+    fragmentShader:`uniform sampler2D map;uniform float rev,shine,glow,op,dir,em,soft;uniform vec3 edge;varying vec2 v;
+    void main(){vec4 c=texture2D(map,v);float px=dir>0.?v.x:1.-v.x;float r=smoothstep(rev,rev-soft,px);float e=exp(-pow((px-rev)/.025,2.))*step(.0001,rev)*step(rev,.9999);
+    float s=exp(-pow((px+(v.y-.5)*.25-shine)/.06,2.));vec3 col=c.rgb*em+edge*(e*2.5+s*1.2*c.a)+edge*glow*c.a;gl_FragColor=vec4(col,(c.a*r+e*.9*smoothstep(.0,.6,c.a+.3))*op);}`});
+  const sc=h/(px*1.3),m=new THREE.Mesh(new THREE.PlaneGeometry(cv.width*sc,cv.height*sc),mat),G=new THREE.Group();G.add(m);G.mesh=m;G.u=u;G.width=w*sc;G.height=h;G.he=he;return G};
+/* logo plane with the same reveal/shine shader */
+K.logoFX=(bm,{h=3,glow='#ffffff'}={})=>{const t=new THREE.Texture(bm);t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;
+  const u={map:{value:t},rev:{value:1},shine:{value:-1},glow:{value:0},op:{value:1},edge:{value:new THREE.Color(glow)},dir:{value:1},em:{value:1},soft:{value:.06}};
+  const mat=new THREE.ShaderMaterial({uniforms:u,transparent:true,depthWrite:false,toneMapped:false,vertexShader:'varying vec2 v;void main(){v=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+    fragmentShader:`uniform sampler2D map;uniform float rev,shine,glow,op,em,soft;uniform vec3 edge;varying vec2 v;void main(){vec4 c=texture2D(map,v);float r=smoothstep(rev,rev-soft,v.x);float e=exp(-pow((v.x-rev)/.025,2.))*step(.0001,rev)*step(rev,.9999);float s=exp(-pow((v.x+(v.y-.5)*.25-shine)/.06,2.));gl_FragColor=vec4(c.rgb*em+edge*(e*2.+s*1.1*c.a+glow*c.a),(c.a*r+e*.6*c.a)*op);}`});
+  const w=h*bm.width/bm.height,m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),mat),G=new THREE.Group();G.add(m);G.mesh=m;G.u=u;G.width=w;G.height=h;return G};
+/* points that sample the inked pixels of a text or logo (for particle builds). Returns Float32Array of [x,y] in world units, centred */
+K.sample=(src,{n=9000,h=3,font=null,weight=900,seed=4}={})=>{let cv,x,W,H;if(typeof src==='string'){const he=K.he(src),f=weight+' 200px '+(font||(he?'Heebo':'Poppins'));cv=new OffscreenCanvas(8,8);x=cv.getContext('2d');x.font=f;
+    W=Math.ceil(x.measureText(src).width)+40;H=280;cv.width=W;cv.height=H;x.font=f;x.direction=he?'rtl':'ltr';x.textAlign='center';x.textBaseline='middle';x.fillStyle='#fff';x.fillText(src,W/2,H/2)}
+  else{const s=Math.min(1,700/Math.max(src.width,src.height));W=Math.round(src.width*s);H=Math.round(src.height*s);cv=new OffscreenCanvas(W,H);x=cv.getContext('2d');x.drawImage(src,0,0,W,H)}
+  const d=x.getImageData(0,0,W,H).data,on=[],col=[];for(let y=0;y<H;y+=2)for(let i=0;i<W;i+=2){const k=(y*W+i)*4;if(d[k+3]>110){on.push(i,y);col.push(d[k]/255,d[k+1]/255,d[k+2]/255)}}
+  const R=K.rng(seed),P=new Float32Array(n*2),C=new Float32Array(n*3),sc=h/H;for(let j=0;j<n;j++){const q=Math.floor(R()*(on.length/2));P[j*2]=(on[q*2]-W/2+(R()-.5)*2)*sc;P[j*2+1]=-(on[q*2+1]-H/2+(R()-.5)*2)*sc;C.set(col.slice(q*3,q*3+3),j*3)}
+  return {P,C,w:W*sc,h}};
+/* soft round additive points with per-point size/colour; update positions yourself (attribute 'position') */
+K.points=(n,{size=6,color='#ffffff',additive=true}={})=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(n*3),3));g.setAttribute('color',new THREE.BufferAttribute(new Float32Array(n*3).fill(1),3));g.setAttribute('sz',new THREE.BufferAttribute(new Float32Array(n).fill(1),1));g.setAttribute('al',new THREE.BufferAttribute(new Float32Array(n).fill(1),1));
+  const m=new THREE.ShaderMaterial({uniforms:{s:{value:size},c:{value:new THREE.Color(color)},op:{value:1}},transparent:true,depthWrite:false,blending:additive?THREE.AdditiveBlending:THREE.NormalBlending,toneMapped:false,vertexColors:true,
+    vertexShader:'attribute float sz,al;uniform float s;varying vec3 vc;varying float va;void main(){vc=color;va=al;vec4 mv=modelViewMatrix*vec4(position,1.);gl_PointSize=s*sz*(300./-mv.z);gl_Position=projectionMatrix*mv;}',
+    fragmentShader:'uniform vec3 c;uniform float op;varying vec3 vc;varying float va;void main(){float d=length(gl_PointCoord-.5);float a=smoothstep(.5,0.,d);a*=a;gl_FragColor=vec4(c*vc,a*va*op);}'});
+  const p=new THREE.Points(g,m);p.frustumCulled=false;return p};
+/* light rays from a point (additive fan of soft beams) */
+K.rays=(n=14,{color='#ffffff',len=30,width=2.2,seed=2,op=.18}={})=>{const R=K.rng(seed),G=new THREE.Group(),tx=(()=>{const c=new OffscreenCanvas(64,256),x=c.getContext('2d'),g=x.createLinearGradient(0,0,0,256);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,64,256);const h=x.createLinearGradient(0,0,64,0);h.addColorStop(0,'rgba(0,0,0,1)');h.addColorStop(.5,'rgba(0,0,0,0)');h.addColorStop(1,'rgba(0,0,0,1)');x.globalCompositeOperation='destination-out';x.fillStyle=h;x.fillRect(0,0,64,256);return new THREE.CanvasTexture(c)})();
+  for(let i=0;i<n;i++){const w=width*(.4+R()),m=new THREE.Mesh(new THREE.PlaneGeometry(w,len),new THREE.MeshBasicMaterial({map:tx,color,transparent:true,opacity:op*(.4+R()*.8),blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false,side:THREE.DoubleSide}));
+    m.geometry.translate(0,-len/2,0);m.rotation.z=(R()-.5)*1.3;m.userData={r0:m.rotation.z,o:m.material.opacity,ph:R()*6.28};G.add(m)}G.sway=(t,a=.08)=>G.children.forEach(m=>{m.rotation.z=m.userData.r0+Math.sin(t*.6+m.userData.ph)*a;m.material.opacity=m.userData.o*(.7+.3*Math.sin(t*1.3+m.userData.ph*2))});return G};
+/* anamorphic flare streak */
+K.flare=(color='#9fd0ff',{w=40,h=.5}={})=>{const c=new OffscreenCanvas(512,32),x=c.getContext('2d'),g=x.createLinearGradient(0,0,512,0);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(.5,'#fff');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,512,32);const v=x.createLinearGradient(0,0,0,32);
+  v.addColorStop(0,'rgba(0,0,0,1)');v.addColorStop(.5,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,1)');x.globalCompositeOperation='destination-out';x.fillStyle=v;x.fillRect(0,0,512,32);
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),color,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}));return m};
 K.V=V;
 return K}
 window.__KIT_SRC='self.K=('+CueyKit.toString()+')(self.THREE||null);';
