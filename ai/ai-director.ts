@@ -220,7 +220,7 @@ Deno.serve(async (req) => {
   for (const k of keep) if (!seen.has(k)) o.fields.push({ k, label: k, type: k.startsWith("accent") ? "color" : "text", value: k === "accent" ? "#ffcf6b" : k === "accent2" ? "#7cf5ff" : "" });
   console.log("direct", r.model, Date.now() - T0, "ms", o.concept, JSON.stringify(o.look), JSON.stringify(o.footage), JSON.stringify(r.usage));
   L.overlay = Math.max(0, Math.min(.5, +L.overlay || 0));
-  if (body?.pick !== false && (!L.bg || L.bg === "footage" || L.overlay > 0)) { try { o.pick = await pickFootage(key, (o.footage || []).map(String), o, T0); } catch (e) { console.error("pick", String(e)); } }
+  if (body?.pick !== false && (!L.bg || L.bg === "footage" || L.overlay > 0 || (L.panel && L.panel !== "none"))) { try { o.pick = await pickFootage(key, (o.footage || []).map(String), o, T0); } catch (e) { console.error("pick", String(e)); } }
   await db.from("ai_builds").insert({ user_id: user.id, chars: prompt.length + (logo ? 1 : 0), cues: -1, ok: true });
   return json({ direct: o, model: r.model, left: cap - (count || 0) - 1 });
 });
