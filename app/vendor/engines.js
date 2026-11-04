@@ -24,7 +24,10 @@ function core(canvas,F,A,{bloom={s:.75,r:.5,th:.9},fov=36,grade={},titleColor='#
   const sub=F.sub?fit(K.type(F.sub,{px:130,h:logo?.5:.62,weight:500,color:'#ffffff',ls:K.he(F.sub)?0:30,emissive:.85}),vw*.75):null;
   const stack=[logo&&[logo,.55],kick&&[kick,.42],title&&[title,.5],sub&&[sub,0]].filter(Boolean);let tot=0;stack.forEach(([g,gap])=>tot+=g.height+gap);y=tot/2;
   stack.forEach(([g,gap])=>{g.position.y=y-g.height/2;y-=g.height+gap;H.add(g)});Object.assign(items,{logo,kick,title,sub});
-  return {st,S,C,fg,H,ac,ac2,vw,...items,feed(){fg.feed(A)}}}
+  /* scrim: a soft dark pool of shade behind the words so they read on any footage */
+  const sv=(()=>{const cv=new OffscreenCanvas(256,128),x=cv.getContext('2d'),g=x.createRadialGradient(128,64,0,128,64,128);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(.55,'rgba(0,0,0,.75)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,256,128);return new THREE.CanvasTexture(cv)})();
+  const scrim=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:sv,transparent:true,depthWrite:false,opacity:0,toneMapped:false}));scrim.scale.set(Math.min(vw*1.1,Math.max(...stack.map(([g])=>g.width))*1.6+4),tot*1.9+2.5,1);scrim.position.z=-1.5;scrim.renderOrder=-10;S.add(scrim);
+  return {st,S,C,fg,H,ac,ac2,vw,...items,scrim,sc(v,a=.62){scrim.material.opacity=a*v},feed(){fg.feed(A)}}}
 /* standard type-in for kicker/sub: fade + tracking */
 function soft(g,u){if(!g)return;g.u.op.value=E.o3(u);g.position.x=0;g.scale.x=g.scale.y*(1+.06*(1-E.o3(u)))}
 const lp=(t,A)=>{const I=A.intro,L=A.loop;return {I,L,ph:TAU*(t-I)/L,u:t<I?0:((t-I)%L)/L,on:t>=I}};
@@ -50,7 +53,7 @@ async function light(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.5,blur:2}
     const he=c.title&&c.title.he,ex=c.title?(he?1:-1)*(c.title.width/2-c.title.width*rv):0;edgeF.position.set(ex,c.title?c.title.position.y:0,.6);edgeF.material.opacity=rv>0&&rv<1?1:0;
     soft(c.kick,k(t,4.3,5.6));soft(c.sub,k(t,4.7,6));
     const sh=L.on?k(L.u,.25,.55):k(t,5.6,6.9);heros.forEach(g=>g.u.shine.value=sh>0&&sh<1?-.2+1.4*E.io3(sh):-1);
-    halo.material.opacity=.32*E.o3(k(t,3.4,5))*(1+.12*Math.sin(L.ph));H.position.y=.06*Math.sin(L.ph);st.bloom.strength=.7+.12*Math.sin(L.ph)+.5*Math.exp(-Math.pow((t-4)/.6,2));st.render()}}
+    c.sc(E.o3(k(t,2.6,4.4)));halo.material.opacity=.32*E.o3(k(t,3.4,5))*(1+.12*Math.sin(L.ph));H.position.y=.06*Math.sin(L.ph);st.bloom.strength=.7+.12*Math.sin(L.ph)+.5*Math.exp(-Math.pow((t-4)/.6,2));st.render()}}
 
 /* 2 · PARTICLES — thousands of sparks fly in from depth and assemble the logo / title, then the crisp letters light up */
 async function particles(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.55,blur:2.5}}),{st,S,C,fg,H,ac,ac2}=c;
@@ -70,7 +73,7 @@ async function particles(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.55,bl
     const rv=E.o3(k(t,5.1,6.2));[c.logo,c.title].filter(Boolean).forEach(g=>{g.u.op.value=rv;g.u.rev.value=1;g.u.glow.value=.35*(1-rv)+.08});
     const sh=L.on?k(L.u,.3,.6):k(t,6.2,7.3);[c.logo,c.title].filter(Boolean).forEach(g=>g.u.shine.value=sh>0&&sh<1?-.2+1.4*E.io3(sh):-1);
     if(!c.logo&&c.title){}soft(c.kick,k(t,5.6,6.8));soft(c.sub,k(t,5.9,7.1));
-    ring.material.opacity=.22*Math.exp(-Math.pow((t-4.9)/.7,2))+.08*E.o3(k(t,5,6.5))*(1+.2*Math.sin(L.ph));ring.scale.setScalar(14+6*E.o3(k(t,4.4,6)));
+    c.sc(E.o3(k(t,3,5.2)));ring.material.opacity=.22*Math.exp(-Math.pow((t-4.9)/.7,2))+.08*E.o3(k(t,5,6.5))*(1+.2*Math.sin(L.ph));ring.scale.setScalar(14+6*E.o3(k(t,4.4,6)));
     st.bloom.strength=.75+.35*Math.exp(-Math.pow((t-5)/.6,2))+.1*Math.sin(L.ph);st.render()}}
 
 /* 3 · CINEMA — a deep, extruded title; the camera glides from a low side angle to the hero frame; light sweeps across the face */
@@ -85,12 +88,12 @@ async function cinema(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.5,blur:4
     const a=E.o3(k(t,.3,1.6));[c.title,c.logo].filter(Boolean).forEach(g=>{g.u.op.value=a;g.u.rev.value=1});layers.forEach(g=>g.u.op.value=a);
     const sh=L.on?k(L.u,.2,.5):k(t,2.4,4.6);[c.title,c.logo].filter(Boolean).forEach(g=>{g.u.shine.value=sh>0&&sh<1?-.2+1.4*E.io3(sh):-1;g.u.glow.value=.06});
     flare.material.opacity=Math.exp(-Math.pow((sh-.5)/.22,2))*(sh>0&&sh<1?1:0);flare.position.x=(sh-.5)*(T?T.width:10);soft(c.kick,k(t,4.6,5.8));soft(c.sub,k(t,5,6.2));ds.tick(L.ph);
-    back.material.opacity=.3*E.o3(k(t,3,5))*(1+.15*Math.sin(L.ph));st.bloom.strength=.75+.15*Math.sin(L.ph);st.render()}}
+    c.sc(E.o3(k(t,.3,2)),.5);back.material.opacity=.3*E.o3(k(t,3,5))*(1+.15*Math.sin(L.ph));st.bloom.strength=.75+.15*Math.sin(L.ph);st.render()}}
 
 /* 4 · CELEBRATE — fireworks bloom over real footage, a flash, the title pops in with confetti raining through the frame */
-async function celebrate(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.45,blur:1.2},bloom:{s:1.05,r:.6,th:.7}}),{st,S,C,fg,H,ac,ac2}=c;
+async function celebrate(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.58,blur:1.6},bloom:{s:.8,r:.55,th:.88},glow:'#ffffff'}),{st,S,C,fg,H,ac,ac2}=c;S.add(new THREE.AmbientLight('#ffffff',1.6));const dl0=new THREE.DirectionalLight('#ffffff',2.2);dl0.position.set(3,5,8);S.add(dl0);
   const cols=[ac,ac2,'#ffffff','#ff5c8a','#ffd166'];const shells=[[-6,3.5,-6,1.0,0],[5.5,4.2,-7,1.7,1],[-2,5.4,-9,2.6,2],[7,1.8,-8,3.4,3],[-7.5,1,-7,4.1,4],[1.5,4.8,-6,4.7,1]];
-  const N=360,fw=shells.map(([x,y,z,t0,ci],j)=>{const p=K.points(N,{size:1.7,color:'#ffffff'}),R=K.rng(40+j),v=[];const cc=new THREE.Color(cols[ci]),col=p.geometry.attributes.color.array;
+  const N=360,fw=shells.map(([x,y,z,t0,ci],j)=>{const p=K.points(N,{size:2.6,color:'#ffffff'}),R=K.rng(40+j),v=[];const cc=new THREE.Color(cols[ci]),col=p.geometry.attributes.color.array;
     for(let i=0;i<N;i++){const th=R()*TAU,ph=Math.acos(2*R()-1),s=2.2+R()*.6;v.push([Math.sin(ph)*Math.cos(th)*s,Math.cos(ph)*s,Math.sin(ph)*Math.sin(th)*s]);col.set([cc.r,cc.g,cc.b],i*3)}
     p.geometry.attributes.color.needsUpdate=true;S.add(p);return {p,v,o:[x,y,z],t0}});
   const conf=K.confetti(900,{colors:cols,size:.16,gravity:2.2});S.add(conf);const rain=K.confetti(500,{colors:cols,size:.13,gravity:0,seed:31});S.add(rain);
@@ -100,16 +103,16 @@ async function celebrate(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.45,bl
     for(let i=0;i<N;i++){pos[i*3]=s.o[0]+s.v[i][0]*dd*1.6;pos[i*3+1]=s.o[1]+s.v[i][1]*dd*1.6-.35*a*a;pos[i*3+2]=s.o[2]+s.v[i][2]*dd*1.6;al[i]=age<0?0:Math.max(0,1-a/2.2)*(.6+.4*Math.sin(a*30+i))}
     s.p.geometry.attributes.position.needsUpdate=true;s.p.geometry.attributes.al.needsUpdate=true};
   const POP=3.2;
-  return t=>{const L=lp(t,A);c.feed();const f=fg.u;f.dark.value=.45+.55*(1-E.o3(k(t,0,1)));f.zoom.value=1.1-.06*E.io3(k(t,0,L.I))+(L.on?.01*Math.sin(L.ph):0);
+  return t=>{const L=lp(t,A);c.feed();const f=fg.u;f.dark.value=.58+.42*(1-E.o3(k(t,0,1)));f.zoom.value=1.1-.06*E.io3(k(t,0,L.I))+(L.on?.01*Math.sin(L.ph):0);
     let fl=0;fw.forEach(s=>{const age=L.on?((L.u*L.L-s.t0*.9)%L.L+L.L)%L.L:t-s.t0;burst(s,age);fl+=Math.max(0,.08-age*.15)*(age>=0?1:0)});
-    fl+=.55*Math.exp(-Math.pow((t-POP)/.12,2));f.flash.value=fl;f.fcol.value.set(ac);
+    fl+=.28*Math.exp(-Math.pow((t-POP)/.12,2));f.flash.value=fl;f.fcol.value.set(ac);
     C.position.set(Math.sin(L.ph)*.3,Math.cos(L.ph)*.15,15-.8*E.io3(k(t,0,L.I))+(t>POP&&t<POP+.4?Math.sin((t-POP)*60)*.04:0));C.lookAt(0,0,0);
     conf.burst(t-POP,[0,c.title?c.title.position.y:0,-1],1.1);conf.visible=t<L.I+.1||!L.on?true:false;
     for(let i=0;i<500;i++){const q=rp[i],yy=((q[1]-(L.on?L.u*L.L:t-L.I)*q[3]*2)%16+16)%16-7;o.position.set(q[0]+Math.sin(L.ph+q[4]*9)*.4,yy,q[2]);o.rotation.set(L.ph*2+q[4]*7,L.ph*3+q[4]*5,q[4]*6);o.scale.setScalar(E.o3(k(t,POP,POP+1.5)));o.updateMatrix();rain.setMatrixAt(i,o.matrix)}rain.instanceMatrix.needsUpdate=true;
-    const p=E.back(k(t,POP,POP+.7));if(c.title){c.title.scale.setScalar(c.title.userData.s0||(c.title.userData.s0=c.title.scale.x));c.title.scale.multiplyScalar(.6+.4*p);c.title.u.op.value=E.o3(k(t,POP,POP+.3));c.title.u.glow.value=.2*Math.exp(-(t-POP))+.05+.03*Math.sin(L.ph*2)}
+    const p=E.back(k(t,POP,POP+.7));if(c.title){c.title.scale.setScalar(c.title.userData.s0||(c.title.userData.s0=c.title.scale.x));c.title.scale.multiplyScalar(.6+.4*p);c.title.u.op.value=E.o3(k(t,POP,POP+.3));c.title.u.glow.value=.12*Math.exp(-(t-POP))+.02+.02*Math.sin(L.ph*2)}
     if(c.logo){c.logo.u.op.value=E.o3(k(t,POP-.2,POP+.4));c.logo.scale.setScalar((c.logo.userData.s0||(c.logo.userData.s0=c.logo.scale.x))*(.7+.3*E.back(k(t,POP-.2,POP+.6))))}
     soft(c.kick,k(t,POP+.5,POP+1.5));soft(c.sub,k(t,POP+.8,POP+1.8));const sh=L.on?k(L.u,.55,.8):-1;if(c.title)c.title.u.shine.value=sh>0&&sh<1?-.2+1.4*E.io3(sh):-1;
-    halo.material.opacity=.35*E.o3(k(t,POP,POP+.6))*(1+.15*Math.sin(L.ph*2));st.bloom.strength=1.05+.4*fl;st.render()}}
+    c.sc(E.o3(k(t,POP-.6,POP+.4)),.7);halo.material.opacity=.22*E.o3(k(t,POP,POP+.6))*(1+.15*Math.sin(L.ph*2));st.bloom.strength=.8+.3*fl;st.render()}}
 
 /* 5 · AWARD — gold: spotlights sweep the stage, a slow golden ring turns behind a metallic title, glitter falls through the light */
 async function award(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.6,blur:3,sat:.7,tint:'#3a2a10',tintA:.25},titleColor:'#fff4cf',titleColor2:'#c9952f',glow:'#ffcf6b'}),{st,S,C,fg,H,ac}=c;
@@ -127,7 +130,7 @@ async function award(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.6,blur:3,
     const pos=gl.geometry.attributes.position.array,al=gl.geometry.attributes.al.array;for(let i=0;i<1400;i++){const q=gp[i],yy=((q[1]-(t-L.I)*q[3]*1.4)%16+16)%16-7;pos[i*3]=q[0]+Math.sin(L.ph+q[4])*.3;pos[i*3+1]=yy;pos[i*3+2]=q[2];al[i]=E.o3(k(t,1,3))*(.4+.6*Math.max(0,Math.sin(L.ph*3+q[4]*7)))}
     gl.geometry.attributes.position.needsUpdate=true;gl.geometry.attributes.al.needsUpdate=true;
     const rv=E.io3(k(t,3,4.6));[c.title,c.logo].filter(Boolean).forEach(g=>{g.u.rev.value=rv;g.u.glow.value=.12});const sh=L.on?k(L.u,.3,.6):k(t,5,6.4);[c.title,c.logo].filter(Boolean).forEach(g=>g.u.shine.value=sh>0&&sh<1?-.2+1.4*E.io3(sh):-1);
-    soft(c.kick,k(t,4.2,5.4));soft(c.sub,k(t,4.6,5.8));halo.material.opacity=.3*E.o3(k(t,3,5))*(1+.12*Math.sin(L.ph));st.bloom.strength=.8+.15*Math.sin(L.ph);st.render()}}
+    c.sc(E.o3(k(t,2.6,4.4)));soft(c.kick,k(t,4.2,5.4));soft(c.sub,k(t,4.6,5.8));halo.material.opacity=.3*E.o3(k(t,3,5))*(1+.12*Math.sin(L.ph));st.bloom.strength=.8+.15*Math.sin(L.ph);st.render()}}
 
 /* 6 · HOLIDAY — warm bokeh and snow; glowing sparks gather into the title / logo; soft golden light breathes */
 async function holiday(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.45,blur:2.2},titleColor:'#ffffff',glow:hex(F.accent,'#ffcf6b')}),{st,S,C,fg,H,ac,ac2}=c;
@@ -144,7 +147,7 @@ async function holiday(canvas,F,A){const c=core(canvas,F,A,{grade:{dark:.45,blur
       pos[i*3]=x0+(smp.P[i*2]-x0)*u;pos[i*3+1]=y0+(smp.P[i*2+1]+ty-y0)*u+.03*Math.sin(L.ph*2+d*20);pos[i*3+2]=q[2]*(1-u);al[i]=.5*E.o3(k(t,.8+d*2,1.6+d*2))*(1-.6*E.o3(k(t,5.6,6.8)))*(.7+.3*Math.sin(L.ph*4+d*40))}
     p.geometry.attributes.position.needsUpdate=true;p.geometry.attributes.al.needsUpdate=true;
     const rv=E.o3(k(t,5.2,6.4));[c.title,c.logo].filter(Boolean).forEach(g=>{g.u.op.value=rv;g.u.glow.value=.15+.05*Math.sin(L.ph*2)});const sh=L.on?k(L.u,.35,.65):-1;[c.title,c.logo].filter(Boolean).forEach(g=>g.u.shine.value=sh>0&&sh<1?-.2+1.4*E.io3(sh):-1);
-    soft(c.kick,k(t,5.6,6.8));soft(c.sub,k(t,6,7.2));halo.material.opacity=.3*E.o3(k(t,4.5,6.5))*(1+.15*Math.sin(L.ph));st.bloom.strength=.95+.15*Math.sin(L.ph);st.render()}}
+    c.sc(E.o3(k(t,3.5,5.5)));soft(c.kick,k(t,5.6,6.8));soft(c.sub,k(t,6,7.2));halo.material.opacity=.3*E.o3(k(t,4.5,6.5))*(1+.15*Math.sin(L.ph));st.bloom.strength=.95+.15*Math.sin(L.ph);st.render()}}
 
 return {META,light,particles,cinema,celebrate,award,holiday}}
 window.__ENG_SRC='self.ENG=('+CueyEngines.toString()+')(self.THREE,self.K);';
