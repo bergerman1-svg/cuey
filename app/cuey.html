@@ -3141,8 +3141,8 @@ setTimeout(()=>{if(!document.querySelector('dialog[open]'))cuTour(false)},docume
    recorded once into a looping video cue, so the event screen, share screen, export and save work as with any video.
    Duplicate the cue and change the text = a new slide, no AI needed. */
 (function(){
-const DS={en:{h:'AI Builder',lbl:'Describe the slide you want',ph:'e.g. Opening slide for our employees evening. Our logo builds itself from light above the clouds, then "Welcome".\n\nor tell a short story: a kid holds a balloon, it flies up, a plane pops it into confetti, then the title comes in.',logo:'⬆ Logo or brand image (optional)',go:'✨ Let the magic happen',magic:'Let the magic happen',making:'The magic is happening…',add:'Add to the cue list',save:'Save changes',back:'← Back',tip:'Change any text and the slide updates right away. Need the same slide for more people? Add it, then duplicate the cue and change the name.',rec:'Making your slide…',recs:'Making second {a} of {b}…',prev:'Preview — it keeps moving until the next GO.',soon:'The AI Builder isn\'t open yet — try again soon.',need:'Sign in (free) to build a slide with AI.',short:'Write a little more about the slide.',err:'Couldn\'t build it right now — try again.',scerr:'This slide has a problem and can\'t play: ',busy:'Building your slide… (about half a minute)',added:'Slide added ✓',saved:'Slide updated ✓'},
- he:{h:'AI Builder',lbl:'תארו את השקופית שאתם רוצים',ph:'למשל: שקופית פתיחה לערב העובדים שלנו. הלוגו נבנה מאור מעל העננים, ואז "ברוכים הבאים".\n\nאו ספרו סיפור קצר: ילד מחזיק בלון, הבלון עף למעלה, מטוס מפוצץ אותו לקונפטי, ונכנסת הכותרת.',logo:'⬆ לוגו או תמונת מיתוג (לא חובה)',go:'✨ Let the magic happen',magic:'Let the magic happen',making:'הקסם קורה…',add:'הוספה לרשימה',save:'שמירת שינויים',back:'→ חזרה',tip:'משנים טקסט והשקופית מתעדכנת מיד. צריך אותה שקופית לעוד אנשים? מוסיפים, משכפלים את הקיו ומחליפים שם.',rec:'מכינים את השקופית…',recs:'מכינים שנייה {a} מתוך {b}…',prev:'תצוגה מקדימה — זזה עד ה-GO הבא.',soon:'ה-AI Builder עוד לא פתוח — נסו שוב בקרוב.',need:'התחברו (בחינם) כדי לבנות שקופית עם AI.',short:'כתבו עוד קצת על השקופית.',err:'לא הצלחנו לבנות עכשיו — נסו שוב.',scerr:'יש בעיה בשקופית והיא לא יכולה לרוץ: ',busy:'בונים את השקופית… (בערך חצי דקה)',added:'השקופית נוספה ✓',saved:'השקופית עודכנה ✓'}};
+const DS={en:{h:'AI Builder',lbl:'Describe the slide you want',ph:'e.g. Opening slide for our employees evening. Our logo builds itself from light above the clouds, then "Welcome".\n\nor tell a short story: a kid holds a balloon, it flies up, a plane pops it into confetti, then the title comes in.',logo:'⬆ Logo or brand image (optional)',go:'✨ Let the magic happen',magic:'Let the magic happen',making:'The magic is happening…',add:'Add to the cue list',save:'Save changes',back:'← Back',tip:'Change any text and the slide updates right away. Need the same slide for more people? Add it, then duplicate the cue and change the name.',rec:'Making your slide…',recs:'Making second {a} of {b}…',prev:'Preview — it keeps moving until the next GO.',soon:'The AI Builder isn\'t open yet — try again soon.',need:'Sign in (free) to build a slide with AI.',short:'Write a little more about the slide.',err:'Couldn\'t build it right now — try again.',scerr:'This slide has a problem and can\'t play: ',review:'Claude is watching the result and polishing it…',busy:'Building your slide… (about half a minute)',added:'Slide added ✓',saved:'Slide updated ✓'},
+ he:{h:'AI Builder',lbl:'תארו את השקופית שאתם רוצים',ph:'למשל: שקופית פתיחה לערב העובדים שלנו. הלוגו נבנה מאור מעל העננים, ואז "ברוכים הבאים".\n\nאו ספרו סיפור קצר: ילד מחזיק בלון, הבלון עף למעלה, מטוס מפוצץ אותו לקונפטי, ונכנסת הכותרת.',logo:'⬆ לוגו או תמונת מיתוג (לא חובה)',go:'✨ Let the magic happen',magic:'Let the magic happen',making:'הקסם קורה…',add:'הוספה לרשימה',save:'שמירת שינויים',back:'→ חזרה',tip:'משנים טקסט והשקופית מתעדכנת מיד. צריך אותה שקופית לעוד אנשים? מוסיפים, משכפלים את הקיו ומחליפים שם.',rec:'מכינים את השקופית…',recs:'מכינים שנייה {a} מתוך {b}…',prev:'תצוגה מקדימה — זזה עד ה-GO הבא.',soon:'ה-AI Builder עוד לא פתוח — נסו שוב בקרוב.',need:'התחברו (בחינם) כדי לבנות שקופית עם AI.',short:'כתבו עוד קצת על השקופית.',err:'לא הצלחנו לבנות עכשיו — נסו שוב.',scerr:'יש בעיה בשקופית והיא לא יכולה לרוץ: ',review:'Claude צופה בתוצאה ומלטש אותה…',busy:'בונים את השקופית… (בערך חצי דקה)',added:'השקופית נוספה ✓',saved:'השקופית עודכנה ✓'}};
 const loc=s=>{const p=String(s||'').split('|');return (lang==='he'&&p[1])?p[1]:p[0]};
 const dt=(k,v)=>{let s=(DS[lang]||DS.en)[k]||DS.en[k]||k;if(v)for(const n in v)s=s.replace('{'+n+'}',v[n]);return s};
 const SC_FN=SB_URL+'/functions/v1/build-scene';
@@ -3170,7 +3170,7 @@ let frameWait={};let fid=0;
 addEventListener('message',e=>{if(e.source!==ifr.contentWindow)return;const d=e.data||{};
   if(d.sc==='host'){st.hostOk=true;const p=st.pend.splice(0);p.forEach(m=>ifr.contentWindow.postMessage(m,'*'))}
   else if(d.sc==='ready'){st.ready=true;$('#dirErr2').textContent='';$('#dirAdd').disabled=false}
-  else if(d.sc==='error'){st.ready=false;$('#dirAdd').disabled=true;$('#dirErr2').textContent=dt('scerr')+d.msg;const w=frameWait.cur;if(w){frameWait.cur=null;w.no(new Error(d.msg))}}
+  else if(d.sc==='error'){st.ready=false;st.lastErr=d.msg;$('#dirAdd').disabled=true;$('#dirErr2').textContent=dt('scerr')+d.msg;const w=frameWait.cur;if(w){frameWait.cur=null;w.no(new Error(d.msg))}}
   else if(d.sc==='frame'){const w=frameWait.cur;if(w&&w.id===d.id){frameWait.cur=null;w.ok(d.bm)}else if(d.bm)d.bm.close()}});
 function post(m){if(st.hostOk)ifr.contentWindow.postMessage(m,'*');else st.pend.push(m)}
 function bootHost(){st.hostOk=false;st.ready=false;st.pend=[];ifr.srcdoc=HOST}
@@ -3207,11 +3207,11 @@ function drawMagic(){mg.raf=0;if(!mg.on||$('#dirDlg').hidden)return;const c=$('#
   for(let i=0;i<46;i++){const a=i*2.399+t*(.18+(i%5)*.04)*(i%2?1:-1),rad=40+((i*53)%230)*(mg.fast?.75+.25*Math.sin(t*2+i):1),cx=W/2+Math.cos(a)*rad*1.6,cy=H*.42+Math.sin(a)*rad*.8,tw=.5+.5*Math.sin(t*3+i*1.7);star(x,cx,cy,3+((i*7)%9)*tw,.25+.6*tw)}
   const p=1+.06*Math.sin(t*2.2);star(x,W/2,H*.40,46*p,1);star(x,W/2+70,H*.30,18*p,.9);star(x,W/2-62,H*.52,12*p,.8);x.globalAlpha=1;
   mg.raf=requestAnimationFrame(drawMagic)}
-window.__dirTest={use:(s,f)=>useScene(s,f)};
+window.__dirTest={use:(s,f)=>useScene(s,f),cur:()=>st.scene&&st.scene.title};
 function fieldsUI(){const box=$('#dirFields');box.innerHTML='';(st.scene.fields||[]).forEach(f=>{const r=document.createElement('div');r.className='fld';const id='dirF_'+f.k;
     r.innerHTML=`<label for="${id}"></label><span><input id="${id}" type="${f.type==='color'?'color':'text'}" dir="auto"></span>`;r.querySelector('label').textContent=loc(f.label||f.k);const inp=r.querySelector('input');inp.value=st.fields[f.k]!=null?st.fields[f.k]:(f.value||'');
     let tm=null;inp.addEventListener('input',()=>{st.fields[f.k]=inp.value;clearTimeout(tm);tm=setTimeout(()=>loadScene(true),350)});box.appendChild(r)})}
-function useScene(s,fields){st.scene=s;st.fields={};(s.fields||[]).forEach(f=>st.fields[f.k]=f.value);if(fields)Object.assign(st.fields,fields);fieldsUI();texts();step(2);bootHost();loadScene(true)}
+function useScene(s,fields){st.lastErr='';st.scene=s;st.fields={};(s.fields||[]).forEach(f=>st.fields[f.k]=f.value);if(fields)Object.assign(st.fields,fields);fieldsUI();texts();step(2);bootHost();loadScene(true)}
 window.openDirector=function(it){st.edit=it||null;st.busy=false;$('#dirErr').textContent='';$('#dirErr2').textContent='';busy(false);texts();$('#dirDlg').hidden=false;
   if(it&&it.scene){st.logoFile=it.scene.logoFile||null;useScene(JSON.parse(JSON.stringify(it.scene.src)),it.scene.fields)}else{step(1);bootHost();magic(true)}}
 function close(){post({sc:'stop'});$('#dirDlg').hidden=true;ifr.srcdoc='';st.hostOk=false}
@@ -3225,6 +3225,10 @@ $('#dirBack').onclick=()=>{if(st.busy)return;if(st.edit){close();return}post({sc
 async function logoData(){if(!st.logoFile)return null;const im=new Image();im.src=URL.createObjectURL(st.logoFile);await new Promise(r=>{im.onload=im.onerror=r});const s=Math.min(1,768/Math.max(im.naturalWidth||1,im.naturalHeight||1)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.naturalWidth*s));c.height=Math.max(1,Math.round(im.naturalHeight*s));c.getContext('2d').drawImage(im,0,0,c.width,c.height);return {media_type:'image/png',data:c.toDataURL('image/png').split(',')[1]}}
 /* two steps: the director writes the shot list (shown on the magic screen), then the motion designer builds it */
 let capT=0;function captions(list){clearInterval(capT);if(!list||!list.length)return;let i=0;const show=()=>{$('#dirMagicT').textContent=list[i%list.length];i++};show();capT=setInterval(show,2600)}
+function waitReady(ms){return new Promise(r=>{const t0=Date.now(),iv=setInterval(()=>{if(st.ready||st.lastErr||Date.now()-t0>ms){clearInterval(iv);r(st.ready)}},120)})}
+function blank(){const c=document.createElement('canvas');c.width=64;c.height=36;const x=c.getContext('2d');x.fillRect(0,0,64,36);return {t:0,data:c.toDataURL('image/jpeg',.5).split(',')[1]}}
+async function shots(s){const I=+s.intro||6,Lp=+s.loop||8,ts=[.1,.28,.46,.64,.82,.99].map(f=>f*I).concat([I+Lp*.5]),out=[],cv=document.createElement('canvas');cv.width=512;cv.height=288;const x=cv.getContext('2d');post({sc:'stop'});
+  for(const t of ts){try{const bm=await frameAt(t);x.drawImage(bm,0,0,512,288);bm.close&&bm.close();out.push({t:+t.toFixed(2),data:cv.toDataURL('image/jpeg',.62).split(',')[1]})}catch(e){break}}return out}
 async function scCall(tk,body){const r=await fetch(SC_FN,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify(body)});let d=null;try{d=await r.json()}catch(e){}return {r,d}}
 $('#dirGo').onclick=async()=>{const p=$('#dirPrompt').value.trim();if(p.length<6){$('#dirErr').textContent=dt('short');return}if(st.busy)return;st.busy=true;$('#dirErr').textContent='';magic(true,true);
   try{const tk=await token();if(!tk){st.busy=false;magic(true,false);$('#dirErr').textContent=dt('need');openAcct('build');return}
@@ -3237,7 +3241,13 @@ $('#dirGo').onclick=async()=>{const p=$('#dirPrompt').value.trim();if(p.length<6
     if(r.status===429){$('#dirErr').textContent=t('be_limit');return}
     if(!r.ok||!d||!d.scene||!d.scene.code){$('#dirErr').textContent=d?dt('err'):dt('soon');return}
     if(plan&&Array.isArray(plan.fields)&&(!d.scene.fields||!d.scene.fields.length))d.scene.fields=plan.fields;
-    track('scene-built');useScene(d.scene)}
+    let sc=d.scene;useScene(sc);busy(true,dt('review'));
+    /* review: render real frames of the draft in the sandbox and let Claude look at them and fix what it sees */
+    try{const ok=await waitReady(30000);const frames=ok?await shots(sc):[];if(!frames.length&&!st.lastErr)throw 0;
+      const rv=await scCall(tk,{...base,step:'review',plan,scene:{code:sc.code,intro:sc.intro,loop:sc.loop,fields:sc.fields,error:st.lastErr||''},frames:frames.length?frames:[blank()]});
+      if(rv.r.ok&&rv.d&&rv.d.scene&&rv.d.scene.code){sc=rv.d.scene;if(!sc.fields||!sc.fields.length)sc.fields=d.scene.fields;useScene(sc)}else loadScene(true)}
+    catch(e){loadScene(true)}finally{busy(false)}
+    track('scene-built')}
   catch(e){$('#dirErr').textContent=dt('soon')}finally{clearInterval(capT);st.busy=false;if(!$('#dirS1').hidden)magic(true,false)}};
 $('#dirAdd').onclick=async()=>{if(!st.ready||st.busy)return;st.busy=true;$('#dirAdd').disabled=true;busy(true,dt('rec'));
   try{const s=st.scene;const f=await record();await keepGen(f);

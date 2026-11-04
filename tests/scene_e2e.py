@@ -60,6 +60,24 @@ async def main():
         data = await pg.evaluate("JSON.stringify(showData())"); d = json.loads(data)
         sc = [c for c in d['cues'] if c.get('scene')]
         ok('Save keeps each slide\'s scene and texts', len(sc) == 2 and sc[1]['scene']['fields']['title'] == 'SECOND' and 'code' in sc[1]['scene']['src'], len(sc))
+        # the full AI flow with a mocked server: plan -> build -> review (gets real frames) -> the reviewed scene is used
+        calls = []
+        async def fake(route):
+            b = json.loads(route.request.post_data or '{}'); calls.append(b)
+            if b.get('step') == 'plan': body = {'plan': {'captions': ['🎬 one', '✨ two'], 'fields': SC[0]['fields'], 'shots': [{}, {}]}}
+            elif b.get('step') == 'build': body = {'scene': SC[0]}
+            else:
+                s2 = dict(SC[0]); s2['title'] = 'REVIEWED'; body = {'scene': s2}
+            await route.fulfill(status=200, body=json.dumps(body), headers={'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'})
+        await pg.route('**/functions/v1/build-scene', fake)
+        await pg.evaluate("window.token=async()=>'test';openDirector();$('#dirPrompt').value='A test slide with a story';$('#dirGo').click()")
+        await pg.wait_for_function("__dirTest.cur()==='REVIEWED'&&$('#dirBusy').hidden", timeout=150000)
+        await pg.wait_for_timeout(1500)
+        steps = [c.get('step') for c in calls]
+        rv = [c for c in calls if c.get('step') == 'review']
+        ok('AI flow: plan → build → review', steps == ['plan', 'build', 'review'], steps)
+        ok('review gets rendered frames of the draft', rv and len(rv[0].get('frames', [])) >= 5 and len(rv[0]['frames'][0]['data']) > 2000, rv and len(rv[0].get('frames', [])))
+        ok('the reviewed scene is the one shown', await pg.evaluate("$('#dirS2').hidden===false&&$('#dirBusy').hidden"))
         ok('no page errors', not errs, errs)
         await b.close()
     print(f'\n{sum(res)}/{len(res)} passed')
