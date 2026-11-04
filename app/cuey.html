@@ -3145,40 +3145,63 @@ const DS={en:{h:'AI Builder',lbl:'Describe the slide you want',ph:'e.g. Opening 
  he:{h:'AI Builder',lbl:'תארו את השקופית שאתם רוצים',ph:'למשל: שקופית פתיחה לערב העובדים שלנו. הלוגו נבנה מאור מעל העננים, ואז "ברוכים הבאים".\n\nאו ספרו סיפור קצר: ילד מחזיק בלון, הבלון עף למעלה, מטוס מפוצץ אותו לקונפטי, ונכנסת הכותרת.',logo:'⬆ לוגו או תמונת מיתוג (לא חובה)',go:'✨ Let the magic happen',magic:'Let the magic happen',making:'הקסם קורה…',add:'הוספה לרשימה',save:'שמירת שינויים',back:'→ חזרה',tip:'משנים טקסט והשקופית מתעדכנת מיד. צריך אותה שקופית לעוד אנשים? מוסיפים, משכפלים את הקיו ומחליפים שם.',rec:'מכינים את השקופית…',recs:'מכינים שנייה {a} מתוך {b}…',prev:'תצוגה מקדימה — זזה עד ה-GO הבא.',soon:'ה-AI Builder עוד לא פתוח — נסו שוב בקרוב.',need:'התחברו (בחינם) כדי לבנות שקופית עם AI.',short:'כתבו עוד קצת על השקופית.',err:'לא הצלחנו לבנות עכשיו — נסו שוב.',scerr:'יש בעיה בשקופית והיא לא יכולה לרוץ: ',review:'Claude צופה בתוצאה ומלטש אותה…',busy:'בונים את השקופית… (בערך חצי דקה)',added:'השקופית נוספה ✓',saved:'השקופית עודכנה ✓'}};
 const loc=s=>{const p=String(s||'').split('|');return (lang==='he'&&p[1])?p[1]:p[0]};
 const dt=(k,v)=>{let s=(DS[lang]||DS.en)[k]||DS.en[k]||k;if(v)for(const n in v)s=s.replace('{'+n+'}',v[n]);return s};
-const SC_FN=SB_URL+'/functions/v1/build-scene';
+const SC_FN=SB_URL+'/functions/v1/build-scene',DIR_FN=SB_URL+'/functions/v1/ai-director';
 const st={scene:null,fields:{},logoFile:null,logoBm:null,mode:'auto',edit:null,ready:false,hostOk:null,pend:[],threeSrc:null,busy:false};
 const ifr=$('#dirFrame');
 /* the sandboxed host: no network, no access to Cuey; draws the scene and hands back frames */
-function hostMain(){let c=document.getElementById('c'),draw=null,playing=false,t0=0,gen=0;
+function hostMain(){let c=document.getElementById('c'),draw=null,playing=false,t0=0,gen=0,A={};
+  const bgIn=d=>{if(d.bg!==undefined){if(A.bg&&A.bg!==d.bg&&A.bg.close)A.bg.close();if(A.bg2&&A.bg2!==d.bg2&&A.bg2.close)A.bg2.close();A.bg=d.bg||null;A.bg2=d.bg2||null;A.mix=d.mix||0}};
   const fonts=()=>Promise.race([Promise.all([300,500,700,900].map(w=>document.fonts.load(w+' 40px Poppins').catch(()=>{})).concat([300,500,800,900].map(w=>document.fonts.load(w+' 40px Heebo').catch(()=>{})))),new Promise(r=>setTimeout(r,3000))]);
   async function load(d){const my=++gen;draw=null;playing=false;try{
       const inj=src=>{const u=URL.createObjectURL(new Blob([src],{type:'text/javascript'}));return new Promise((ok,no)=>{const s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=no;document.head.appendChild(s)})};
-      if(d.three&&!self.THREE)await inj(d.three);if(d.kit&&(!self.K||(d.three&&!self.K.stage)))await inj(d.kit);
+      if(d.three&&!self.THREE)await inj(d.three);if(d.kit&&(!self.K||(d.three&&!self.K.stage)))await inj(d.kit);if(d.engsrc&&!self.ENG)await inj(d.engsrc);
       await fonts();const n=document.createElement('canvas');n.id='c';n.width=1920;n.height=1080;c.replaceWith(n);c=n;
-      const A={logo:d.logo?await createImageBitmap(d.logo):null};
-      const fn=new Function('canvas','F','A','THREE','K','return (async()=>{\n'+d.code+'\n})()');const r=await fn(c,d.fields||{},A,self.THREE,self.K);
+      A={logo:d.logo?await createImageBitmap(d.logo):null,intro:+d.intro||6,loop:+d.loop||8,bg:null,bg2:null,mix:0};
+      const fn=d.eng?((cv,F,AA)=>self.ENG[d.eng](cv,F,AA,self.THREE,self.K)):new Function('canvas','F','A','THREE','K','return (async()=>{\n'+d.code+'\n})()');const r=await fn(c,d.fields||{},A,self.THREE,self.K);
       if(my!==gen)return;if(typeof r!=='function')throw new Error('the scene did not return draw(t)');r(0);draw=r;parent.postMessage({sc:'ready'},'*');
       if(d.play){playing=true;t0=performance.now();loop()}
     }catch(e){parent.postMessage({sc:'error',msg:String(e&&e.message||e)},'*')}}
   function loop(){if(!playing||!draw)return;try{draw((performance.now()-t0)/1000)}catch(e){playing=false;parent.postMessage({sc:'error',msg:String(e&&e.message||e)},'*');return}requestAnimationFrame(loop)}
   addEventListener('message',async e=>{const d=e.data||{};if(d.sc==='load')load(d);else if(d.sc==='stop')playing=false;else if(d.sc==='play'){if(!draw)return;playing=true;t0=performance.now();loop()}
-    else if(d.sc==='frame'){if(!draw)return;try{draw(d.t);const bm=await createImageBitmap(c);parent.postMessage({sc:'frame',id:d.id,bm},'*',[bm])}catch(err){parent.postMessage({sc:'error',msg:String(err&&err.message||err)},'*')}}});
+    else if(d.sc==='tick'){if(!draw)return;bgIn(d);try{draw(d.t)}catch(err){parent.postMessage({sc:'error',msg:String(err&&err.message||err)},'*')}}
+    else if(d.sc==='frame'){if(!draw)return;bgIn(d);try{draw(d.t);const bm=await createImageBitmap(c);parent.postMessage({sc:'frame',id:d.id,bm},'*',[bm])}catch(err){parent.postMessage({sc:'error',msg:String(err&&err.message||err)},'*')}}});
   parent.postMessage({sc:'host'},'*')}
 const CSP="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' blob:; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src blob: data:; connect-src 'none'; media-src 'none'; frame-src 'none'; worker-src blob:";
 const HOST=`<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${CSP}"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700;900&family=Heebo:wght@300;500;800;900&display=swap"><style>html,body{margin:0;background:#000;overflow:hidden;height:100%}canvas{width:100%;height:100%;display:block}</style><canvas id="c" width="1920" height="1080"></canvas><script>(${hostMain})()<\/script>`;
 let frameWait={};let fid=0;
 addEventListener('message',e=>{if(e.source!==ifr.contentWindow)return;const d=e.data||{};
   if(d.sc==='host'){st.hostOk=true;const p=st.pend.splice(0);p.forEach(m=>ifr.contentWindow.postMessage(m,'*'))}
-  else if(d.sc==='ready'){st.ready=true;$('#dirErr2').textContent='';$('#dirAdd').disabled=false}
+  else if(d.sc==='ready'){st.ready=true;$('#dirErr2').textContent='';$('#dirAdd').disabled=false;if(st.scene&&st.scene.engine&&st.wantPlay)footPlay()}
   else if(d.sc==='error'){st.ready=false;st.lastErr=d.msg;$('#dirAdd').disabled=true;$('#dirErr2').textContent=dt('scerr')+d.msg;const w=frameWait.cur;if(w){frameWait.cur=null;w.no(new Error(d.msg))}}
   else if(d.sc==='frame'){const w=frameWait.cur;if(w&&w.id===d.id){frameWait.cur=null;w.ok(d.bm)}else if(d.bm)d.bm.close()}});
 function post(m){if(st.hostOk)ifr.contentWindow.postMessage(m,'*');else st.pend.push(m)}
 function bootHost(){st.hostOk=false;st.ready=false;st.pend=[];ifr.srcdoc=HOST}
 async function three(){if(st.threeSrc)return st.threeSrc;if(!window.__THREE_SRC)await loadScript('vendor/three.src.js');st.threeSrc=window.__THREE_SRC;return st.threeSrc}
 async function kit(){if(!window.__KIT_SRC)await loadScript('vendor/kit.js');return window.__KIT_SRC}
+async function engines(){if(!window.__ENG_SRC)await loadScript('vendor/engines.js');return window.__ENG_SRC}
+/* engines (AI Builder v3): hand-made motion pieces over real footage. The footage plays here (outside the sandbox) and is handed in frame by frame. */
+const ENGT={light:[7,8],particles:[7.5,8],cinema:[7,8],celebrate:[6.5,8],award:[7,8],holiday:[7.5,8]};
+const ft={v1:null,v2:null,url:null,D:0,on:false,busy:false};
+async function footLoad(file){footStop();if(ft.url)URL.revokeObjectURL(ft.url);ft.url=null;ft.D=0;if(!file)return;ft.url=URL.createObjectURL(file);
+  const mk=()=>{const v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='auto';v.src=ft.url;return v};ft.v1=mk();ft.v2=mk();
+  await Promise.all([ft.v1,ft.v2].map(v=>new Promise(r=>{v.onloadeddata=r;v.onerror=r;setTimeout(r,15000)})));ft.D=ft.v1.duration||0}
+const footRate=s=>ft.D?Math.min(1,(ft.D-.3)/((+s.intro||6)+(+s.loop||8))):1;
+/* seamless loop: the last second of the loop cross-fades into the footage at the loop's start */
+function footTimes(s,t){const I=+s.intro||6,L=+s.loop||8,r=footRate(s),F=Math.min(1,L/4);const tau=t-I;if(tau>L-F&&tau<L)return [t*r,(t-L)*r,(tau-(L-F))/F];return [t*r]}
+const vseek=(v,t)=>new Promise(r=>{if(Math.abs(v.currentTime-t)<.004){r();return}const done=()=>{v.removeEventListener('seeked',done);r()};v.addEventListener('seeked',done);v.currentTime=Math.max(0,Math.min(ft.D-.05,t));setTimeout(done,3000)});
+async function footFrame(s,t){if(!ft.D)return {};const [a,b,m]=footTimes(s,t);await vseek(ft.v1,a);const bg=await createImageBitmap(ft.v1);if(b==null)return {bg,bg2:null,mix:0};await vseek(ft.v2,b);return {bg,bg2:await createImageBitmap(ft.v2),mix:m}}
+function footStop(){ft.on=false;try{ft.v1&&ft.v1.pause()}catch(e){}}
+async function footPlay(){const s=st.scene;if(!s||!s.engine)return;footStop();ft.on=true;const I=+s.intro||6,L=+s.loop||8,r=footRate(s);let t0=performance.now();
+  if(ft.D){ft.v1.playbackRate=r;await vseek(ft.v1,0);try{await ft.v1.play()}catch(e){}t0=performance.now()}
+  const tick=async()=>{if(!ft.on||!st.scene||st.scene!==s)return;let t=(performance.now()-t0)/1000;if(t>I+L){t0+=L*1000;t-=L;if(ft.D)ft.v1.currentTime=t*r}
+    let bg=null;if(ft.D&&!ft.busy){ft.busy=true;try{bg=await createImageBitmap(ft.v1)}catch(e){}ft.busy=false}
+    if(st.hostOk)ifr.contentWindow.postMessage(bg?{sc:'tick',t,bg,bg2:null,mix:0}:{sc:'tick',t},'*',bg?[bg]:[]);requestAnimationFrame(tick)};requestAnimationFrame(tick)}
+async function footFetch(qs){for(const q of (qs||[]).filter(Boolean)){try{const r=await fetch(PB_FN+'?'+new URLSearchParams({q,type:'video'}));if(!r.ok)continue;const d=await r.json();
+    const hs=(d.hits||[]).filter(h=>(!h.w||h.w>=h.h)&&(!h.dur||h.dur>=8));const h=hs.find(h=>!h.dur||h.dur>=14)||hs[0];if(!h)continue;
+    const blob=await pbFetch(h.full);const f=new File([blob],`pixabay-${h.id}.mp4`,{type:'video/mp4'});await keepGen(f);return {file:f,q,id:h.id}}catch(e){}}return null}
 async function loadScene(play){const s=st.scene;if(!s)return;st.ready=false;$('#dirAdd').disabled=true;
-  const m={sc:'load',code:s.code,fields:{...st.fields},logo:st.logoFile||null,play:!!play};try{if(s.mode==='3d')m.three=await three();m.kit=await kit()}catch(e){$('#dirErr2').textContent=dt('err');return}post(m)}
-function frameAt(t){return new Promise((ok,no)=>{const id=++fid;frameWait.cur={id,ok,no};post({sc:'frame',t,id});setTimeout(()=>{if(frameWait.cur&&frameWait.cur.id===id){frameWait.cur=null;no(new Error('timeout'))}},8000)})}
+  footStop();const m={sc:'load',code:s.code,eng:s.engine||null,intro:s.intro,loop:s.loop,fields:{...st.fields},logo:st.logoFile||null,play:!!play&&!s.engine};try{if(s.mode==='3d'||s.engine)m.three=await three();m.kit=await kit();if(s.engine)m.engsrc=await engines()}catch(e){$('#dirErr2').textContent=dt('err');return}st.wantPlay=!!play;post(m)}
+function frameAt(t,bgs){return new Promise((ok,no)=>{const id=++fid;frameWait.cur={id,ok,no};const b=bgs||{},tr=[b.bg,b.bg2].filter(Boolean);if(st.hostOk)ifr.contentWindow.postMessage({sc:'frame',t,id,...b},'*',tr);else post({sc:'frame',t,id});setTimeout(()=>{if(frameWait.cur&&frameWait.cur.id===id){frameWait.cur=null;no(new Error('timeout'))}},8000)})}
 /* record intro + one loop into a video file, frame by frame with exact timestamps (WebCodecs + WebM),
    so a slow computer gives the same smooth video, only slower to make. The loop starts on a key frame. */
 async function record(){const s=st.scene,FPS=window.__sceneFps||30,intro=+s.intro||0,dur=intro+(+s.loop||6),n=Math.round(dur*FPS),W=1920,H=1080;post({sc:'stop'});
@@ -3188,7 +3211,7 @@ async function record(){const s=st.scene,FPS=window.__sceneFps||30,intro=+s.intr
   const target=new WebMMuxer.ArrayBufferTarget(),mux=new WebMMuxer.Muxer({target,video:{codec:mc,width:W,height:H,frameRate:FPS}});
   let err=null;const enc=new VideoEncoder({output:(c,m)=>mux.addVideoChunk(c,m),error:e=>{err=e}});enc.configure(cfg);
   const kf=Math.round(intro*FPS);
-  for(let i=0;i<n;i++){if(err)throw err;const bm=await frameAt(i/FPS);const vf=new VideoFrame(bm,{timestamp:Math.round(i*1e6/FPS),duration:Math.round(1e6/FPS)});enc.encode(vf,{keyFrame:i===0||i===kf||i%(FPS*2)===0});vf.close();bm.close();
+  footStop();for(let i=0;i<n;i++){if(err)throw err;const bm=await frameAt(i/FPS,s.engine?await footFrame(s,i/FPS):null);const vf=new VideoFrame(bm,{timestamp:Math.round(i*1e6/FPS),duration:Math.round(1e6/FPS)});enc.encode(vf,{keyFrame:i===0||i===kf||i%(FPS*2)===0});vf.close();bm.close();
     while(enc.encodeQueueSize>6)await new Promise(r=>setTimeout(r,5));
     $('#dirBar').style.width=Math.round((i+1)/n*100)+'%';$('#dirBusyT').textContent=dt('recs',{a:Math.floor(i/FPS),b:Math.round(dur)})}
   await enc.flush();enc.close();mux.finalize();if(err)throw err;
@@ -3211,47 +3234,38 @@ window.__dirTest={use:(s,f)=>useScene(s,f),cur:()=>st.scene&&st.scene.title};
 function fieldsUI(){const box=$('#dirFields');box.innerHTML='';(st.scene.fields||[]).forEach(f=>{const r=document.createElement('div');r.className='fld';const id='dirF_'+f.k;
     r.innerHTML=`<label for="${id}"></label><span><input id="${id}" type="${f.type==='color'?'color':'text'}" dir="auto"></span>`;r.querySelector('label').textContent=loc(f.label||f.k);const inp=r.querySelector('input');inp.value=st.fields[f.k]!=null?st.fields[f.k]:(f.value||'');
     let tm=null;inp.addEventListener('input',()=>{st.fields[f.k]=inp.value;clearTimeout(tm);tm=setTimeout(()=>loadScene(true),350)});box.appendChild(r)})}
-function useScene(s,fields){st.lastErr='';st.scene=s;st.fields={};(s.fields||[]).forEach(f=>st.fields[f.k]=f.value);if(fields)Object.assign(st.fields,fields);fieldsUI();texts();step(2);bootHost();loadScene(true)}
-window.openDirector=function(it){st.edit=it||null;st.busy=false;$('#dirErr').textContent='';$('#dirErr2').textContent='';busy(false);texts();$('#dirDlg').hidden=false;
-  if(it&&it.scene){st.logoFile=it.scene.logoFile||null;useScene(JSON.parse(JSON.stringify(it.scene.src)),it.scene.fields)}else{step(1);bootHost();magic(true)}}
-function close(){post({sc:'stop'});$('#dirDlg').hidden=true;ifr.srcdoc='';st.hostOk=false}
+async function useScene(s,fields){st.lastErr='';st.scene=s;if(s.engine){if(!st.footFile&&s.foot&&s.foot.q){const r=await footFetch([s.foot.q]);if(r)st.footFile=r.file}await footLoad(st.footFile)}else footLoad(null);st.fields={};(s.fields||[]).forEach(f=>st.fields[f.k]=f.value);if(fields)Object.assign(st.fields,fields);fieldsUI();texts();step(2);bootHost();loadScene(true)}
+window.openDirector=function(it){st.edit=it||null;st.footFile=null;st.busy=false;$('#dirErr').textContent='';$('#dirErr2').textContent='';busy(false);texts();$('#dirDlg').hidden=false;
+  if(it&&it.scene){st.logoFile=it.scene.logoFile||null;st.footFile=it.scene.footFile||null;useScene(JSON.parse(JSON.stringify(it.scene.src)),it.scene.fields)}else{step(1);bootHost();magic(true)}}
+function close(){post({sc:'stop'});footStop();$('#dirDlg').hidden=true;ifr.srcdoc='';st.hostOk=false}
 $('#dirDlg').addEventListener('click',e=>{if(e.target.id==='dirDlg'&&!st.busy)close()});
 $('#dirDlg').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Escape'&&!st.busy)close()});
 $('#dirMode').onclick=e=>{const b=e.target.closest('button');if(!b)return;st.mode=b.dataset.m;$('#dirMode').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))};
 $('#dirLogoBtn').onclick=()=>$('#dirLogo').click();
 $('#dirLogo').onchange=()=>{const f=$('#dirLogo').files[0];if(!f)return;st.logoFile=f;const im=$('#dirLogoImg');im.src=URL.createObjectURL(f);im.hidden=false;$('#dirLogoX').hidden=false};
 $('#dirLogoX').onclick=()=>{st.logoFile=null;$('#dirLogoImg').hidden=true;$('#dirLogoX').hidden=true;$('#dirLogo').value=''};
-$('#dirBack').onclick=()=>{if(st.busy)return;if(st.edit){close();return}post({sc:'stop'});step(1)};
+$('#dirBack').onclick=()=>{if(st.busy)return;if(st.edit){close();return}post({sc:'stop'});footStop();step(1)};
 async function logoData(){if(!st.logoFile)return null;const im=new Image();im.src=URL.createObjectURL(st.logoFile);await new Promise(r=>{im.onload=im.onerror=r});const s=Math.min(1,768/Math.max(im.naturalWidth||1,im.naturalHeight||1)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.naturalWidth*s));c.height=Math.max(1,Math.round(im.naturalHeight*s));c.getContext('2d').drawImage(im,0,0,c.width,c.height);return {media_type:'image/png',data:c.toDataURL('image/png').split(',')[1]}}
 /* two steps: the director writes the shot list (shown on the magic screen), then the motion designer builds it */
 let capT=0;function captions(list){clearInterval(capT);if(!list||!list.length)return;let i=0;const show=()=>{$('#dirMagicT').textContent=list[i%list.length];i++};show();capT=setInterval(show,2600)}
 function waitReady(ms){return new Promise(r=>{const t0=Date.now(),iv=setInterval(()=>{if(st.ready||st.lastErr||Date.now()-t0>ms){clearInterval(iv);r(st.ready)}},120)})}
 function blank(){const c=document.createElement('canvas');c.width=64;c.height=36;const x=c.getContext('2d');x.fillRect(0,0,64,36);return {t:0,data:c.toDataURL('image/jpeg',.5).split(',')[1]}}
-async function shots(s){const I=+s.intro||6,Lp=+s.loop||8,ts=[.1,.28,.46,.64,.82,.99].map(f=>f*I).concat([I+Lp*.5]),out=[],cv=document.createElement('canvas');cv.width=512;cv.height=288;const x=cv.getContext('2d');post({sc:'stop'});
-  for(const t of ts){try{const bm=await frameAt(t);x.drawImage(bm,0,0,512,288);bm.close&&bm.close();out.push({t:+t.toFixed(2),data:cv.toDataURL('image/jpeg',.62).split(',')[1]})}catch(e){break}}return out}
-async function scCall(tk,body){const r=await fetch(SC_FN,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify(body)});let d=null;try{d=await r.json()}catch(e){}return {r,d}}
+async function shots(s){const I=+s.intro||6,Lp=+s.loop||8,ts=[.1,.28,.46,.64,.82,.99].map(f=>f*I).concat([I+Lp*.5]),out=[],cv=document.createElement('canvas');cv.width=512;cv.height=288;const x=cv.getContext('2d');post({sc:'stop'});footStop();
+  for(const t of ts){try{const bm=await frameAt(t,s.engine?await footFrame(s,t):null);x.drawImage(bm,0,0,512,288);bm.close&&bm.close();out.push({t:+t.toFixed(2),data:cv.toDataURL('image/jpeg',.62).split(',')[1]})}catch(e){break}}return out}
+async function scCall(tk,body){const r=await fetch(body.step==='direct'?DIR_FN:SC_FN,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify(body)});let d=null;try{d=await r.json()}catch(e){}return {r,d}}
 $('#dirGo').onclick=async()=>{const p=$('#dirPrompt').value.trim();if(p.length<6){$('#dirErr').textContent=dt('short');return}if(st.busy)return;st.busy=true;$('#dirErr').textContent='';magic(true,true);
   try{const tk=await token();if(!tk){st.busy=false;magic(true,false);$('#dirErr').textContent=dt('need');openAcct('build');return}
-    const base={prompt:p,mode:st.mode,lang,logo:await logoData()};
-    let {r,d}=await scCall(tk,{...base,step:'plan'});
+    const {r,d}=await scCall(tk,{prompt:p,mode:st.mode,lang,logo:await logoData(),step:'direct'});
     if(r.status===404||r.status===503||!d){$('#dirErr').textContent=dt('soon');return}
     if(r.status===429){$('#dirErr').textContent=t('be_limit');return}
-    const plan=r.ok&&d.plan?d.plan:null;if(plan)captions(plan.captions);
-    ({r,d}=await scCall(tk,{...base,step:'build',plan}));
-    if(r.status===429){$('#dirErr').textContent=t('be_limit');return}
-    if(!r.ok||!d||!d.scene||!d.scene.code){$('#dirErr').textContent=d?dt('err'):dt('soon');return}
-    if(plan&&Array.isArray(plan.fields)&&(!d.scene.fields||!d.scene.fields.length))d.scene.fields=plan.fields;
-    let sc=d.scene;useScene(sc);busy(true,dt('review'));
-    /* review: render real frames of the draft in the sandbox and let Claude look at them and fix what it sees */
-    try{const ok=await waitReady(30000);const frames=ok?await shots(sc):[];if(!frames.length&&!st.lastErr)throw 0;
-      const rv=await scCall(tk,{...base,step:'review',plan,scene:{code:sc.code,intro:sc.intro,loop:sc.loop,fields:sc.fields,error:st.lastErr||''},frames:frames.length?frames:[blank()]});
-      if(rv.r.ok&&rv.d&&rv.d.scene&&rv.d.scene.code){sc=rv.d.scene;if(!sc.fields||!sc.fields.length)sc.fields=d.scene.fields;useScene(sc)}else loadScene(true)}
-    catch(e){loadScene(true)}finally{busy(false)}
-    track('scene-built')}
+    const dd=r.ok&&d.direct;if(!dd||!ENGT[dd.engine]){$('#dirErr').textContent=dt('err');return}
+    captions(dd.captions);const fo=await footFetch(dd.footage||[]);st.footFile=fo?fo.file:null;
+    const [I,L]=ENGT[dd.engine];const sc={title:dd.title||'AI Builder',mode:'engine',engine:dd.engine,intro:I,loop:L,fields:dd.fields||[],code:'',foot:fo?{q:fo.q,id:fo.id}:null};
+    await useScene(sc);track('scene-built')}
   catch(e){$('#dirErr').textContent=dt('soon')}finally{clearInterval(capT);st.busy=false;if(!$('#dirS1').hidden)magic(true,false)}};
 $('#dirAdd').onclick=async()=>{if(!st.ready||st.busy)return;st.busy=true;$('#dirAdd').disabled=true;busy(true,dt('rec'));
   try{const s=st.scene;const f=await record();await keepGen(f);
-    const scene={src:s,fields:{...st.fields},intro:+s.intro||0,loop:+s.loop||6,logoFile:st.logoFile||null};
+    const scene={src:s,fields:{...st.fields},intro:+s.intro||0,loop:+s.loop||6,logoFile:st.logoFile||null,footFile:st.footFile||null};
     const name=String(st.fields.title||st.fields.name||st.fields.kicker||loc(s.title)).slice(0,60);
     if(st.edit){const it=st.edit;if(it._vurl)URL.revokeObjectURL(it._vurl);it.file=f;it.url=it._vurl=URL.createObjectURL(f);it.scene=scene;if(!it.renamed)it.name=name;it.thumb=null;it.outUrl=null;it.bad=false;makeThumb(it);if(items[cur]===it)show(cur,true);flash(dt('saved'))}
     else{const it={...newCardItem(),type:'video',file:f,name,loop:true,scale:'fill',scene};it.url=it._vurl=URL.createObjectURL(f);items.push(it);makeThumb(it);flash(dt('added'));track('scene-added')}

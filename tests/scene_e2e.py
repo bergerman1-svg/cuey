@@ -60,24 +60,30 @@ async def main():
         data = await pg.evaluate("JSON.stringify(showData())"); d = json.loads(data)
         sc = [c for c in d['cues'] if c.get('scene')]
         ok('Save keeps each slide\'s scene and texts', len(sc) == 2 and sc[1]['scene']['fields']['title'] == 'SECOND' and 'code' in sc[1]['scene']['src'], len(sc))
-        # the full AI flow with a mocked server: plan -> build -> review (gets real frames) -> the reviewed scene is used
-        calls = []
+        # AI Builder v3 with a mocked server: the director picks an engine + footage; the engine plays over the real footage
+        calls = []; FOOT = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fixtures', 'footage.webm'), 'rb').read()
         async def fake(route):
-            b = json.loads(route.request.post_data or '{}'); calls.append(b)
-            if b.get('step') == 'plan': body = {'plan': {'captions': ['🎬 one', '✨ two'], 'fields': SC[0]['fields'], 'shots': [{}, {}]}}
-            elif b.get('step') == 'build': body = {'scene': SC[0]}
-            else:
-                s2 = dict(SC[0]); s2['title'] = 'REVIEWED'; body = {'scene': s2}
+            b = json.loads(route.request.post_data or '{}'); calls.append(b.get('step'))
+            body = {'direct': {'engine': 'light', 'footage': ['sunset clouds'], 'title': 'Test', 'captions': ['🎬 one', '✨ two'],
+                    'fields': [{'k': 'kicker', 'label': 'Kicker', 'type': 'text', 'value': 'NORTHWIND'}, {'k': 'title', 'label': 'Title', 'type': 'text', 'value': 'WELCOME'},
+                               {'k': 'sub', 'label': 'Sub', 'type': 'text', 'value': 'TEL AVIV 2026'}, {'k': 'accent', 'label': 'Accent', 'type': 'color', 'value': '#ffcf6b'}, {'k': 'accent2', 'label': 'Accent 2', 'type': 'color', 'value': '#7cf5ff'}]}}
             await route.fulfill(status=200, body=json.dumps(body), headers={'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'})
-        await pg.route('**/functions/v1/build-scene', fake)
-        await pg.evaluate("window.token=async()=>'test';openDirector();$('#dirPrompt').value='A test slide with a story';$('#dirGo').click()")
-        await pg.wait_for_function("__dirTest.cur()==='REVIEWED'&&$('#dirBusy').hidden", timeout=150000)
-        await pg.wait_for_timeout(1500)
-        steps = [c.get('step') for c in calls]
-        rv = [c for c in calls if c.get('step') == 'review']
-        ok('AI flow: plan → build → review', steps == ['plan', 'build', 'review'], steps)
-        ok('review gets rendered frames of the draft', rv and len(rv[0].get('frames', [])) >= 5 and len(rv[0]['frames'][0]['data']) > 2000, rv and len(rv[0].get('frames', [])))
-        ok('the reviewed scene is the one shown', await pg.evaluate("$('#dirS2').hidden===false&&$('#dirBusy').hidden"))
+        async def pbx(route):
+            await route.fulfill(status=200, body=json.dumps({'total': 1, 'hits': [{'id': 7, 'full': 'https://cdn.pixabay.com/test/footage.webm', 'w': 640, 'h': 360, 'dur': 20}]}), headers={'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'})
+        async def cdn(route):
+            await route.fulfill(status=200, body=FOOT, headers={'Content-Type': 'video/webm', 'Access-Control-Allow-Origin': '*'})
+        await pg.route('**/functions/v1/ai-director', fake); await pg.route('**/functions/v1/pixabay**', pbx); await pg.route('https://cdn.pixabay.com/**', cdn)
+        n0 = await pg.evaluate("items.length")
+        await pg.evaluate("window.token=async()=>'test';openDirector();$('#dirPrompt').value='Opening slide for our employees evening';$('#dirGo').click()")
+        ok3 = True
+        try: await pg.wait_for_function("!$('#dirS2').hidden&&!$('#dirAdd').disabled", timeout=180000)
+        except Exception: ok3 = False
+        ok('AI Builder: the director picks an engine and it runs (one call)', ok3 and calls == ['direct'], [calls, await pg.evaluate("$('#dirErr').textContent+' | '+$('#dirErr2').textContent")])
+        ok('the director\'s words fill the fields', await pg.evaluate("$('#dirF_title').value==='WELCOME'&&$('#dirF_kicker').value==='NORTHWIND'"))
+        await pg.click('#dirAdd'); await pg.wait_for_function("$('#dirDlg').hidden", timeout=240000)
+        eng = await pg.evaluate("(()=>{const x=items[items.length-1];return {n:items.length,t:x.type,sz:x.file.size,eng:x.scene&&x.scene.src.engine,ff:!!(x.scene&&x.scene.footFile),nm:x.name}})()")
+        ok('Add records the engine slide over the footage into a video cue', eng['n'] == n0 + 1 and eng['t'] == 'video' and eng['eng'] == 'light' and eng['ff'] and eng['sz'] > 50000, eng)
+        ok('it is named after the title', eng['nm'] == 'WELCOME', eng)
         ok('no page errors', not errs, errs)
         await b.close()
     print(f'\n{sum(res)}/{len(res)} passed')

@@ -116,6 +116,46 @@ You now see real frames rendered from your scene. Be a strict director. Check ev
 - Does the loop part look alive and continuous?
 First write 3–8 short bullet observations (what is wrong / weak), then call make_scene with the FULL corrected code (same fields keys unless broken). Fix the problems for real — move the camera, rescale, reposition, re-time — don't just tweak numbers blindly. If it failed to run, fix the error.`;
 
+const DIRECT_SYSTEM = `${BRIEF}
+
+You are the DIRECTOR of Cuey's AI Builder. Cuey has hand-made premium motion ENGINES. Each one plays over REAL cinematic footage from a free stock library (Pixabay videos). You pick the engine, the footage and the words — Cuey does the rest. Answer by calling direct ONCE.
+
+ENGINES
+- light — the title (and logo) are revealed by light: god rays from above, a light streak, an edge of light sweeping across the letters, dust in the light. Elegant and premium: openings, conferences, corporate evenings, launches, ceremonies, memorials (calm).
+- particles — thousands of glowing sparks fly in from depth and assemble the logo / title, then the crisp letters light up. Modern, tech, kick-offs, hi-tech, a logo reveal.
+- cinema — a deep 3D extruded title; the camera glides from a low side angle to the hero frame; a light sweep crosses the face. Bold film-title feel: product launches, sports, big announcements, "the next chapter".
+- celebrate — fireworks over the footage, a flash, the title pops in with confetti raining through the frame. Parties, New Year, birthdays, end-of-year, weddings, wins.
+- award — gold: spotlights sweep, golden rings turn behind a metallic gold title, glitter falls. Awards, honours, galas, VIP, employee of the year.
+- holiday — warm bokeh and snow; glowing sparks gather into the title; soft golden light. Christmas, Hanukkah, winter, holidays, family events.
+
+FOOTAGE — 2–3 Pixabay VIDEO search queries in ENGLISH, best first. 2–4 words each, concrete and visual, landscape, atmospheric, with no faces as the subject. They must fit the mood AND the engine:
+  sky/clouds/sunset/aerial for airlines & openings; city night lights / bokeh for tech & corporate; concert crowd lights / fireworks for parties; stage spotlight / gold particles for awards; christmas lights bokeh / snow falling / candles for holidays; ocean waves sunset for calm; memorial candle for memorials.
+  Prefer footage that is dark or medium-dark (text sits on top).
+
+WORDS (fields) — in the user's language (Hebrew stays Hebrew). Never invent names, dates or facts the user did not give; leave a field empty ("") rather than invent.
+- kicker: small line above (event type / organiser), ≤ 30 chars.
+- title: the hero words, SHORT (1–3 words, ≤ 18 chars) — the name, brand or the big message.
+- sub: the line below (event name / date / place), ≤ 40 chars.
+- accent, accent2: two hex colours from the brand/logo or the mood (accent = main glow).
+If a logo is attached, the logo becomes the hero above the title (the title may be the event name).
+captions: 3 very short lines in the user's language, shown while the slide is built (e.g. "🎬 Real sunset sky footage", "✨ The title is revealed by light").`;
+
+const DIRECT_TOOL = {
+  name: "direct",
+  description: "Pick the engine, footage and words for the slide.",
+  input_schema: {
+    type: "object",
+    properties: {
+      engine: { type: "string", enum: ["light", "particles", "cinema", "celebrate", "award", "holiday"] },
+      footage: { type: "array", minItems: 1, maxItems: 3, items: { type: "string" } },
+      title: { type: "string", description: "short name for the slide in the user's language" },
+      fields: { type: "array", items: { type: "object", properties: { k: { type: "string", enum: ["kicker", "title", "sub", "accent", "accent2"] }, label: { type: "string", description: "label in the user's language" }, type: { type: "string", enum: ["text", "color"] }, value: { type: "string" } }, required: ["k", "label", "type", "value"] } },
+      captions: { type: "array", maxItems: 4, items: { type: "string" } },
+    },
+    required: ["engine", "footage", "title", "fields", "captions"],
+  },
+};
+
 const TOOL = {
   name: "make_scene",
   description: "Return the one slide: a scene program with editable fields.",
@@ -181,7 +221,7 @@ Deno.serve(async (req) => {
   const prompt = String(body?.prompt || "").trim().slice(0, MAX_CHARS), mode = ["2d", "3d"].includes(body?.mode) ? body.mode : "auto", lang = body?.lang === "he" ? "he" : "en";
   const lg = body?.logo, logo = lg && /^image\/(png|jpeg|webp)$/.test(lg.media_type) && typeof lg.data === "string" && lg.data.length < 3_000_000 ? { media_type: lg.media_type, data: lg.data } : null;
   if (prompt.length < 6) return json({ error: "too short" }, 400);
-  const step = ["build", "review"].includes(body?.step) ? body.step : "plan";
+  const step = ["build", "review", "direct"].includes(body?.step) ? body.step : "plan";
 
   const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
   const [{ count }, { data: ents }] = await Promise.all([
@@ -196,6 +236,17 @@ Deno.serve(async (req) => {
   const logoLine = logo ? "Attached: the user's logo / brand picture (passed to the code as A.logo)." : "No logo attached (A.logo is null).";
   const want = mode === "3d" ? "The user chose 3D." : mode === "2d" ? "The user chose 2D." : "";
 
+  if (step === "direct") {
+    const r = await run(key, [env("DIRECT_MODEL"), "claude-sonnet-5-5", "claude-opus-5-5"].filter(Boolean), DIRECT_SYSTEM, DIRECT_TOOL, [...img, { type: "text", text: `${logoLine}\nUser's language: ${lang}.\n\nThe request:\n${prompt}\n\nCall direct now.` }],
+      { max_tokens: 2500, thinking: { type: "between_tools" }, output_config: { effort: "medium" } }, (i) => typeof i.engine === "string" && Array.isArray(i.fields), T0);
+    if (!r.out) { await db.from("ai_builds").insert({ user_id: user.id, chars: prompt.length, cues: -1, ok: false }); return json({ error: "ai", status: r.status, detail: r.detail }, 502); }
+    const o = r.out, keep = ["kicker", "title", "sub", "accent", "accent2"], seen = new Set();
+    o.fields = (o.fields || []).filter((f: any) => keep.includes(f.k) && !seen.has(f.k) && seen.add(f.k)).map((f: any) => ({ k: f.k, label: String(f.label || f.k).slice(0, 40), type: f.k.startsWith("accent") ? "color" : "text", value: String(f.value || "").slice(0, f.k === "sub" ? 60 : 40) }));
+    for (const k of keep) if (!seen.has(k)) o.fields.push({ k, label: k, type: k.startsWith("accent") ? "color" : "text", value: k === "accent" ? "#ffcf6b" : k === "accent2" ? "#7cf5ff" : "" });
+    console.log("direct", r.model, o.engine, JSON.stringify(o.footage), JSON.stringify(r.usage));
+    await db.from("ai_builds").insert({ user_id: user.id, chars: prompt.length + (logo ? 1 : 0), cues: -1, ok: true });
+    return json({ direct: o, model: r.model, left: cap - (count || 0) - 1 });
+  }
   if (step === "plan") {
     const r = await run(key, PLAN_MODELS, PLAN_SYSTEM, PLAN_TOOL, [...img, { type: "text", text: `${logoLine}\nUser's language: ${lang}. ${want}\n\nThe request:\n${prompt}\n\nCall make_plan now.` }],
       { max_tokens: 9000, output_config: { effort: env("PLAN_EFFORT") || "medium" } }, (i) => Array.isArray(i.shots) && i.shots.length > 1, T0);
