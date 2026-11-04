@@ -6,6 +6,7 @@ const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...CORS, "Content-Type": "application/json" } });
 const env = (k: string) => Deno.env.get(k) || "";
 const FREE_PER_DAY = 3, PRO_PER_DAY = 30, MAX_CHARS = 2000;
+const ADMINS = ["46a2d753-7a3f-45fe-83e0-437c16be3642"]; // Avi — testing allowance
 
 const BRIEF = `Cuey is event playback software. Its AI Builder makes ONE breathtaking full-screen slide (1920×1080) for a live event screen — an LED wall or projector in a hall.
 The slide is a short motion piece: an INTRO (plays once, 6–12 s) that ends on the hero frame, then a seamless LOOP (6–10 s) that holds that hero frame alive until the operator presses GO.
@@ -40,6 +41,8 @@ LOOK — the design, built from Cuey's blocks:
 - bg: footage (default — real stock video, picked by looking) | aurora (ribbons of light flowing across a night sky in the accent colours — conferences, launches, airlines, travel, night events) | silk (flowing metallic silk folds — galas, awards, luxury brands) | nebula (deep-space clouds and stars — tech, vision, future, innovation) | liquid (slow liquid gradient in the brand colours — corporate, brand events). Cuey draws these live: pin-sharp on any wall, perfect loop, exactly the brand colours. Prefer them when the brand/feeling matters more than a real place or object, or when the user asks for Cuey's own background; prefer footage when the idea needs something real (a candle, balloons, the sea).
 - overlay: 0–0.5 — only with a code bg: real footage (your footage queries, e.g. clouds, bokeh, light) is layered over the drawn background at this strength for depth and realism (0.25–0.35 is usually right; 0 = none).
 - prop: none | airplane (a white airliner crossing the sky on the loop — airlines, travel, tourism) | trophy (a slowly turning gold trophy beside the title — awards) | balloons (balloons drifting up — birthdays, kids). One story element at most, only when it tells the brand/occasion story; it never covers the words.
+- motif: none | dots | stripes | rings | arc | bars — the LEADING graphic element built from the logo's colours and shapes (see Brand language). With no logo it uses your accents.
+- panel: none | window | circle | strip — real footage shown INSIDE a framed shape beside the words (rounded window, circle, slanted strip) over a drawn background: great for conferences, brands, travel, people-and-place events. The words go to the reading side, the panel to the other.
 - camera: push (slow push-in) | drift | still.
 - dark: 0.2–0.7 how much the footage is darkened; blur: 0–4 how defocused the footage is (more blur = text pops).
 - Memorial / remembrance: energy ≤ 0.15, no confetti/fireworks/flash/spots, a serif (frankLight / bellefair / david), veil, often rule:true and embers or none.
@@ -56,6 +59,7 @@ DESIGN BIBLE (from Cuey's motion-design research — follow it):
 - Colour: accents from the brand or the feeling (memory = warm candle gold / ivory; gala = gold / champagne; tech = cyan / electric blue; party = gold + a hot pink or violet; kids = sunny yellow + sky blue; nature = sage / sand). Never pure white backgrounds; text must keep contrast.
 - Composition: the footage carries the atmosphere, the words sit in the empty space (layout auto). A single subject (candle, flag, horizon, glass) is better than busy footage. Push-in camera for drama, still for solemnity.
 - Light is motivated: rays come from above like a stage or a window; a halo sits behind words; spots for awards and parties. Never a flash in a memorial.
+- Brand language: when a logo is attached, think like the brand's designer — take its colours (accent/accent2) and echo its shapes with a motif (dots for dotted/multi-colour marks, stripes for flags/wings/speed, rings for round seals, arc for swooshes, bars for music/data); the motif leads the eye to the title. This almost always lifts the slide.
 - Logo: when a logo is attached it is the brand signature, not a billboard — about a quarter to a third of the screen width, above the words; the title stays the biggest WORDS on screen.
 - The title is never dead in the hold: Cuey gives it a soft light sweep once per loop (or the letters wave when hold:wave); a slide that only breathes feels unfinished.
 - Layering: a drawn background (aurora/silk/nebula/liquid) gains depth and realism with real footage layered over it (overlay ~0.3: clouds for airlines/travel/outdoors, bokeh for parties, light streaks for tech).
@@ -89,7 +93,7 @@ const DIRECT_TOOL = {
         font: { type: "string", enum: ["heebo", "heeboLight", "assistant", "rubik", "rubikBlack", "karantina", "suez", "secular", "frank", "frankLight", "bellefair", "notoSerif", "david", "amatic", "fredoka"] },
         reveal: { type: "string", enum: ["veil", "rise", "maskWords", "maskChars", "blur", "slam", "pop", "light", "type", "center", "scramble", "glitch", "snap", "count"] },
         energy: { type: "number" }, light: { type: "string", enum: ["none", "halo", "rays", "spots", "sweep", "ripple"] }, fx: { type: "string" }, hold: { type: "string", enum: ["breath", "wave", "none"] },
-        rule: { type: "boolean" }, fill: { type: "string", enum: ["white", "gold", "silver", "accent"] }, ornament: { type: "string", enum: ["none", "stars"] }, tag: { type: "boolean" }, grade: { type: "string", enum: ["natural", "duotone"] }, bg: { type: "string", enum: ["footage", "aurora", "silk", "nebula", "liquid"] }, overlay: { type: "number" }, prop: { type: "string", enum: ["none", "airplane", "trophy", "balloons"] }, camera: { type: "string", enum: ["push", "drift", "still"] }, dark: { type: "number" }, blur: { type: "number" } },
+        rule: { type: "boolean" }, fill: { type: "string", enum: ["white", "gold", "silver", "accent"] }, ornament: { type: "string", enum: ["none", "stars"] }, tag: { type: "boolean" }, grade: { type: "string", enum: ["natural", "duotone"] }, bg: { type: "string", enum: ["footage", "aurora", "silk", "nebula", "liquid"] }, overlay: { type: "number" }, prop: { type: "string", enum: ["none", "airplane", "trophy", "balloons"] }, motif: { type: "string", enum: ["none", "dots", "stripes", "rings", "arc", "bars"] }, panel: { type: "string", enum: ["none", "window", "circle", "strip"] }, camera: { type: "string", enum: ["push", "drift", "still"] }, dark: { type: "number" }, blur: { type: "number" } },
         required: ["layout", "font", "reveal", "energy", "light", "fx", "rule"] },
       footage: { type: "array", minItems: 1, maxItems: 3, items: { type: "string" } },
       title: { type: "string", description: "short name for the slide in the user's language" },
@@ -142,11 +146,12 @@ async function pickFootage(key: string, qs: string[], o: any, T0: number) {
   return { ...cands[i], why: r.out?.why || "", n: cands.length };
 }
 
+let LESSONS = "";
 function call(key: string, model: string, system: string, tool: any, content: any[], opts: any) {
   return fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-    body: JSON.stringify({ model, stream: true, system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }], tools: [tool], tool_choice: { type: "auto" }, messages: [{ role: "user", content }], ...opts }),
+    body: JSON.stringify({ model, stream: true, system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }, ...(LESSONS && tool.name === "direct" ? [{ type: "text", text: LESSONS }] : [])], tools: [tool], tool_choice: { type: "auto" }, messages: [{ role: "user", content }], ...opts }),
   });
 }
 // read the SSE stream; give up before the 150 s edge limit
@@ -198,7 +203,8 @@ Deno.serve(async (req) => {
     db.from("entitlements").select("product,expires_at").eq("user_id", user.id),
   ]);
   const pro = (ents || []).some((e: any) => e.product === "pro" && (!e.expires_at || Date.parse(e.expires_at) > Date.now()));
-  const cap = pro ? PRO_PER_DAY : FREE_PER_DAY;
+  const cap = ADMINS.includes(user.id) ? 300 : pro ? PRO_PER_DAY : FREE_PER_DAY;
+  try { const { data: ls } = await db.from("ai_lessons").select("lesson").eq("status", "active").order("id").limit(60); LESSONS = (ls && ls.length) ? "LESSONS LEARNED from reviewed Cuey slides (follow them; they override the gallery when they conflict):\n" + ls.map((l: any, i: number) => `${i + 1}. ${l.lesson}`).join("\n") : ""; } catch { LESSONS = ""; }
   if ((count || 0) >= cap) return json({ error: "limit", cap }, 429);
   const img = logo ? [{ type: "image", source: { type: "base64", media_type: logo.media_type, data: logo.data } }] : [];
   const logoLine = logo ? "Attached: the user's logo / brand picture (it will be the hero of the slide)." : "No logo attached.";
