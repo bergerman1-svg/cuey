@@ -200,7 +200,7 @@ async function compose(canvas,F,A){
   const lk={layout:'auto',font:'heebo',reveal:'maskWords',energy:.5,light:'none',fx:'dust',rule:false,camera:'push',dark:.45,blur:2,sat:1,tint:null,...(A.look||F.look||{})};
   const e=K.cl(+lk.energy||0,0,1),I=A.intro,ac=hex(F.accent,'#e8d9b0'),ac2=hex(F.accent2,'#8a8f9c'),calm=e<.35;
   const FT=FONTS[lk.font]||FONTS.heebo,kf=calm?FT:(FT[0]==='Karantina'||FT[0]==='Amatic SC'?['Heebo',700]:FT);
-  await loadFonts([FT,kf,['Heebo',500]],[F.title,F.kicker,F.sub].filter(Boolean).join(' ')+' Aa');
+  await loadFonts([FT,kf,[kf[0],Math.min(700,kf[1])],[FT[0],Math.min(500,FT[1])],['Heebo',500],['Heebo',700]],[F.title,F.kicker,F.sub].filter(Boolean).join(' ')+' Aa');
   const camZ=15,fov=36,st=K.stage(canvas,{bg:'#000000',fov,bloom:{s:.12+.45*e,r:.38,th:.93},shadows:false,exposure:1}),{S,C}=st;C.position.set(0,0,camZ);C.lookAt(0,0,0);
   const DUO=lk.grade==='duotone',fg=K.footage(S,{dark:1,vig:.55+.2*(1-e),blur:+lk.blur||0,sat:DUO?0:lk.sat==null?1:+lk.sat,tint:DUO?hex(F.accent,'#3b6ef5'):hex(lk.tint,'#000000'),tintA:DUO?.6:lk.tint?.22:0});
   const vw=2*camZ*Math.tan(fov*Math.PI/360)*16/9,vh=vw*9/16;
@@ -214,7 +214,8 @@ async function compose(canvas,F,A){
     vertexShader:'varying vec2 v;void main(){v=uv;gl_Position=vec4(position.xy,.999,1.);}',fragmentShader:BGFS}));bgM.frustumCulled=false;bgM.renderOrder=-999;S.add(bgM)}
   const OV=bgM?K.cl(+lk.overlay||0,0,.6):0;if(OV){fg.renderOrder=-998;fg.material.transparent=true;fg.material.blending=THREE.AdditiveBlending;fg.material.depthTest=false}
   const titleC=FILL?FILL[0]:calm?'#f4efe4':'#ffffff',TAG=!!lk.tag&&!!F.kicker;
-  const kick=F.kicker?tf(F.kicker,{px:120,h:.64,font:kf[0],weight:Math.min(700,kf[1]),color:TAG?'#0b0b10':ac,shadow:TAG?null:'rgba(0,0,0,.6)',ls:K.he(F.kicker)?0:120*.22,emissive:.95,unit:'line'}):null;
+  const acL=(()=>{const c=new THREE.Color(ac);return .2126*c.r+.7152*c.g+.0722*c.b})(),kc=acL<.35?'#'+new THREE.Color(ac).lerp(new THREE.Color('#ffffff'),.5).getHexString():ac;
+  const kick=F.kicker?tf(F.kicker,{px:120,h:.64,font:kf[0],weight:Math.min(700,kf[1]),color:TAG?'#0b0b10':kc,shadow:TAG?null:'rgba(0,0,0,.6)',ls:K.he(F.kicker)?0:120*.22,emissive:.95,unit:'line'}):null;
   const title=F.title?tf(F.title,{px:260,h:(lk.reveal==='count'?3.6:2.1+.9*e),color:titleC,color2:FILL?FILL[1]:calm?'#e6dfd0':titleC,glow:null,shadow,ls:K.he(F.title)?0:-260*.015,emissive:calm?.9:.86,unit:unitOf(RC0)}):null;
   const RC=WAVE&&RC0.unit!=='char'?{...RC0,unit:'char',st:Math.min(.05,(RC0.st*Math.max(1,String(F.title||'').split(/\s+/).length))/Math.max(1,(title&&title.n)||1)+.012)}:RC0;
   /* scramble / counter: ghost glyphs from a pool rendered in the same face and size, swapped per frame */
