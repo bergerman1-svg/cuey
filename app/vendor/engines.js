@@ -225,7 +225,7 @@ async function compose(canvas,F,A){
     for(let i=0;i<N;i++){const th=R()*TAU,ph=Math.acos(2*R()-1),s=2.1+R()*.6;v.push([Math.sin(ph)*Math.cos(th)*s,Math.cos(ph)*s,Math.sin(ph)*Math.sin(th)*s]);c.set([cc.r,cc.g,cc.b],i*3)}p.geometry.attributes.color.needsUpdate=true;S.add(p);return {p,v,o:[x,y,z],off:o,N}})}
   /* layout: decided on the first frame that has footage (or immediately when there is none) */
   let laid=false,need=.5,blk={x:0,y:0,w:0,h:0};
-  const lay=fr=>{laid=true;let L=lk.layout;if(L==='auto'){if(!fr||fr.str<.02)L='center';else if(fr.cx>.6)L='left';else if(fr.cx<.4)L='right';else L=fr.cy>.55?'top':'bottom'}
+  const lay=fr=>{laid=true;let L=lk.layout;if(L==='auto'){if(!fr||fr.str<.003)L='center';else if(fr.cx>.6)L='left';else if(fr.cx<.4)L='right';else L=fr.cy>.55?'top':'bottom'}
     const side=L==='left'||L==='right',maxW=side?vw*.46:vw*.84,items=[logo,kick,title,sub].filter(Boolean);
     items.forEach(g=>{const s0=g.userData.s0||(g.userData.s0=1);const w=g.width/s0;const s=w>maxW?maxW/w:1;g.scale.setScalar(s);g.userData.s0=s;g.width=w*s;g.height=(g.height/s0)*s});
     const gap=g=>g===logo?.55:g===kick?.34:g===title?(ruleM?.62:.44):0,tot=items.reduce((a,g)=>a+g.height+gap(g),0)+(ruleM?.0:0);
