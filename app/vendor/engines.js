@@ -214,9 +214,10 @@ async function compose(canvas,F,A){
   /* scramble / counter: ghost glyphs from a pool rendered in the same face and size, swapped per frame */
   const tOpt={px:260,h:2.1+.9*e,color:titleC,shadow,emissive:calm?.9:.86,unit:'char'};
   const mkPool=chars=>{const g=tf(chars,tOpt);return g};
-  const ghostOf=pg=>{const m0=pg.parts[0],mat=m0.material.clone();mat.uniforms.map.value=m0.material.uniforms.map.value;mat.uniforms.mode.value=1;mat.uniforms.p.value=1;const m=new THREE.Mesh(m0.geometry,mat);m.renderOrder=21;m.visible=false;return m};
+  const gOff=pm=>pm.userData.gc-pm.userData.x0,ghostOf=pg=>{const m0=pg.parts[0],mat=m0.material.clone();mat.uniforms.map.value=m0.material.uniforms.map.value;mat.uniforms.mode.value=1;mat.uniforms.p.value=1;const m=new THREE.Mesh(m0.geometry,mat);m.renderOrder=21;m.visible=false;return m};
   let pool=null,ghosts=null;const hsh=(a,b)=>{let x=Math.sin(a*127.1+b*311.7)*43758.5453;return x-Math.floor(x)};
-  if(title&&(SCR||CNT)){pool=mkPool(CNT?'0123456789':(K.he(ST)?'אבגדהוזחטיכלמנסעפצקרשת':'ABCDEFGHJKLMNPRSTUVWXYZ0123456789#%&'));ghosts=title.parts.map(m=>{const g=ghostOf(pool);g.position.x=m.userData.x0;title.add(g);return g})}
+  if(title&&(SCR||CNT)){pool=mkPool(CNT?'0123456789':(K.he(ST)?'אבגדהוזחטיכלמנסעפצקרשת':'ABCDEFGHJKLMNPRSTUVWXYZ0123456789#%&'));ghosts=title.parts.map(m=>{const g=ghostOf(pool);title.add(g);return g})}
+  const showG=(g,m,pm)=>{g.geometry=pm.geometry;g.position.x=m.userData.gc-gOff(pm)};
   const sub=F.sub?tf(F.sub,{px:130,h:.68,font:calm?FT[0]:'Heebo',weight:calm?Math.min(500,FT[1]):500,color:'#ffffff',shadow:'rgba(0,0,0,.7)',ls:K.he(F.sub)?0:130*.06,emissive:.86,unit:'line'}):null;
   const logo=A.logo?K.logoFX(A.logo,{h:2.4,glow:ac}):null;
   const ruleM=lk.rule?new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:ac,transparent:true,opacity:0,depthWrite:false,toneMapped:false})):null;
@@ -265,10 +266,10 @@ async function compose(canvas,F,A){
     if(logo){logo.u.rev.value=E.io3(K.k(t,logoT,logoT+1.4*sp));logo.u.glow.value=0}
     if(kick)kick.at(t,kickT,'soft'===lk.reveal||calm?rec('veil'):rec('maskLines'));
     if(title&&SCR){title.parts.forEach((m,j)=>{const i=m.userData.i,lock=titleT+.35+i*stS,U=m.material.uniforms,g=ghosts[j];U.mode.value=1;const on=t>=titleT&&t<lock;U.p.value=t>=lock?1:0;
-        g.visible=on;if(on){g.geometry=pool.parts[Math.floor(hsh(i,Math.floor(t*16))*pool.n)].geometry;g.material.uniforms.op.value=.55+.3*hsh(i+9,Math.floor(t*16))}})}
+        g.visible=on;if(on){showG(g,m,pool.parts[Math.floor(hsh(i,Math.floor(t*16))*pool.n)]);g.material.uniforms.op.value=.55+.3*hsh(i+9,Math.floor(t*16))}})}
     else if(title&&CNT){const pr=E.o3(K.k(t,titleT,titleT+2.2)),dn=ST.replace(/[^\d.]/g,''),dec=(dn.split('.')[1]||'').length,v=(parseFloat(dn)||0)*pr,ds=v.toFixed(dec).replace('.',''),slots=title.parts.filter(m=>/\d/.test(ST[m.userData.i])),fin=pr>=1,fade=E.o3(K.k(t,titleT-.1,titleT+.4));
       const digs=ds.padStart(slots.length,' ').slice(-slots.length);let anyLeft=false;
-      title.parts.forEach((m,j)=>{const ch=ST[m.userData.i],U=m.material.uniforms,g=ghosts[j];U.mode.value=1;if(/\d/.test(ch)){const si=slots.indexOf(m),d=digs[si];U.p.value=fin?fade:0;g.visible=!fin&&d!==' '&&t>=titleT-.1;if(g.visible){g.geometry=pool.parts[+d].geometry;g.material.uniforms.op.value=fade;anyLeft=true}}
+      title.parts.forEach((m,j)=>{const ch=ST[m.userData.i],U=m.material.uniforms,g=ghosts[j];U.mode.value=1;if(/\d/.test(ch)){const si=slots.indexOf(m),d=digs[si];U.p.value=fin?fade:0;g.visible=!fin&&d!==' '&&t>=titleT-.1;if(g.visible){showG(g,m,pool.parts[+d]);g.material.uniforms.op.value=fade;anyLeft=true}}
         else{U.p.value=(/[,.]/.test(ch)?(fin||anyLeft):true)?fade:0}})}
     else if(title){if(lk.reveal==='light'){const rv=E.io3(K.k(t,titleT,titleT+1.6));title.u.rev.value=rv;if(flare){flare.position.x=blk.x+(title.he?1:-1)*(title.width/2-title.width*rv);flare.material.opacity=rv>0&&rv<1?.9:0}}else{title.at(t,titleT,RC);
         if(SNAP)title.parts.forEach(m=>{const pr=K.cl((t-titleT-m.userData.i*RC.st)/RC.dur,0,1),q=1-K.ez.settle(pr);m.scale.set(Math.max(.001,1+.8*q),Math.max(.001,1-.45*q),1)});

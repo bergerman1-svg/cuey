@@ -203,7 +203,7 @@ K.typeFX=(str,{font=null,px=240,h=2,color='#ffffff',color2=null,glow=null,weight
       void main(){vec2 q=v;float a=1.;if(mode<.5){q.y+=(1.-p)*rise;float inb=smoothstep(b0-.008,b0+.008,v.y)*(1.-smoothstep(b1-.008,b1+.008,v.y));a=mix(inb,1.,step(.999,p));}else{a=p;}vec4 c=texture2D(map,q,mode>1.5&&mode<2.5?bl:0.);
       float px=dir>0.?v.x:1.-v.x;float r=smoothstep(rev,rev-soft,px);float e=exp(-pow((px-rev)/.02,2.))*step(.0001,rev)*step(rev,.9999);
       float s=exp(-pow((px+(v.y-.5)*.3-shine)/.05,2.));vec3 col=c.rgb*em+edge*(s*.9*c.a+glow*c.a+e*2.);gl_FragColor=vec4(col,(c.a*r+e*.8*c.a)*a*op);}`}));
-    m.position.x=((L+R)/2-cv.width/2)*sc;m.userData={i,x0:m.position.x};m.renderOrder=20;G.add(m);parts.push(m)});
+    m.position.x=((L+R)/2-cv.width/2)*sc;m.userData={i,x0:m.position.x,gc:((rngs[i][0]+rngs[i][1])/2-cv.width/2)*sc};m.renderOrder=20;G.add(m);parts.push(m)});
   G.u=S;G.parts=parts;G.width=W*sc;G.height=h;G.he=he;G.n=parts.length;G.mesh=parts[0];
   G.set=v=>parts.forEach(m=>{m.material.uniforms.p.value=v;m.scale.setScalar(1);m.position.x=m.userData.x0});
   /* animate the reveal: returns overall progress 0..1 */
