@@ -26,7 +26,7 @@ A scene = JavaScript code + editable fields. Cuey runs your code in a sandbox an
 - Deterministic and fast: draw(t) must render any t directly (no state that depends on previous frames). Budget ~15 ms per frame on a laptop: ≤ 12k particles, no per-frame getImageData, cache gradients / offscreen canvases where you can.
 - intro (seconds) + loop (seconds): the build-up happens during [0, intro]. After intro, everything must be PERIODIC with period loop so the video loops seamlessly: use ph = 2π(t−intro)/loop and only sin/cos(n·ph) with INTEGER n, or fractions ((t−intro) mod loop)/loop. intro 3–7 s, loop 6–8 s.
 - Fonts available: 'Poppins' (300,500,700,900) and 'Heebo' (300,500,800,900, Hebrew). Hebrew text: set ctx.direction='rtl' and use Heebo; don't letter-space Hebrew. Measure text and shrink it to fit (max ~1700px wide).
-- Return only plain modern JavaScript (no imports, no TypeScript).
+- Return only plain modern JavaScript (no imports, no TypeScript). Keep the code compact: under ~8,000 characters, no comments, short variable names — it must be generated fast.
 
 ## Design standards (this is what makes people say "wow")
 - One clear hero moment (the logo/title arriving) + rich atmosphere (light, depth, particles, haze, bloom-like glows), cinematic easing (easeOutCubic / easeInOutCubic), never linear.
@@ -60,11 +60,32 @@ async function ask(key: string, model: string, prompt: string, mode: string, lan
   return await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-    body: JSON.stringify({ model, max_tokens: 16000, system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }], tools: [TOOL], tool_choice: { type: "tool", name: "make_scene" },
+    body: JSON.stringify({ model, max_tokens: 12000, stream: true, thinking: { type: "between_tools" }, output_config: { effort: Deno.env.get("SCENE_EFFORT") || "high" }, system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }], tools: [TOOL], tool_choice: { type: "auto" },
       messages: [{ role: "user", content: [
         ...(logo ? [{ type: "image", source: { type: "base64", media_type: logo.media_type, data: logo.data } }] : []),
         { type: "text", text: (logo ? "Attached: the user's logo / brand picture (it will be passed to your code as A.logo).\n\n" : "No logo was attached (A.logo will be null).\n\n") + `The user's request (UI language: ${lang}):\n\n${prompt}\n\n${want} Call make_scene now.` }] }] }),
   });
+}
+// read the SSE stream; give up before the 150 s edge limit
+async function collect(r: Response, deadline: number) {
+  const rd = r.body!.getReader(), dec = new TextDecoder(); const ty: any = {}; let buf = "", tool = "", text = "", usage: any = {}, stop = "", t1 = 0, last = Date.now();
+  while (true) {
+    if (Date.now() > deadline) { try { await rd.cancel(); } catch {} ; stop = "timeout"; break; }
+    const { value, done } = await rd.read(); if (done) break;
+    if (!t1) t1 = Date.now();
+    buf += dec.decode(value, { stream: true }); let i;
+    while ((i = buf.indexOf("\n\n")) >= 0) {
+      const ev = buf.slice(0, i); buf = buf.slice(i + 2);
+      const dl = ev.split("\n").find((l) => l.startsWith("data:")); if (!dl) continue;
+      let d: any; try { d = JSON.parse(dl.slice(5)); } catch { continue; }
+      if (d.type === "content_block_delta") { ty[d.delta?.type] = (ty[d.delta?.type] || 0) + 1; if (d.delta?.type === "input_json_delta") tool += d.delta.partial_json; else if (d.delta?.type === "text_delta") text += d.delta.text; }
+      else if (d.type === "message_start") usage = d.message?.usage || {};
+      else if (d.type === "message_delta") { usage = { ...usage, ...(d.usage || {}) }; stop = d.delta?.stop_reason || stop; }
+    }
+    if (Date.now() - last > 15000) { last = Date.now(); console.log("progress", tool.length, "json chars", text.length, "text chars", JSON.stringify(ty)); }
+  }
+  let input: any = null; try { input = JSON.parse(tool); } catch {}
+  console.log("deltas", JSON.stringify(ty), "first byte", t1 ? t1 - (last) : 0); return { input, text, usage, stop, tool: tool.length };
 }
 const sceneOf = (d: any) => { const u = (d.content || []).find((c: any) => c.type === "tool_use" && c.name === "make_scene"); return u && typeof u.input?.code === "string" && u.input.code.length > 50 ? u.input : null; };
 
@@ -90,12 +111,14 @@ Deno.serve(async (req) => {
   const cap = pro ? PRO_PER_DAY : FREE_PER_DAY;
   if ((count || 0) >= cap) return json({ error: "limit", cap }, 429);
 
+  const T0 = Date.now();
   let scene: any = null, used = "", status = 0, detail = "", usage: any = null;
   for (const m of MODELS) {
-    const r = await ask(key, m, prompt, mode, lang, logo); used = m; status = r.status;
-    if (r.ok) { const d = await r.json(); usage = d.usage; scene = sceneOf(d); if (scene) break; detail = "no scene"; continue; }
+    const t0 = Date.now(); const r = await ask(key, m, prompt, mode, lang, logo); used = m; status = r.status; console.log("anthropic", m, r.status, Date.now() - t0, "ms");
+    if (r.ok) { const c = await collect(r, T0 + 140000); usage = c.usage; console.log("done", m, Date.now() - t0, "ms", c.stop, c.tool, "json", c.text.length, "text", JSON.stringify(c.usage));
+      if (c.input && typeof c.input.code === "string" && c.input.code.length > 50) { scene = c.input; break; } detail = c.stop === "timeout" ? "timeout" : "no scene"; break; }
     detail = (await r.text()).slice(0, 300); console.error("anthropic", m, r.status, detail);
-    if (r.status === 401 || r.status === 403 || r.status === 429 || r.status >= 500) break;
+    if (r.status === 400 || r.status === 401 || r.status === 403 || r.status === 429 || r.status >= 500) break;
   }
   if (!scene) { await db.from("ai_builds").insert({ user_id: user.id, chars: prompt.length, cues: -1, ok: false }); return json({ error: "ai", status, detail }, 502); }
   scene.intro = Math.min(8, Math.max(2, +scene.intro || 4)); scene.loop = Math.min(10, Math.max(4, +scene.loop || 6));
