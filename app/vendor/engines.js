@@ -244,7 +244,8 @@ async function compose(canvas,F,A){
   /* timeline (calm slides breathe slower) */
   const sp=calm?1.35:1,T0=.9*sp,kickT=T0,titleT=T0+(kick?.45*sp:0),tEnd=titleT+RC.dur+RC.st*Math.max(0,((title&&title.n)||1)-1),ruleT=tEnd-.2,subT=tEnd+.05,logoT=T0-.1;
   const POP=titleT+.25,dark=K.cl(+lk.dark||.45,0,.9),zoom0=1.04+.1*e;
-  return t=>{const ph=TAU*(t-I)/A.loop,amp=K.k(t,I-2.2,I-.2),f=fg.u;fg.feed(A);if(!laid)lay(A.bg?readFrame(A.bg):null);
+  return t=>{const ph=TAU*(t-I)/A.loop,amp=K.k(t,I-2.2,I-.2),f=fg.u;if(!laid){const Tdec=T0-.15,L0=A.bg?readFrame(A.bg):null;if(L0){if(!acc)acc=L0.map(()=>0);L0.forEach((v,i)=>acc[i]+=v);accN++}
+      if(t>=Tdec||lk.layout!=='auto'){panT=t;lay(accN?subject(acc.map(v=>v/accN)):null)}}fg.feed(A);
     /* up from black, push in (settles before the hold) */
     f.dark.value=dark+(1-dark)*(1-K.ez.calmIn(K.k(t,0,1.8*sp)));const rf=pan?E.io3(K.k(t,panT,panT+1.6)):0,zr=1+(zoomR-1)*rf;f.zoom.value=(zoom0-(zoom0-1.02)*E.io3(K.k(t,0,I-.3))+.006*e*Math.sin(ph)*amp)*zr;f.pan.value.set(pan*rf,0);
     if(lk.camera!=='still'){C.position.set(.22*e*Math.sin(ph)*amp,.1*e*Math.cos(ph)*amp-.1*e*amp,camZ+(lk.camera==='push'?.9*(1-E.io3(K.k(t,0,I-.3))):0));C.lookAt(blk.x*.04,0,0)}
