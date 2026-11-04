@@ -23,7 +23,15 @@ ENGINES
 - award — gold: spotlights sweep, golden rings turn behind a metallic gold title, glitter falls. Awards, honours, galas, VIP, employee of the year.
 - holiday — warm bokeh and snow; glowing sparks gather into the title; soft golden light. Christmas, Hanukkah, winter, holidays, family events.
 
-FOOTAGE — 2–3 Pixabay VIDEO search queries in ENGLISH, best first. 2–4 words each, concrete and visual, landscape, atmospheric, with no faces as the subject. They must fit the mood AND the engine:
+MOOD — pick one; it sets the typeface, how the words are revealed and how much glow there is:
+- corporate — clean sans, words rise from a mask, calm easing, little glow. Conferences, company evenings, launches.
+- gala — elegant serif, blur-to-focus reveal, gold light, more glow. Awards, honours, galas, weddings.
+- tech — letters rise one by one, crisp, cool light. Hi-tech, kick-offs, product, innovation.
+- party — bold display face, words slam in with a little bounce. Parties, birthdays, New Year, sports wins.
+- memorial — soft serif, letters fade in slowly, no flash, no confetti, no shake. Memorials, remembrance, solemn moments.
+Choose a calm engine (light / particles / cinema) for memorial — never celebrate.
+
+FOOTAGE — 2–3 Pixabay VIDEO search queries in ENGLISH, best first. 2–4 words each, concrete and visual, landscape, atmospheric, with no faces as the subject. Good backgrounds are steady or slow (tripod, time-lapse, slow motion), defocused or bokeh, with no clear subject and empty space in the middle; avoid fine patterns and fast camera moves. Words like "bokeh", "abstract", "dark", "timelapse", "slow motion" help. They must fit the mood AND the engine:
   sky/clouds/sunset/aerial for airlines & openings; city night lights / bokeh for tech & corporate; concert crowd lights / fireworks for parties; stage spotlight / gold particles for awards; christmas lights bokeh / snow falling / candles for holidays; ocean waves sunset for calm; memorial candle for memorials.
   Prefer footage that is dark or medium-dark (text sits on top).
 
@@ -33,6 +41,7 @@ WORDS (fields) — in the user's language (Hebrew stays Hebrew). Never invent na
 - sub: the line below (event name / date / place), ≤ 40 chars.
 - accent, accent2: two hex colours from the brand/logo or the mood (accent = main glow).
 If a logo is attached, the logo becomes the hero above the title (the title may be the event name).
+Less but motivated: the slide makes ONE point. If in doubt, keep the title shorter.
 captions: 3 very short lines in the user's language, shown while the slide is built (e.g. "🎬 Real sunset sky footage", "✨ The title is revealed by light").`;
 
 const DIRECT_TOOL = {
@@ -42,12 +51,13 @@ const DIRECT_TOOL = {
     type: "object",
     properties: {
       engine: { type: "string", enum: ["light", "particles", "cinema", "celebrate", "award", "holiday"] },
+      mood: { type: "string", enum: ["corporate", "gala", "tech", "party", "memorial"] },
       footage: { type: "array", minItems: 1, maxItems: 3, items: { type: "string" } },
       title: { type: "string", description: "short name for the slide in the user's language" },
       fields: { type: "array", items: { type: "object", properties: { k: { type: "string", enum: ["kicker", "title", "sub", "accent", "accent2"] }, label: { type: "string", description: "label in the user's language" }, type: { type: "string", enum: ["text", "color"] }, value: { type: "string" } }, required: ["k", "label", "type", "value"] } },
       captions: { type: "array", maxItems: 4, items: { type: "string" } },
     },
-    required: ["engine", "footage", "title", "fields", "captions"],
+    required: ["engine", "mood", "footage", "title", "fields", "captions"],
   },
 };
 

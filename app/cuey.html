@@ -3151,12 +3151,12 @@ const ifr=$('#dirFrame');
 /* the sandboxed host: no network, no access to Cuey; draws the scene and hands back frames */
 function hostMain(){let c=document.getElementById('c'),draw=null,playing=false,t0=0,gen=0,A={};
   const bgIn=d=>{if(d.bg!==undefined){if(A.bg&&A.bg!==d.bg&&A.bg.close)A.bg.close();if(A.bg2&&A.bg2!==d.bg2&&A.bg2.close)A.bg2.close();A.bg=d.bg||null;A.bg2=d.bg2||null;A.mix=d.mix||0}};
-  const fonts=()=>Promise.race([Promise.all([300,500,700,900].map(w=>document.fonts.load(w+' 40px Poppins').catch(()=>{})).concat([300,500,800,900].map(w=>document.fonts.load(w+' 40px Heebo').catch(()=>{})))),new Promise(r=>setTimeout(r,3000))]);
+  const fonts=()=>Promise.race([Promise.all([300,500,600,700,800,900].map(w=>document.fonts.load(w+' 40px Poppins').catch(()=>{})).concat([300,500,700,800,900].map(w=>document.fonts.load(w+' 40px Heebo').catch(()=>{})),[500,700].map(w=>document.fonts.load(w+' 40px "Frank Ruhl Libre"').catch(()=>{})),[document.fonts.load('400 40px "Secular One"').catch(()=>{})])),new Promise(r=>setTimeout(r,3500))]);
   async function load(d){const my=++gen;draw=null;playing=false;try{
       const inj=src=>{const u=URL.createObjectURL(new Blob([src],{type:'text/javascript'}));return new Promise((ok,no)=>{const s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=no;document.head.appendChild(s)})};
       if(d.three&&!self.THREE)await inj(d.three);if(d.kit&&(!self.K||(d.three&&!self.K.stage)))await inj(d.kit);if(d.engsrc&&!self.ENG)await inj(d.engsrc);
       await fonts();const n=document.createElement('canvas');n.id='c';n.width=1920;n.height=1080;c.replaceWith(n);c=n;
-      A={logo:d.logo?await createImageBitmap(d.logo):null,intro:+d.intro||6,loop:+d.loop||8,bg:null,bg2:null,mix:0};
+      A={logo:d.logo?await createImageBitmap(d.logo):null,intro:+d.intro||6,loop:+d.loop||8,bg:null,bg2:null,mix:0,lum:typeof d.lum==='number'?d.lum:undefined,mood:d.mood||null};
       const fn=d.eng?((cv,F,AA)=>self.ENG[d.eng](cv,F,AA,self.THREE,self.K)):new Function('canvas','F','A','THREE','K','return (async()=>{\n'+d.code+'\n})()');const r=await fn(c,d.fields||{},A,self.THREE,self.K);
       if(my!==gen)return;if(typeof r!=='function')throw new Error('the scene did not return draw(t)');r(0);draw=r;parent.postMessage({sc:'ready'},'*');
       if(d.play){playing=true;t0=performance.now();loop()}
@@ -3167,7 +3167,7 @@ function hostMain(){let c=document.getElementById('c'),draw=null,playing=false,t
     else if(d.sc==='frame'){if(!draw)return;bgIn(d);try{draw(d.t);const bm=await createImageBitmap(c);parent.postMessage({sc:'frame',id:d.id,bm},'*',[bm])}catch(err){parent.postMessage({sc:'error',msg:String(err&&err.message||err)},'*')}}});
   parent.postMessage({sc:'host'},'*')}
 const CSP="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' blob:; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src blob: data:; connect-src 'none'; media-src 'none'; frame-src 'none'; worker-src blob:";
-const HOST=`<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${CSP}"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700;900&family=Heebo:wght@300;500;800;900&display=swap"><style>html,body{margin:0;background:#000;overflow:hidden;height:100%}canvas{width:100%;height:100%;display:block}</style><canvas id="c" width="1920" height="1080"></canvas><script>(${hostMain})()<\/script>`;
+const HOST=`<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${CSP}"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Heebo:wght@300;500;700;800;900&family=Frank+Ruhl+Libre:wght@500;700;900&family=Secular+One&display=swap"><style>html,body{margin:0;background:#000;overflow:hidden;height:100%}canvas{width:100%;height:100%;display:block}</style><canvas id="c" width="1920" height="1080"></canvas><script>(${hostMain})()<\/script>`;
 let frameWait={};let fid=0;
 addEventListener('message',e=>{if(e.source!==ifr.contentWindow)return;const d=e.data||{};
   if(d.sc==='host'){st.hostOk=true;const p=st.pend.splice(0);p.forEach(m=>ifr.contentWindow.postMessage(m,'*'))}
@@ -3185,6 +3185,9 @@ const ft={v1:null,v2:null,url:null,D:0,on:false,busy:false};
 async function footLoad(file){footStop();if(ft.url)URL.revokeObjectURL(ft.url);ft.url=null;ft.D=0;if(!file)return;ft.url=URL.createObjectURL(file);
   const mk=()=>{const v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='auto';v.src=ft.url;return v};ft.v1=mk();ft.v2=mk();
   await Promise.all([ft.v1,ft.v2].map(v=>new Promise(r=>{v.onloadeddata=r;v.onerror=r;setTimeout(r,15000)})));ft.D=ft.v1.duration||0}
+async function footLum(){if(!ft.D)return undefined;const c=document.createElement('canvas');c.width=48;c.height=27;const x=c.getContext('2d',{willReadFrequently:true});let sum=0,n=0;
+  for(const f of [.15,.35,.55,.75]){await vseek(ft.v1,ft.D*f);x.drawImage(ft.v1,0,0,48,27);const d=x.getImageData(10,6,28,15).data;for(let i=0;i<d.length;i+=4){const L=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)};sum+=.2126*L(d[i])+.7152*L(d[i+1])+.0722*L(d[i+2]);n++}}
+  return n?sum/n:undefined}
 const footRate=s=>ft.D?Math.min(1,(ft.D-.3)/((+s.intro||6)+(+s.loop||8))):1;
 /* seamless loop: the last second of the loop cross-fades into the footage at the loop's start */
 function footTimes(s,t){const I=+s.intro||6,L=+s.loop||8,r=footRate(s),F=Math.min(1,L/4);const tau=t-I;if(tau>L-F&&tau<L)return [t*r,(t-L)*r,(tau-(L-F))/F];return [t*r]}
@@ -3200,7 +3203,7 @@ async function footFetch(qs){for(const q of (qs||[]).filter(Boolean)){try{const 
     const hs=(d.hits||[]).filter(h=>(!h.w||h.w>=h.h)&&(!h.dur||h.dur>=8));const h=hs.find(h=>!h.dur||h.dur>=14)||hs[0];if(!h)continue;
     const blob=await pbFetch(h.full);const f=new File([blob],`pixabay-${h.id}.mp4`,{type:'video/mp4'});await keepGen(f);return {file:f,q,id:h.id}}catch(e){}}return null}
 async function loadScene(play){const s=st.scene;if(!s)return;st.ready=false;$('#dirAdd').disabled=true;
-  footStop();const m={sc:'load',code:s.code,eng:s.engine||null,intro:s.intro,loop:s.loop,fields:{...st.fields},logo:st.logoFile||null,play:!!play&&!s.engine};try{if(s.mode==='3d'||s.engine)m.three=await three();m.kit=await kit();if(s.engine)m.engsrc=await engines()}catch(e){$('#dirErr2').textContent=dt('err');return}st.wantPlay=!!play;post(m)}
+  footStop();const m={sc:'load',code:s.code,eng:s.engine||null,intro:s.intro,loop:s.loop,lum:st.footLum,mood:s.mood||null,fields:{...st.fields},logo:st.logoFile||null,play:!!play&&!s.engine};try{if(s.mode==='3d'||s.engine)m.three=await three();m.kit=await kit();if(s.engine)m.engsrc=await engines()}catch(e){$('#dirErr2').textContent=dt('err');return}st.wantPlay=!!play;post(m)}
 function frameAt(t,bgs){return new Promise((ok,no)=>{const id=++fid;frameWait.cur={id,ok,no};const b=bgs||{},tr=[b.bg,b.bg2].filter(Boolean);if(st.hostOk)ifr.contentWindow.postMessage({sc:'frame',t,id,...b},'*',tr);else post({sc:'frame',t,id});setTimeout(()=>{if(frameWait.cur&&frameWait.cur.id===id){frameWait.cur=null;no(new Error('timeout'))}},8000)})}
 /* record intro + one loop into a video file, frame by frame with exact timestamps (WebCodecs + WebM),
    so a slow computer gives the same smooth video, only slower to make. The loop starts on a key frame. */
@@ -3234,7 +3237,7 @@ window.__dirTest={use:(s,f)=>useScene(s,f),cur:()=>st.scene&&st.scene.title};
 function fieldsUI(){const box=$('#dirFields');box.innerHTML='';(st.scene.fields||[]).forEach(f=>{const r=document.createElement('div');r.className='fld';const id='dirF_'+f.k;
     r.innerHTML=`<label for="${id}"></label><span><input id="${id}" type="${f.type==='color'?'color':'text'}" dir="auto"></span>`;r.querySelector('label').textContent=loc(f.label||f.k);const inp=r.querySelector('input');inp.value=st.fields[f.k]!=null?st.fields[f.k]:(f.value||'');
     let tm=null;inp.addEventListener('input',()=>{st.fields[f.k]=inp.value;clearTimeout(tm);tm=setTimeout(()=>loadScene(true),350)});box.appendChild(r)})}
-async function useScene(s,fields){st.lastErr='';st.scene=s;if(s.engine){if(!st.footFile&&s.foot&&s.foot.q){const r=await footFetch([s.foot.q]);if(r)st.footFile=r.file}await footLoad(st.footFile)}else footLoad(null);st.fields={};(s.fields||[]).forEach(f=>st.fields[f.k]=f.value);if(fields)Object.assign(st.fields,fields);fieldsUI();texts();step(2);bootHost();loadScene(true)}
+async function useScene(s,fields){st.lastErr='';st.scene=s;if(s.engine){if(!st.footFile&&s.foot&&s.foot.q){const r=await footFetch([s.foot.q]);if(r)st.footFile=r.file}await footLoad(st.footFile);try{st.footLum=await footLum()}catch(e){st.footLum=undefined}}else footLoad(null);st.fields={};(s.fields||[]).forEach(f=>st.fields[f.k]=f.value);if(fields)Object.assign(st.fields,fields);fieldsUI();texts();step(2);bootHost();loadScene(true)}
 window.openDirector=function(it){st.edit=it||null;st.footFile=null;st.busy=false;$('#dirErr').textContent='';$('#dirErr2').textContent='';busy(false);texts();$('#dirDlg').hidden=false;
   if(it&&it.scene){st.logoFile=it.scene.logoFile||null;st.footFile=it.scene.footFile||null;useScene(JSON.parse(JSON.stringify(it.scene.src)),it.scene.fields)}else{step(1);bootHost();magic(true)}}
 function close(){post({sc:'stop'});footStop();$('#dirDlg').hidden=true;ifr.srcdoc='';st.hostOk=false}
@@ -3260,7 +3263,7 @@ $('#dirGo').onclick=async()=>{const p=$('#dirPrompt').value.trim();if(p.length<6
     if(r.status===429){$('#dirErr').textContent=t('be_limit');return}
     const dd=r.ok&&d.direct;if(!dd||!ENGT[dd.engine]){$('#dirErr').textContent=dt('err');return}
     captions(dd.captions);const fo=await footFetch(dd.footage||[]);st.footFile=fo?fo.file:null;
-    const [I,L]=ENGT[dd.engine];const sc={title:dd.title||'AI Builder',mode:'engine',engine:dd.engine,intro:I,loop:L,fields:dd.fields||[],code:'',foot:fo?{q:fo.q,id:fo.id}:null};
+    const [I,L]=ENGT[dd.engine];const sc={title:dd.title||'AI Builder',mode:'engine',engine:dd.engine,mood:['corporate','gala','tech','party','memorial'].includes(dd.mood)?dd.mood:null,intro:I,loop:L,fields:dd.fields||[],code:'',foot:fo?{q:fo.q,id:fo.id}:null};
     await useScene(sc);track('scene-built')}
   catch(e){$('#dirErr').textContent=dt('soon')}finally{clearInterval(capT);st.busy=false;if(!$('#dirS1').hidden)magic(true,false)}};
 $('#dirAdd').onclick=async()=>{if(!st.ready||st.busy)return;st.busy=true;$('#dirAdd').disabled=true;busy(true,dt('rec'));
