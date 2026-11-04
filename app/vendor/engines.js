@@ -244,7 +244,7 @@ async function compose(canvas,F,A){
   if(lk.light==='sweep'||e>.55){flare=K.flare(ac2,{w:26,h:.3});S.add(flare)}
   const fxs=String(lk.fx||'').split(/[,+ ]+/).filter(Boolean);const fields=fxs.map((f,i)=>field(S,f,{n:Math.round(260+400*e),ac,ac2,e,seed:7+i})).filter(Boolean);
   let prop=null;const PR=lk.prop;if(PR&&PR!=='none'){S.add(new THREE.AmbientLight('#ffffff',1.1));const dl2=new THREE.DirectionalLight('#ffffff',2);dl2.position.set(4,6,8);S.add(dl2);
-    if(PR==='airplane'){prop=K.airplane({body:'#f3f5fa',accent:hex(F.accent2,'#1f4aa8')});prop.scale.setScalar(.32);if(K.he(F.title||''))prop.rotation.y=Math.PI;S.add(prop)}
+    if(PR==='airplane'){prop=K.airplane({body:'#f3f5fa',accent:hex(F.accent2,'#1f4aa8')});prop.scale.setScalar(.4);if(K.he(F.title||''))prop.rotation.y=Math.PI;S.add(prop)}
     else if(PR==='trophy'){prop=K.trophy({color:hex(F.accent,'#ffcf5a'),s:1.25});S.add(prop)}
     else if(PR==='balloons'){prop=new THREE.Group();const cs=[ac,ac2,'#ff5c8a','#ffd166','#4cc9f0'];for(let i=0;i<7;i++){const b=K.balloon({color:cs[i%cs.length],r:.42});b.userData={x:(i/6-.5)*22+(i%2?1:-1)*.8,ph:i*.9,sp:1+(i%3)};prop.add(b)}S.add(prop)}}
   let vtx=null,vq=null,vN=0;if(fxs.includes('vortex')){vN=2200;vtx=K.points(vN,{size:2,color:ac});const R=K.rng(55);vq=[];for(let i=0;i<vN;i++){vq.push([1.5+Math.pow(R(),.7)*13,Math.floor(R()*3)*TAU/3+(R()-.5)*.5,(R()-.5)*2,1+Math.floor(R()*3),R()*TAU]);vtx.geometry.attributes.sz.array[i]=.4+R()*1.2}S.add(vtx)}
@@ -306,7 +306,7 @@ async function compose(canvas,F,A){
     if(flare&&lk.reveal!=='light'){const s1=K.k(t,tEnd+.5,tEnd+1.4);flare.material.opacity=e>.55?.28*Math.sin(Math.PI*s1):0;flare.position.x=blk.x+(s1-.5)*(title?title.width:6)}
     fields.forEach(p=>p.tick(ph,E.o3(K.k(t,.4,2.4))));
     if(prop){const cyc=(((t-I)/A.loop)%1+1)%1,on=E.o3(K.k(t,.8,2.4));
-      if(PR==='airplane'){const dir=prop.rotation.y?-1:1,x=dir*(-15+30*cyc);prop.position.set(x,3.6+.5*Math.sin(cyc*Math.PI),-9);prop.rotation.z=.04*Math.sin(ph);prop.rotation.x=.12;prop.visible=on>.01}
+      if(PR==='airplane'){const dir=prop.rotation.y?-1:1,x=dir*(-17+34*cyc),tp=blk.y+blk.h/2,bt=blk.y-blk.h/2,up=vh/2-tp,dn=bt+vh/2,ys=up>dn?tp+up*.5:bt-dn*.5;prop.position.set(x,ys*(camZ+9)/camZ+.4*Math.sin(cyc*Math.PI),-9);prop.rotation.z=.04*Math.sin(ph);prop.rotation.x=.12;prop.visible=on>.01}
       else if(PR==='trophy'){const side=blk.x>0?-1:1;prop.position.set(blk.x+side*(blk.w/2+2.4),(title?title.position.y:0)-1.4,-1);prop.rotation.y=ph;prop.scale.setScalar(1.25*on)}
       else{prop.children.forEach(b=>{const u=b.userData,y=((cyc*u.sp+u.ph/6)%1)*22-13;b.position.set(u.x+Math.sin(ph+u.ph)*.5,y,-5-u.sp);b.rotation.z=.12*Math.sin(ph*2+u.ph)});prop.visible=on>.01}}
     if(vtx){const pos=vtx.geometry.attributes.position.array,al=vtx.geometry.attributes.al.array,on=E.o3(K.k(t,.3,2.5)),cy=title?title.position.y:blk.y;for(let i=0;i<vN;i++){const q=vq[i],a=q[1]+ph+q[0]*.55;pos[i*3]=blk.x+Math.cos(a)*q[0]*1.35;pos[i*3+1]=cy+Math.sin(a)*q[0]*.8;pos[i*3+2]=-7+q[2];al[i]=on*(.25+.6*Math.max(0,Math.sin(ph*q[3]+q[4])))*Math.min(1,q[0]/3)}vtx.geometry.attributes.position.needsUpdate=true;vtx.geometry.attributes.al.needsUpdate=true}
