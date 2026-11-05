@@ -116,11 +116,11 @@ K.he=s=>/[֐-׿]/.test(String(s||''));
 /* full-screen real footage behind everything: A.bg / A.bg2 (ImageBitmaps) and A.mix (crossfade for the seamless loop).
    grade: {dark 0..1, tint '#hex', tintA 0..1, sat 0..2, blur 0..6 (soft focus), vig 0..1}; zoom/pan for camera moves. */
 K.footage=(S,{dark=.35,tint='#000000',tintA=0,sat=1,blur=0,vig=.55}={})=>{const mk=()=>{const t=new THREE.Texture();t.colorSpace=THREE.SRGBColorSpace;t.generateMipmaps=true;t.minFilter=THREE.LinearMipmapLinearFilter;return t};
-  const ta=mk(),tb=mk(),u={a:{value:ta},b:{value:tb},m:{value:0},has:{value:0},dark:{value:dark},tint:{value:new THREE.Color(tint)},tintA:{value:tintA},sat:{value:sat},blur:{value:blur},vig:{value:vig},zoom:{value:1},pan:{value:new THREE.Vector2()},aspect:{value:16/9},flash:{value:0},fcol:{value:new THREE.Color('#ffffff')}};
+  const ta=mk(),tb=mk(),u={a:{value:ta},b:{value:tb},m:{value:0},has:{value:0},dark:{value:dark},tint:{value:new THREE.Color(tint)},tintA:{value:tintA},sat:{value:sat},blur:{value:blur},vig:{value:vig},zoom:{value:1},pan:{value:new THREE.Vector2()},flip:{value:0},aspect:{value:16/9},flash:{value:0},fcol:{value:new THREE.Color('#ffffff')}};
   const m=new THREE.Mesh(new THREE.PlaneGeometry(2,2),new THREE.ShaderMaterial({uniforms:u,depthTest:false,depthWrite:false,fog:false,toneMapped:false,
     vertexShader:'varying vec2 v;void main(){v=uv;gl_Position=vec4(position.xy,1.,1.);}',
-    fragmentShader:`uniform sampler2D a,b;uniform float m,has,dark,tintA,sat,blur,vig,zoom,aspect,flash;uniform vec3 tint,fcol;uniform vec2 pan;varying vec2 v;
-    vec2 cov(vec2 p){float r=aspect/(16./9.);vec2 q=vec2(p.x,1.-p.y)-.5;if(r>1.)q.x/=r;else q.y*=r;return q/zoom+.5+pan;}
+    fragmentShader:`uniform sampler2D a,b;uniform float m,has,dark,tintA,sat,blur,vig,zoom,aspect,flash,flip;uniform vec3 tint,fcol;uniform vec2 pan;varying vec2 v;
+    vec2 cov(vec2 p){float r=aspect/(16./9.);vec2 q=vec2(p.x,1.-p.y)-.5;if(r>1.)q.x/=r;else q.y*=r;if(flip>.5)q.x=-q.x;return q/zoom+.5+pan;}
     void main(){vec2 q=cov(v);vec3 c=texture2D(a,q,blur).rgb;if(m>0.)c=mix(c,texture2D(b,q,blur).rgb,m);if(has<.5)c=vec3(.02,.025,.05);
     float l=dot(c,vec3(.299,.587,.114));c=mix(vec3(l),c,sat);c=mix(c,tint*l*1.6,tintA);c*=1.-dark;
     float d=distance(v,vec2(.5));c*=1.-vig*smoothstep(.35,.85,d);c+=fcol*flash;gl_FragColor=vec4(c,1.);}`}));
