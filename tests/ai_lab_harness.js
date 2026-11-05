@@ -1,8 +1,7 @@
 /* Cuey AI Lab harness — test the AI director + compose engine from a signed-in cuey.live/app tab.
-   Load it in that tab (DevTools or Claude in Chrome):
-     await import('https://cdn.jsdelivr.net/gh/bergerman1-svg/cuey@next/tests/ai_lab_harness.js')   // or eval the raw file text
+   Open https://cuey.live/app/?lab=1 (signed in) — the app loads this file itself (app/lab.js). Then:
    Then:
-     await LAB.init()                       // latest `next` engine (or LAB.init(sha))
+     await LAB.init()                       // this app's engine (or LAB.init('next') / LAB.init(sha) for GitHub)
      const d = await LAB.dir('ערב גאלה ...') // director result (.direct)
      await LAB.show(d)                      // 9-frame grid over the page (screenshot it)
      const v = await LAB.video(d)           // webm blob url (15 fps, 640x360, intro+loop)
@@ -29,9 +28,10 @@ addEventListener('message',async e=>{const m=e.data;try{
 
   L.latest = async () => (await (await fetch(`https://api.github.com/repos/${REPO}/commits/next`)).json()).sha;
   L.init = async sha => {
-    sha = sha || await L.latest(); L.sha = sha;
+    // no sha: the engine this app ships (same site, nothing downloaded from elsewhere); a sha: that commit on GitHub (developer testing)
+    const base = sha ? RAW(sha === 'next' ? await L.latest() : sha) : new URL('vendor/', location.href).href; L.sha = sha || 'app';
     const ev = s => { const w = {}; new Function('window', s)(w); return w; };
-    const [k, e, mx, th] = await Promise.all(['kit.js', 'engines.js', 'webm-muxer.js', 'three.src.js'].map(f => fetch(RAW(sha) + f).then(r => r.text())));
+    const [k, e, mx, th] = await Promise.all(['kit.js', 'engines.js', 'webm-muxer.js', 'three.src.js'].map(f => fetch(base + f).then(r => r.text())));
     if (!window.WebMMuxer) new Function(mx + ';window.WebMMuxer=WebMMuxer')();
     L.f && L.f.remove();
     const f = document.createElement('iframe'); f.sandbox = 'allow-scripts';
