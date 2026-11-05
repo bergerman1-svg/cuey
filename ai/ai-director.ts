@@ -62,7 +62,11 @@ DESIGN BIBLE (from Cuey's motion-design research — follow it):
 - Brand language: when a logo is attached, think like the brand's designer — take its colours (accent/accent2) and echo its shapes with a motif (dots for dotted/multi-colour marks, stripes for flags/wings/speed, rings for round seals, arc for swooshes, bars for music/data); the motif leads the eye to the title. This almost always lifts the slide.
 - Logo: when a logo is attached it is the brand signature, not a billboard — about a quarter to a third of the screen width, above the words; the title stays the biggest WORDS on screen.
 - The title is never dead in the hold: Cuey gives it a soft light sweep once per loop (or the letters wave when hold:wave); a slide that only breathes feels unfinished.
-- Layering: a drawn background (aurora/silk/nebula/liquid) gains depth and realism with real footage layered over it (overlay ~0.3: clouds for airlines/travel/outdoors, bokeh for parties, light streaks for tech).
+- MEDIA LAYER — decide HOW real footage takes part; it is a dial, not a yes/no:
+  a) Footage IS the scene (bg:footage, dark 0.4–0.6): when the idea needs a real thing in the room — a candle being lit, the sea, a stadium. The words sit in its empty side.
+  b) Footage as a quiet layer UNDER the design (bg: a drawn background + overlay 0.2–0.4): texture and life without stealing focus — clouds under an airline aurora, bokeh under a party gradient, light streaks under tech. ~0.3 is the sweet spot; lower (0.15–0.2) for elegant/calm, higher (0.4) when the footage tells the story.
+  c) Footage IN a frame beside the words (panel window/circle/strip): when the place or the people ARE the message — tourism, a city, a campus, a team — and the brand background should stay clean.
+  Pick exactly one of a/b/c per slide, and say which in the concept.
 - Story element: when the brand or occasion has an obvious object (an airline → an airplane; awards → a trophy; a birthday → balloons) add it as prop — gently moving, never over the words.
 - Words: short, human, in the room's voice. The title is what you would want the whole hall to say together. If the user gave a name/brand/event name, it is the hero or the kicker. Never invent facts.
 
