@@ -31,14 +31,14 @@ addEventListener('message',async e=>{const m=e.data;try{
   L.init = async sha => {
     sha = sha || await L.latest(); L.sha = sha;
     const ev = s => { const w = {}; new Function('window', s)(w); return w; };
-    const [k, e, mx] = await Promise.all(['kit.js', 'engines.js', 'webm-muxer.js'].map(f => fetch(RAW(sha) + f).then(r => r.text())));
+    const [k, e, mx, th] = await Promise.all(['kit.js', 'engines.js', 'webm-muxer.js', 'three.src.js'].map(f => fetch(RAW(sha) + f).then(r => r.text())));
     if (!window.WebMMuxer) new Function(mx + ';window.WebMMuxer=WebMMuxer')();
     L.f && L.f.remove();
     const f = document.createElement('iframe'); f.sandbox = 'allow-scripts';
     f.style.cssText = 'position:fixed;left:-4000px;top:0;width:960px;height:540px;border:0'; f.srcdoc = HOST;
     document.body.appendChild(f); L.f = f; await new Promise(r => f.onload = r);
     if (!L.v) { L.v = document.createElement('video'); L.v.muted = true; L.v.playsInline = true; L.v.crossOrigin = 'anonymous'; }
-    const r = await L.x({ lib: 1, three: await three(), kit: ev(k).__KIT_SRC, eng: ev(e).__ENG_SRC });
+    const r = await L.x({ lib: 1, three: ev(th).__THREE_SRC, kit: ev(k).__KIT_SRC, eng: ev(e).__ENG_SRC });
     return { sha, libs: r.libs };
   };
 
