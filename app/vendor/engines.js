@@ -294,7 +294,7 @@ async function compose(canvas,F,A){
     blk={x:cx,y:top-tot/2,w:bw,h:tot};scrim.scale.set(Math.min(vw*1.1,bw*1.5+4),tot*1.8+2.4,1);scrim.position.set(cx,blk.y,-1.5);
     if(halo)halo.position.set(cx,title?title.position.y:blk.y,-3);if(flare)flare.position.set(cx,title?title.position.y:0,.5);
     if(pnl){const sh=PANEL,w=sh===1?vh*.62:sh===2?vw*.34:vw*.4,h=sh===1?vh*.62:sh===2?vh*.86:vh*.62,px=(L==='right'?-1:1)*(vw/2-vw*.05-w/2);pnl.scale.set(w,h,1);pnl.position.set(px,0,-.3);pnl.material.uniforms.pa.value=w/h;pnl.userData={x:px}}
-    if(MOT==='arc'&&title){const he2=title.he,x0=blk.x-blk.w/2-.3,x1=blk.x+blk.w/2+.3,yb=title.position.y-title.height*.62,pts=[];for(let i=0;i<=64;i++){const u=i/64,xx=x0+(x1-x0)*u;pts.push(new THREE.Vector3(xx,yb-.35*Math.sin(Math.PI*u)+.25*u*(he2?-1:1),0))}
+    if(MOT==='arc'&&title){const he2=title.he,x0=blk.x-blk.w/2-.3,x1=blk.x+blk.w/2+.3,yb=sub?sub.position.y-sub.height*.5-.45:title.position.y-title.height*.62,pts=[];for(let i=0;i<=64;i++){const u=i/64,xx=x0+(x1-x0)*u;pts.push(new THREE.Vector3(xx,yb-.35*Math.sin(Math.PI*u)+.25*u*(he2?-1:1),0))}
       const crv=new THREE.CatmullRomCurve3(he2?pts.reverse():pts);mm[0].geometry=new THREE.TubeGeometry(crv,128,.045,8,false);mm[0].userData.cnt=mm[0].geometry.index.count}
     const u0=(cx-bw/2)/vw+.5,u1=(cx+bw/2)/vw+.5,v0=.5-(top)/vh,v1=.5-(top-tot)/vh,lum=fr?region(fr,u0,u1,v0,v1):(typeof A.lum==='number'?A.lum:.3);
     if(fr&&fr.mean>.3)dark=Math.min(.75,dark+(fr.mean-.3)*.9);need=K.cl(1-.16/Math.max(lum*(1-dark),.02),.2,.85);if(bgM)need=Math.max(need,FILL?.62:.42);if(INK)need=0};
