@@ -34,11 +34,27 @@ async def main():
         ok('the position can be changed', pos2 != 'tr', pos2)
         await pg.evaluate("$('#mkLogoSize').value=25;$('#mkLogoSize').dispatchEvent(new Event('input',{bubbles:true}))")
         ok('the size can be changed', abs(await pg.evaluate("mk.T.logoSize") - .25) < .001, await pg.evaluate("mk.T.logoSize"))
+        # free placement and size (Avi 5.11): drag the logo body, then drag its corner; the preset buttons go off
+        box = await pg.evaluate("(()=>{const r=$('#mkPv').getBoundingClientRect(),B=logoBox;return {l:r.left,t:r.top,sw:r.width/B.W,sh:r.height/B.H,x:B.x,y:B.y,w:B.w,h:B.h}})()")
+        cx = box['l'] + (box['x'] + box['w'] / 2) * box['sw']; cy = box['t'] + (box['y'] + box['h'] / 2) * box['sh']
+        await pg.mouse.move(cx, cy); await pg.mouse.down(); await pg.mouse.move(cx + 200, cy - 120, steps=6); await pg.mouse.up(); await pg.wait_for_timeout(200)
+        xy = await pg.evaluate("mk.T.logoXY")
+        ok('dragging the logo places it freely', xy and xy['x'] > 0.2 and xy['y'] < 0.9, xy)
+        ok('the preset buttons are off for a free spot', await pg.evaluate("!$('#mkLogoPos .on')"))
+        ok('the text did not move with the logo', await pg.evaluate("Math.abs(mk.T.x-.5)<.2"), await pg.evaluate("[mk.T.x,mk.T.y]"))
+        s0 = await pg.evaluate("mk.T.logoSize")
+        box = await pg.evaluate("(()=>{const r=$('#mkPv').getBoundingClientRect(),B=logoBox;return {l:r.left,t:r.top,sw:r.width/B.W,sh:r.height/B.H,x:B.x,y:B.y,w:B.w,h:B.h}})()")
+        kx = box['l'] + (box['x'] + box['w'] - 2) * box['sw']; ky = box['t'] + (box['y'] + box['h'] - 2) * box['sh']
+        await pg.mouse.move(kx, ky); await pg.mouse.down(); await pg.mouse.move(kx + 80, ky + 40, steps=6); await pg.mouse.up(); await pg.wait_for_timeout(200)
+        s1 = await pg.evaluate("mk.T.logoSize")
+        ok('dragging the corner makes the logo bigger', s1 > s0 * 1.2, [s0, s1])
+        ok('the size slider follows', abs(await pg.evaluate("+$('#mkLogoSize').value") - round(s1 * 100)) <= 1)
         await pg.click('#mkOk'); await pg.wait_for_timeout(1500)
         it = await pg.evaluate("(()=>{const i=items[items.length-1];return i?{name:i.name,logo:!!(i.card&&i.card.logo)||!!(i.T&&i.T.logo)||JSON.stringify(i).includes('data:image/png')}:null})()")
         ok('the cue is created with its logo', it and it['logo'], it)
         saved = await pg.evaluate("JSON.stringify(typeof showData==='function'?showData():{}).includes('red.png')")
         ok('the logo is saved with the show', saved)
+        ok('the free spot is saved with the show', await pg.evaluate("JSON.stringify(showData()).includes('logoXY')"))
         # remove
         await pg.evaluate("openCard&&openCard(items[items.length-1])") if await pg.evaluate("typeof openCard==='function'") else None
         if await pg.evaluate("!$('#mkDlg').hidden"):
