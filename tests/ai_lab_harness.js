@@ -18,7 +18,7 @@ let D,A={};const inj=s=>new Promise((ok,no)=>{const e=document.createElement('sc
 addEventListener('message',async e=>{const m=e.data;try{
  if(m.lib){await inj(m.three);await inj(m.kit);await inj(m.eng);parent.postMessage({libs:Object.keys(self.ENG)},'*');return}
  if(m.eng){await document.fonts.ready;const n=document.createElement('canvas');n.id='c';n.width=1920;n.height=1080;document.getElementById('c').replaceWith(n);
-  A={mood:m.mood||null,lum:m.lum,logo:m.logo||null,intro:ENG.META[m.eng].intro,loop:ENG.META[m.eng].loop};D=await ENG[m.eng](n,m.F,A,self.THREE,self.K);parent.postMessage({ok:A},'*');return}
+  A={mood:m.mood||null,lum:m.lum,logo:m.logo||null,intro:ENG.META[m.eng].intro+(m.xi||0),loop:ENG.META[m.eng].loop};D=await ENG[m.eng](n,m.F,A,self.THREE,self.K);parent.postMessage({ok:A},'*');return}
  if(m.t!=null&&D){if(A.bg&&A.bg!==m.bg)A.bg.close&&A.bg.close();A.bg=m.bg||A.bg;A.bg2=null;D(m.t);
   const bm=await createImageBitmap(document.getElementById('c'),{resizeWidth:m.w||640,resizeHeight:m.h||360});parent.postMessage({bm,t:m.t},'*',[bm])}
 }catch(err){parent.postMessage({err:String(err&&err.stack||err)},'*')}});<\/script>`;
@@ -70,7 +70,8 @@ addEventListener('message',async e=>{const m=e.data;try{
   L.load = async (d, o = {}) => {
     await L.foot(d);
     const F = {}; d.fields.forEach(f => F[f.k] = f.value); F.look = d.look;
-    const r = await L.x({ eng: d.engine || 'compose', F, logo: await logoBm(o), mood: d.mood || null, lum: await L.lum() });
+    const xi = ({ countdown: 3.4, curtain: .8 })[d.look && d.look.intro] || 0;
+    const r = await L.x({ eng: d.engine || 'compose', F, logo: await logoBm(o), mood: d.mood || null, lum: await L.lum(), xi });
     if (r.err) throw new Error(r.err); L.A = r.ok; return r.ok;
   };
   L.at = async (t, w, h) => { const rt = L.still ? 1 : Math.min(1, (L.D - .3) / (L.A.intro + L.A.loop)); await seek(t * rt); const bg = await frame(); const q = await L.x({ t, bg, w, h }, [bg]); if (q.err) throw new Error(q.err); return q.bm; };

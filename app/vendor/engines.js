@@ -211,7 +211,8 @@ void main(){vec2 p=v-.5;float sd;if(shape<.5){sd=rb(p*vec2(pa,1.),vec2(pa*.5,.5)
 async function compose(canvas,F,A){
   const lk={layout:'auto',font:'heebo',reveal:'maskWords',energy:.5,light:'none',fx:'dust',rule:false,camera:'push',dark:.45,blur:2,sat:1,tint:null,...(A.look||F.look||{})};
   const PANEL={window:0,circle:1,strip:2}[lk.panel];if(PANEL!=null){if(!lk.bg||lk.bg==='footage')lk.bg='liquid';lk.overlay=0;lk.layout=K.he(String(F.title||F.kicker||''))?'right':'left'}
-  const e=K.cl(+lk.energy||0,0,1),I=A.intro,ac=hex(F.accent,'#e8d9b0'),ac2=hex(F.accent2,'#8a8f9c'),calm=e<.35;
+  const XOFF={countdown:3.4,curtain:.8}[lk.intro]||0; /* opening moment before the slide (Avi 6.11, Canva gallery): the caller adds XOFF to the intro */
+  const e=K.cl(+lk.energy||0,0,1),I=A.intro-XOFF,ac=hex(F.accent,'#e8d9b0'),ac2=hex(F.accent2,'#8a8f9c'),calm=e<.35;
   const FT=FONTS[lk.font]||FONTS.heebo,kf=calm?FT:(FT[0]==='Karantina'||FT[0]==='Amatic SC'?['Heebo',700]:FT);
   await loadFonts([FT,kf,[kf[0],Math.min(700,kf[1])],[FT[0],Math.min(500,FT[1])],['Heebo',500],['Heebo',700]],[F.title,F.kicker,F.sub].filter(Boolean).join(' ')+' Aa');
   const camZ=15,fov=36,st=K.stage(canvas,{bg:'#000000',fov,bloom:{s:.12+.45*e,r:.38,th:.93},shadows:false,exposure:1}),{S,C}=st;C.position.set(0,0,camZ);C.lookAt(0,0,0);
@@ -302,7 +303,7 @@ async function compose(canvas,F,A){
   /* timeline (calm slides breathe slower) */
   const sp=calm?1.35:1,T0=.9*sp,kickT=T0,titleT=T0+(kick?.45*sp:0),nT=(title&&title.n)||1,stS=Math.min(.06,1.2/nT),tEnd=SCR?titleT+.35+stS*(nT-1)+.45:CNT?titleT+2.2:titleT+RC.dur+RC.st*Math.max(0,nT-1),ruleT=tEnd-.2,subT=tEnd+.05,logoT=T0-.1;
   const POP=titleT+.25;let dark=K.cl(+lk.dark||.45,0,.9);const zoom0=1.04+.1*e;
-  return t=>{const ph=TAU*(t-I)/A.loop,amp=K.k(t,I-2.2,I-.2),f=fg.u;if(!laid){const Tdec=T0-.15,L0=A.bg&&!bgM?readFrame(A.bg):null;if(L0){if(!acc)acc=L0.map(()=>0);L0.forEach((v,i)=>acc[i]+=v);accN++}
+  const inner=t=>{const ph=TAU*(t-I)/A.loop,amp=K.k(t,I-2.2,I-.2),f=fg.u;if(!laid){const Tdec=T0-.15,L0=A.bg&&!bgM?readFrame(A.bg):null;if(L0){if(!acc)acc=L0.map(()=>0);L0.forEach((v,i)=>acc[i]+=v);accN++}
       if(t>=Tdec||lk.layout!=='auto'){panT=t;lay(accN?subject(acc.map(v=>v/accN)):null)}}fg.feed(A);if(bgM){const u=bgM.material.uniforms;u.ph.value=ph;u.fade.value=K.ez.calmIn(K.k(t,0,1.8*sp));}
     /* up from black, push in (settles before the hold) */
     f.dark.value=OV?1-OV*K.ez.calmIn(K.k(t,0,1.8*sp)):dark+(1-dark)*(1-K.ez.calmIn(K.k(t,0,1.8*sp)));const rf=pan?E.io3(K.k(t,panT,panT+1.6)):0,zr=1+(zoomR-1)*rf;f.zoom.value=(zoom0-(zoom0-1.02)*E.io3(K.k(t,0,I-.3))+.006*e*Math.sin(ph)*amp)*zr;f.pan.value.set(pan*rf,0);
@@ -354,7 +355,28 @@ async function compose(canvas,F,A){
       for(let i=0;i<s.N;i++){pos[i*3]=s.o[0]+s.v[i][0]*dd*1.6;pos[i*3+1]=s.o[1]+s.v[i][1]*dd*1.6-.35*a*a;pos[i*3+2]=s.o[2]+s.v[i][2]*dd*1.6;al[i]=on*Math.max(0,1-a/2)*(.6+.4*Math.sin(a*30+i))}
       s.p.geometry.attributes.position.needsUpdate=true;s.p.geometry.attributes.al.needsUpdate=true;fl+=on*Math.max(0,.05-a*.1)})}
     let gfl=0;if(GL){[titleT+.05,titleT+.32,titleT+.6,tEnd+.35].forEach(t0=>{if(t>=t0&&t<t0+.12)gfl=.04})}
-    f.flash.value=fl+gfl;if(!gfl)f.fcol.value.set(ac);st.bloom.strength=.12+.45*e+.3*fl;st.render()}}
+    f.flash.value=fl+gfl;if(!gfl)f.fcol.value.set(ac);st.bloom.strength=.12+.45*e+.3*fl};
+  /* ---- opening moments, drawn in front of the camera: a 3-2-1 countdown, or a stage curtain that opens ---- */
+  const OD=4,oh=2*OD*Math.tan(fov*Math.PI/360),ow=oh*16/9,ov=new THREE.Group();S.add(ov);const _q=new THREE.Vector3();
+  const pin=()=>{_q.set(0,0,-OD).applyQuaternion(C.quaternion);ov.position.copy(C.position).add(_q);ov.quaternion.copy(C.quaternion)};
+  let cd=null,cur=null;
+  if(lk.intro==='countdown'){const cv=document.createElement('canvas');cv.width=cv.height=1024;const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;
+    const m=new THREE.Mesh(new THREE.PlaneGeometry(oh*.86,oh*.86),new THREE.MeshBasicMaterial({map:tx,transparent:true,depthTest:false,depthWrite:false,toneMapped:false}));m.renderOrder=999;ov.add(m);
+    const bk=new THREE.Mesh(new THREE.PlaneGeometry(ow*1.2,oh*1.2),new THREE.MeshBasicMaterial({color:'#000000',transparent:true,depthTest:false,depthWrite:false}));bk.renderOrder=998;bk.position.z=-.01;ov.add(bk);
+    const x=cv.getContext('2d'),fam=`"${FT[0]}"`;
+    cd=t=>{const on=t<XOFF;m.visible=bk.visible=on;if(!on)return;const n=Math.floor(t),p=t-n,dg=3-n;x.clearRect(0,0,1024,1024);
+      if(dg>=1){const c=512,R=400,pulse=1+.06*Math.exp(-p*9);x.save();x.translate(c,c);x.scale(pulse,pulse);
+        x.fillStyle=ac;x.globalAlpha=.16;x.beginPath();x.moveTo(0,0);x.arc(0,0,R,-Math.PI/2,-Math.PI/2+TAU*p);x.closePath();x.fill();
+        x.globalAlpha=.9;x.lineWidth=10;x.strokeStyle=ac;x.beginPath();x.arc(0,0,R,0,TAU);x.stroke();x.globalAlpha=.35;x.lineWidth=3;x.strokeStyle='#ffffff';x.beginPath();x.arc(0,0,R-34,0,TAU);x.stroke();
+        x.beginPath();x.moveTo(-R-60,0);x.lineTo(R+60,0);x.moveTo(0,-R-60);x.lineTo(0,R+60);x.globalAlpha=.18;x.stroke();
+        x.globalAlpha=1;x.fillStyle='#ffffff';x.textAlign='center';x.textBaseline='middle';x.font=`800 560px ${fam}`;x.shadowColor=ac;x.shadowBlur=40;x.fillText(String(dg),0,24);x.restore()}
+      tx.needsUpdate=true;const out=K.k(t,3,XOFF);m.material.opacity=1-out;m.scale.setScalar(1+.5*E.io3(out));bk.material.opacity=1-out}}
+  if(lk.intro==='curtain'){const cv=document.createElement('canvas');cv.width=512;cv.height=256;const x=cv.getContext('2d'),col=BGK===4?BRC.clone():new THREE.Color('#d41c2e');
+    for(let i=0;i<512;i++){const f=Math.pow(Math.abs(Math.sin(i/512*Math.PI*7)),.6),v=.32+.68*f+.25*Math.pow(f,12);x.fillStyle=`rgb(${Math.round(col.r*255*v)},${Math.round(col.g*255*v)},${Math.round(col.b*255*v)})`;x.fillRect(i,0,1,256)}
+    const g=x.createLinearGradient(0,0,0,256);g.addColorStop(0,'rgba(0,0,0,.55)');g.addColorStop(.25,'rgba(0,0,0,0)');g.addColorStop(.85,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=g;x.fillRect(0,0,512,256);
+    const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;const half=[-1,1].map(sd=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(ow*.56,oh*1.1),new THREE.MeshBasicMaterial({map:tx,transparent:true,depthTest:false,depthWrite:false,toneMapped:false}));m.renderOrder=999;m.userData.sd=sd;ov.add(m);return m});
+    cur=t=>{const op=E.io3(K.k(t,.25,2.6));half.forEach(m=>{const sd=m.userData.sd;m.visible=op<1;m.scale.x=1-.45*op;m.position.x=sd*(ow*.28*(1-.45*op)+ow*.5*op);m.position.y=.06*oh*op*op})}}
+  return t=>{inner(Math.max(0,t-XOFF));if(cd||cur){pin();cd&&cd(t);cur&&cur(t)}st.render()}}
 
 return {META,light,particles,cinema,celebrate,award,holiday,compose}}
 window.__ENG_SRC='self.ENG=('+CueyEngines.toString()+')(self.THREE,self.K);';
