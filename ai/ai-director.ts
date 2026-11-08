@@ -201,22 +201,25 @@ Deno.serve(async (req) => {
   const user = u?.user; if (!user) return json({ error: "sign in" }, 401);
   let body: any; try { body = await req.json(); } catch { return json({ error: "bad json" }, 400); }
   const prompt = String(body?.prompt || "").trim().slice(0, MAX_CHARS), lang = body?.lang === "he" ? "he" : "en";
+  // fix by prompt: the slide as it is now + what to change (3 per slide in the app; here up to 3x the daily build cap, counted apart as cues -2)
+  const revise = body?.step === "revise", ask = String(body?.ask || "").trim().slice(0, 300);
+  let prev: any = null; if (revise) { try { const p = body?.prev; if (p && typeof p === "object" && JSON.stringify(p).length < 20000) { prev = { ...p }; delete prev.pick; delete prev.captions; } } catch { prev = null; } if (!prev || ask.length < 2) return json({ error: "bad revise" }, 400); }
   const lg = body?.logo, logo = lg && /^image\/(png|jpeg|webp)$/.test(lg.media_type) && typeof lg.data === "string" && lg.data.length < 3_000_000 ? { media_type: lg.media_type, data: lg.data } : null;
-  if (prompt.length < 6) return json({ error: "too short" }, 400);
+  if (prompt.length < 6 && !revise) return json({ error: "too short" }, 400);
   const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
   const [{ count }, { data: ents }] = await Promise.all([
-    db.from("ai_builds").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("ok", true).eq("cues", -1).gte("created_at", since),
+    db.from("ai_builds").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("ok", true).eq("cues", revise ? -2 : -1).gte("created_at", since),
     db.from("entitlements").select("product,expires_at").eq("user_id", user.id),
   ]);
   const pro = (ents || []).some((e: any) => e.product === "pro" && (!e.expires_at || Date.parse(e.expires_at) > Date.now()));
   const cap = ADMINS.includes(user.id) ? 300 : pro ? PRO_PER_DAY : FREE_PER_DAY;
   try { const { data: ls } = await db.from("ai_lessons").select("lesson").eq("status", "active").order("id").limit(60); LESSONS = (ls && ls.length) ? "LESSONS LEARNED from reviewed Cuey slides (follow them; they override the gallery when they conflict):\n" + ls.map((l: any, i: number) => `${i + 1}. ${l.lesson}`).join("\n") : ""; } catch { LESSONS = ""; }
-  if ((count || 0) >= cap) return json({ error: "limit", cap }, 429);
+  if ((count || 0) >= (revise ? cap * 3 : cap)) return json({ error: "limit", cap }, 429);
   const img = logo ? [{ type: "image", source: { type: "base64", media_type: logo.media_type, data: logo.data } }] : [];
   const logoLine = logo ? "Attached: the user's logo / brand picture (it will be the hero of the slide)." : "No logo attached.";
-  const r = await run(key, (body?.model === "opus" ? ["claude-opus-5-5", "claude-sonnet-5-5"] : [env("DIRECT_MODEL"), "claude-sonnet-5-5", "claude-opus-5-5"]).filter(Boolean), DIRECT_SYSTEM, DIRECT_TOOL, [...img, { type: "text", text: `${logoLine}\nSlide language: ${lang === "he" ? "Hebrew" : "English"} (all words, labels and captions in it).\n\nThe request:\n${prompt}\n\nCall direct now.` }],
+  const r = await run(key, (body?.model === "opus" ? ["claude-opus-5-5", "claude-sonnet-5-5"] : [env("DIRECT_MODEL"), "claude-sonnet-5-5", "claude-opus-5-5"]).filter(Boolean), DIRECT_SYSTEM, DIRECT_TOOL, [...img, { type: "text", text: `${logoLine}\nSlide language: ${lang === "he" ? "Hebrew" : "English"} (all words, labels and captions in it).\n\nThe request:\n${prompt}\n\n` + (revise ? `This slide was already made — here is your direct call for it, with the user's current texts:\n${JSON.stringify(prev)}\n\nThe user now asks for ONE CHANGE:\n${ask}\n\nMake exactly that change and call direct again. Copy every other value unchanged: the same look fields, the same footage queries (change footage only when the change is about the background or the picture), and the same field values word for word (change texts only when the change is about the words). captions: 2-3 short lines in the slide language saying what you changed.` : `Call direct now.`) }],
     { max_tokens: 4000, thinking: { type: "between_tools" }, output_config: { effort: "medium" } }, (i) => i.look && typeof i.look === "object" && Array.isArray(i.fields), T0);
-  if (!r.out) { await db.from("ai_builds").insert({ user_id: user.id, chars: prompt.length, cues: -1, ok: false }); return json({ error: "ai", status: r.status, detail: r.detail }, 502); }
+  if (!r.out) { await db.from("ai_builds").insert({ user_id: user.id, chars: prompt.length, cues: revise ? -2 : -1, ok: false }); return json({ error: "ai", status: r.status, detail: r.detail }, 502); }
   const o = r.out; o.engine = "compose"; const L = o.look, FX = ["dust", "embers", "snow", "glitter", "bokeh", "confetti", "fireworks", "vortex"];
   L.energy = Math.max(0, Math.min(1, +L.energy || 0)); L.fx = String(L.fx || "none").split(/[+, ]+/).filter((f: string) => FX.includes(f)).slice(0, 2).join("+") || "none";
   if (o.mood === "memorial") { L.energy = Math.min(L.energy, .15); L.fx = L.fx.split("+").filter((f: string) => !["confetti", "fireworks", "glitter"].includes(f)).join("+") || "none"; if (L.light === "spots" || L.light === "rays" || L.light === "ripple") L.light = "none"; if (L.hold === "wave") L.hold = "none"; L.tag = false; if (L.grade === "duotone") L.grade = "natural"; if (["glitch", "snap", "scramble", "pop", "slam"].includes(L.reveal)) L.reveal = "veil"; }
@@ -226,7 +229,8 @@ Deno.serve(async (req) => {
   for (const k of keep) if (!seen.has(k)) o.fields.push({ k, label: k, type: k.startsWith("accent") ? "color" : "text", value: k === "accent" ? "#ffcf6b" : k === "accent2" ? "#7cf5ff" : "" });
   console.log("direct", r.model, Date.now() - T0, "ms", o.concept, JSON.stringify(o.look), JSON.stringify(o.footage), JSON.stringify(r.usage));
   L.overlay = Math.max(0, Math.min(.5, +L.overlay || 0));
-  if (body?.pick !== false && (!L.bg || L.bg === "footage" || L.overlay > 0 || (L.panel && L.panel !== "none"))) { try { o.pick = await pickFootage(key, (o.footage || []).map(String), o, T0); } catch (e) { console.error("pick", String(e)); } }
-  await db.from("ai_builds").insert({ user_id: user.id, chars: prompt.length + (logo ? 1 : 0), cues: -1, ok: true });
+  if (revise && JSON.stringify(o.footage || []) === JSON.stringify(prev.footage || []) && body?.prev?.pick) o.pick = body.prev.pick;
+  else if (body?.pick !== false && (!L.bg || L.bg === "footage" || L.overlay > 0 || (L.panel && L.panel !== "none"))) { try { o.pick = await pickFootage(key, (o.footage || []).map(String), o, T0); } catch (e) { console.error("pick", String(e)); } }
+  await db.from("ai_builds").insert({ user_id: user.id, chars: prompt.length + ask.length + (logo ? 1 : 0), cues: revise ? -2 : -1, ok: true });
   return json({ direct: o, model: r.model, left: cap - (count || 0) - 1 });
 });

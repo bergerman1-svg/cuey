@@ -61,11 +61,11 @@ async def main():
         sc = [c for c in d['cues'] if c.get('scene')]
         ok('Save keeps each slide\'s scene and texts', len(sc) == 2 and sc[1]['scene']['fields']['title'] == 'SECOND' and 'code' in sc[1]['scene']['src'], len(sc))
         # AI Builder v3 with a mocked server: the director picks an engine + footage; the engine plays over the real footage
-        calls = []; FOOT = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fixtures', 'footage.webm'), 'rb').read()
+        calls = []; revs = []; FOOT = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fixtures', 'footage.webm'), 'rb').read()
         async def fake(route):
-            b = json.loads(route.request.post_data or '{}'); calls.append(b.get('step'))
+            b = json.loads(route.request.post_data or '{}'); calls.append(b.get('step')); revs.append(b) if b.get('step') == 'revise' else None
             body = {'direct': {'engine': 'compose', 'mood': 'corporate', 'look': {'layout': 'auto', 'font': 'heebo', 'reveal': 'rise', 'energy': .5, 'light': 'halo', 'fx': 'dust', 'rule': True, 'camera': 'push', 'dark': .45, 'blur': 1.5}, 'footage': ['sunset clouds'], 'title': 'Test', 'captions': ['🎬 one', '✨ two'],
-                    'fields': [{'k': 'kicker', 'label': 'Kicker', 'type': 'text', 'value': 'NORTHWIND'}, {'k': 'title', 'label': 'Title', 'type': 'text', 'value': 'WELCOME'},
+                    'fields': [{'k': 'kicker', 'label': 'Kicker', 'type': 'text', 'value': 'NORTHWIND'}, {'k': 'title', 'label': 'Title', 'type': 'text', 'value': 'FIXED' if b.get('step') == 'revise' else 'WELCOME'},
                                {'k': 'sub', 'label': 'Sub', 'type': 'text', 'value': 'TEL AVIV 2026'}, {'k': 'accent', 'label': 'Accent', 'type': 'color', 'value': '#ffcf6b'}, {'k': 'accent2', 'label': 'Accent 2', 'type': 'color', 'value': '#7cf5ff'}]}}
             await route.fulfill(status=200, body=json.dumps(body), headers={'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'})
         async def pbx(route):
@@ -80,6 +80,20 @@ async def main():
         except Exception: ok3 = False
         ok('AI Builder: the director picks an engine and it runs (one call)', ok3 and calls == ['direct'], [calls, await pg.evaluate("$('#dirErr').textContent+' | '+$('#dirErr2').textContent")])
         ok('the director\'s words fill the fields', await pg.evaluate("$('#dirF_title').value==='WELCOME'&&$('#dirF_kicker').value==='NORTHWIND'"))
+        # fix by prompt: the director gets the slide as it is now (with the user's text) + the change; ↶ goes back
+        await pg.evaluate("$('#dirF_kicker').value='MY TEXT';$('#dirF_kicker').dispatchEvent(new Event('input'))")
+        await pg.fill('#dirFix', 'make the background blue'); await pg.click('#dirFixGo')
+        okf = True
+        try: await pg.wait_for_function("$('#dirF_title').value==='FIXED'&&!$('#dirAdd').disabled&&!$('#dirUndo').hidden", timeout=180000)
+        except Exception: okf = False
+        ok('fix by prompt: one revise call with the change and the user\'s current texts', okf and len(revs) == 1 and revs[0].get('ask') == 'make the background blue' and any(f['k'] == 'kicker' and f['value'] == 'MY TEXT' for f in revs[0]['prev']['fields']), [okf, len(revs), await pg.evaluate("$('#dirFixErr').textContent")])
+        ok('fix by prompt: shows fixes left', await pg.evaluate("$('#dirFixN').textContent.includes('2')"), await pg.evaluate("$('#dirFixN').textContent"))
+        await pg.click('#dirUndo')
+        oku = True
+        try: await pg.wait_for_function("$('#dirF_title').value==='WELCOME'&&$('#dirUndo').hidden", timeout=60000)
+        except Exception: oku = False
+        ok('fix by prompt: ↶ brings the previous version back', oku, await pg.evaluate("JSON.stringify({t:$('#dirF_title').value,u:$('#dirUndo').hidden,err:$('#dirErr2').textContent,fe:$('#dirFixErr').textContent})"))
+        await pg.wait_for_function("!$('#dirAdd').disabled", timeout=180000)
         await pg.click('#dirAdd'); await pg.wait_for_function("$('#dirDlg').hidden", timeout=240000)
         eng = await pg.evaluate("(()=>{const x=items[items.length-1];return {n:items.length,t:x.type,sz:x.file.size,eng:x.scene&&x.scene.src.engine,ff:!!(x.scene&&x.scene.footFile),nm:x.name}})()")
         ok('Add records the engine slide over the footage into a video cue', eng['n'] == n0 + 1 and eng['t'] == 'video' and eng['eng'] == 'compose' and eng['ff'] and eng['sz'] > 50000, eng)
@@ -91,6 +105,18 @@ async def main():
         try: await pg.wait_for_function("!$('#dirS2').hidden&&!$('#dirAdd').disabled", timeout=180000)
         except Exception: ok4 = False
         ok('an SVG logo: the slide still runs (no decode error)', ok4 and not await pg.evaluate("$('#dirErr2').textContent"), await pg.evaluate("$('#dirErr').textContent+' | '+$('#dirErr2').textContent"))
+        # rating the slide: 5 stars go straight to public.ratings with the prompt and the director's look
+        rated = []
+        async def rt(route):
+            rated.append(json.loads(route.request.post_data or '{}')); await route.fulfill(status=201, body='', headers={'Access-Control-Allow-Origin': '*'})
+        await pg.route('**/rest/v1/ratings', rt)
+        await pg.evaluate("$('#dirStars').querySelector('[data-n=\"5\"]').click()"); await pg.wait_for_timeout(800)
+        ok('rate the slide: 5 stars are sent with the prompt and look', len(rated) == 1 and rated[0].get('kind') == 'slide' and rated[0].get('stars') == 5 and 'logo' in (rated[0].get('prompt') or '') and rated[0]['meta'].get('engine') == 'compose', rated)
+        # rating Cuey: after shows on 3 days, 2 stars ask what to improve and send it
+        await pg.evaluate("localStorage.setItem('cuey.rate.days',JSON.stringify(['2026-01-01','2026-01-02','2026-01-03']));appRateMaybe()")
+        await pg.click('#appRate .stars [data-n="2"]'); await pg.fill('#appRate textarea', 'more fonts'); await pg.click('#appRate .pri'); await pg.wait_for_timeout(800)
+        ok('rate Cuey: low stars ask what to improve, then send once', len(rated) == 2 and rated[1].get('kind') == 'app' and rated[1].get('stars') == 2 and rated[1].get('note') == 'more fonts', rated[1:] )
+        ok('rate Cuey is asked at most once after an answer', await pg.evaluate("(()=>{document.getElementById('appRate')?.remove();appRateMaybe();return !document.getElementById('appRate')})()"))
         await pg.evaluate("$('#dirDlg').hidden=true")
         ok('the slide language follows the prompt (names in English keep a Hebrew prompt Hebrew)', await pg.evaluate("promptLang('Opening slide for a biotech summit')==='en'&&promptLang('שקופית פתיחה לכנס של Google בתל אביב')==='he'&&promptLang('שקופית לכנס בינלאומי באנגלית')==='en'"))
         ok('an AI slide in Edit: no timer, end or trim choices', await pg.evaluate("(()=>{const x=items.find(i=>i.scene);openEdit(x);const b=$('#edBox');const r=!b.querySelector('[data-f=hold]')&&!b.querySelector('[data-f=onEndV]')&&!b.querySelector('[data-f=in]')&&!!b.querySelector('[data-f=standby]');$('#edX').click();return r})()"))
