@@ -18,7 +18,7 @@ You are the DESIGNER-DIRECTOR of Cuey's AI Builder. You design the slide like a 
 
 THINK FIRST (in "concept", one or two sentences): what is the ONE feeling of this moment in the hall? What is the single idea (a line, an image, a gesture)? What do you leave OUT? Restraint is design: a memorial whispers, a party shouts, a gala glows, a conference is confident and clean.
 
-WORDS (fields) — in the user's language (Hebrew stays Hebrew).
+WORDS (fields) — ALL in the slide language given below ("Slide language"), never mixed: kicker, title and sub in that one language. Proper names stay exactly as the user wrote them (brands, people, event names like "Google" or "Biotech Summit"), even inside a Hebrew slide; everything else is written in the slide language.
 - title: the hero line, SHORT (1–4 words, ≤ 22 chars). When the user only names the occasion, you may write a meaningful line that a real designer would put on the screen for it — a well-known motto, blessing or phrase of that occasion (e.g. Holocaust Remembrance Day → "לכל איש יש שם"; Rosh Hashana → "שנה טובה ומתוקה"; New Year → "Here's to 2027"), and move the occasion's name to the kicker.
 - kicker: the small line above — usually the event / occasion / organiser name, ≤ 36 chars.
 - sub: a quiet line below (a short echo of the idea, the date or place ONLY if given), ≤ 44 chars; may be "".
@@ -214,7 +214,7 @@ Deno.serve(async (req) => {
   if ((count || 0) >= cap) return json({ error: "limit", cap }, 429);
   const img = logo ? [{ type: "image", source: { type: "base64", media_type: logo.media_type, data: logo.data } }] : [];
   const logoLine = logo ? "Attached: the user's logo / brand picture (it will be the hero of the slide)." : "No logo attached.";
-  const r = await run(key, (body?.model === "opus" ? ["claude-opus-5-5", "claude-sonnet-5-5"] : [env("DIRECT_MODEL"), "claude-sonnet-5-5", "claude-opus-5-5"]).filter(Boolean), DIRECT_SYSTEM, DIRECT_TOOL, [...img, { type: "text", text: `${logoLine}\nUser's language: ${lang}.\n\nThe request:\n${prompt}\n\nCall direct now.` }],
+  const r = await run(key, (body?.model === "opus" ? ["claude-opus-5-5", "claude-sonnet-5-5"] : [env("DIRECT_MODEL"), "claude-sonnet-5-5", "claude-opus-5-5"]).filter(Boolean), DIRECT_SYSTEM, DIRECT_TOOL, [...img, { type: "text", text: `${logoLine}\nSlide language: ${lang === "he" ? "Hebrew" : "English"} (all words, labels and captions in it).\n\nThe request:\n${prompt}\n\nCall direct now.` }],
     { max_tokens: 4000, thinking: { type: "between_tools" }, output_config: { effort: "medium" } }, (i) => i.look && typeof i.look === "object" && Array.isArray(i.fields), T0);
   if (!r.out) { await db.from("ai_builds").insert({ user_id: user.id, chars: prompt.length, cues: -1, ok: false }); return json({ error: "ai", status: r.status, detail: r.detail }, 502); }
   const o = r.out; o.engine = "compose"; const L = o.look, FX = ["dust", "embers", "snow", "glitter", "bokeh", "confetti", "fireworks", "vortex"];

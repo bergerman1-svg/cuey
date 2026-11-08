@@ -92,6 +92,8 @@ async def main():
         except Exception: ok4 = False
         ok('an SVG logo: the slide still runs (no decode error)', ok4 and not await pg.evaluate("$('#dirErr2').textContent"), await pg.evaluate("$('#dirErr').textContent+' | '+$('#dirErr2').textContent"))
         await pg.evaluate("$('#dirDlg').hidden=true")
+        ok('the slide language follows the prompt (names in English keep a Hebrew prompt Hebrew)', await pg.evaluate("promptLang('Opening slide for a biotech summit')==='en'&&promptLang('שקופית פתיחה לכנס של Google בתל אביב')==='he'&&promptLang('שקופית לכנס בינלאומי באנגלית')==='en'"))
+        ok('an AI slide in Edit: no timer, end or trim choices', await pg.evaluate("(()=>{const x=items.find(i=>i.scene);openEdit(x);const b=$('#edBox');const r=!b.querySelector('[data-f=hold]')&&!b.querySelector('[data-f=onEndV]')&&!b.querySelector('[data-f=in]')&&!!b.querySelector('[data-f=standby]');$('#edX').click();return r})()"))
         ok('no page errors', not errs, errs)
         await b.close()
     print(f'\n{sum(res)}/{len(res)} passed')
