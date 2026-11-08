@@ -3173,7 +3173,7 @@ function hostMain(){let c=document.getElementById('c'),draw=null,playing=false,t
       const inj=src=>{const u=URL.createObjectURL(new Blob([src],{type:'text/javascript'}));return new Promise((ok,no)=>{const s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=no;document.head.appendChild(s)})};
       if(d.three&&!self.THREE)await inj(d.three);if(d.kit&&(!self.K||(d.three&&!self.K.stage)))await inj(d.kit);if(d.engsrc&&!self.ENG)await inj(d.engsrc);
       await fonts();const n=document.createElement('canvas');n.id='c';n.width=1920;n.height=1080;c.replaceWith(n);c=n;
-      A={logo:d.logo?await createImageBitmap(d.logo):null,intro:+d.intro||6,loop:+d.loop||8,bg:null,bg2:null,mix:0,lum:typeof d.lum==='number'?d.lum:undefined,mood:d.mood||null,look:d.look||null};
+      A={logo:d.logo?await createImageBitmap(d.logo).catch(()=>null):null,intro:+d.intro||6,loop:+d.loop||8,bg:null,bg2:null,mix:0,lum:typeof d.lum==='number'?d.lum:undefined,mood:d.mood||null,look:d.look||null};
       const fn=d.eng?((cv,F,AA)=>self.ENG[d.eng](cv,F,AA,self.THREE,self.K)):new Function('canvas','F','A','THREE','K','return (async()=>{\n'+d.code+'\n})()');const r=await fn(c,d.fields||{},A,self.THREE,self.K);
       if(my!==gen)return;if(typeof r!=='function')throw new Error('the scene did not return draw(t)');r(0);draw=r;parent.postMessage({sc:'ready'},'*');
       if(d.play){playing=true;t0=performance.now();loop()}
@@ -3222,7 +3222,7 @@ async function footFetch(qs,pick){if(pick&&pick.full&&pick.id){try{const blob=aw
     const hs=(d.hits||[]).filter(h=>(!h.w||h.w>=h.h)&&(!h.dur||h.dur>=8));const h=hs.find(h=>!h.dur||h.dur>=14)||hs[0];if(!h)continue;
     const blob=await pbFetch(h.full);const f=new File([blob],`pixabay-${h.id}.mp4`,{type:'video/mp4'});await keepGen(f);return {file:f,q,id:h.id}}catch(e){}}return null}
 async function loadScene(play){const s=st.scene;if(!s)return;st.ready=false;$('#dirAdd').disabled=true;
-  footStop();const m={sc:'load',code:s.code,eng:s.engine||null,intro:s.intro,loop:s.loop,lum:st.footLum,mood:s.mood||null,look:s.look||null,fields:{...st.fields},logo:st.logoFile||null,play:!!play&&!s.engine};try{if(s.mode==='3d'||s.engine)m.three=await three();m.kit=await kit();if(s.engine)m.engsrc=await engines()}catch(e){$('#dirErr2').textContent=dt('err');return}st.wantPlay=!!play;post(m)}
+  footStop();const m={sc:'load',code:s.code,eng:s.engine||null,intro:s.intro,loop:s.loop,lum:st.footLum,mood:s.mood||null,look:s.look||null,fields:{...st.fields},logo:await logoPng(),play:!!play&&!s.engine};try{if(s.mode==='3d'||s.engine)m.three=await three();m.kit=await kit();if(s.engine)m.engsrc=await engines()}catch(e){$('#dirErr2').textContent=dt('err');return}st.wantPlay=!!play;post(m)}
 function frameAt(t,bgs){return new Promise((ok,no)=>{const id=++fid;frameWait.cur={id,ok,no};const b=bgs||{},tr=[b.bg,b.bg2].filter(Boolean);if(st.hostOk)ifr.contentWindow.postMessage({sc:'frame',t,id,...b},'*',tr);else post({sc:'frame',t,id});setTimeout(()=>{if(frameWait.cur&&frameWait.cur.id===id){frameWait.cur=null;no(new Error('timeout'))}},8000)})}
 /* record intro + one loop into a video file, frame by frame with exact timestamps (WebCodecs + WebM),
    so a slow computer gives the same smooth video, only slower to make. The loop starts on a key frame. */
@@ -3267,6 +3267,8 @@ $('#dirLogoBtn').onclick=()=>$('#dirLogo').click();
 $('#dirLogo').onchange=()=>{const f=$('#dirLogo').files[0];if(!f)return;st.logoFile=f;const im=$('#dirLogoImg');im.src=URL.createObjectURL(f);im.hidden=false;$('#dirLogoX').hidden=false};
 $('#dirLogoX').onclick=()=>{st.logoFile=null;$('#dirLogoImg').hidden=true;$('#dirLogoX').hidden=true;$('#dirLogo').value=''};
 $('#dirBack').onclick=()=>{if(st.busy)return;if(st.edit){close();return}post({sc:'stop'});footStop();step(1)};
+/* the engine gets a PNG: createImageBitmap can't open SVG/HEIC, the <img> route can */
+const lpC=new WeakMap();async function logoPng(){const f=st.logoFile;if(!f)return null;if(lpC.has(f))return lpC.get(f);let out=null;try{const u=URL.createObjectURL(f),im=new Image();im.src=u;await im.decode();let w=im.naturalWidth||1024,h=im.naturalHeight||1024;const k=Math.min(1,2048/Math.max(w,h));w=Math.max(1,Math.round(w*k));h=Math.max(1,Math.round(h*k));const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);URL.revokeObjectURL(u);out=await new Promise(r=>c.toBlob(r,'image/png'))}catch(e){out=null}lpC.set(f,out);return out}
 async function logoData(){if(!st.logoFile)return null;const im=new Image();im.src=URL.createObjectURL(st.logoFile);await new Promise(r=>{im.onload=im.onerror=r});const s=Math.min(1,768/Math.max(im.naturalWidth||1,im.naturalHeight||1)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.naturalWidth*s));c.height=Math.max(1,Math.round(im.naturalHeight*s));c.getContext('2d').drawImage(im,0,0,c.width,c.height);return {media_type:'image/png',data:c.toDataURL('image/png').split(',')[1]}}
 /* two steps: the director writes the shot list (shown on the magic screen), then the motion designer builds it */
 let capT=0;function captions(list){clearInterval(capT);if(!list||!list.length)return;let i=0;const show=()=>{$('#dirMagicT').textContent=list[i%list.length];i++};show();capT=setInterval(show,2600)}

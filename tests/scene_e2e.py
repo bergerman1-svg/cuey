@@ -84,6 +84,14 @@ async def main():
         eng = await pg.evaluate("(()=>{const x=items[items.length-1];return {n:items.length,t:x.type,sz:x.file.size,eng:x.scene&&x.scene.src.engine,ff:!!(x.scene&&x.scene.footFile),nm:x.name}})()")
         ok('Add records the engine slide over the footage into a video cue', eng['n'] == n0 + 1 and eng['t'] == 'video' and eng['eng'] == 'compose' and eng['ff'] and eng['sz'] > 50000, eng)
         ok('it is named after the title', eng['nm'] == 'WELCOME', eng)
+        # an SVG logo (common download format) must not stop the slide: the engine gets a PNG
+        await pg.evaluate("""(()=>{const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80"><rect width="200" height="80" rx="16" fill="#1e40af"/><text x="100" y="52" font-size="36" text-anchor="middle" fill="#fff">LOGO</text></svg>';
+          const f=new File([svg],'logo.svg',{type:'image/svg+xml'});const dt=new DataTransfer();dt.items.add(f);const i=$('#dirLogo');openDirector();i.files=dt.files;i.dispatchEvent(new Event('change'));$('#dirPrompt').value='Opening slide with our logo';$('#dirGo').click()})()""")
+        ok4 = True
+        try: await pg.wait_for_function("!$('#dirS2').hidden&&!$('#dirAdd').disabled", timeout=180000)
+        except Exception: ok4 = False
+        ok('an SVG logo: the slide still runs (no decode error)', ok4 and not await pg.evaluate("$('#dirErr2').textContent"), await pg.evaluate("$('#dirErr').textContent+' | '+$('#dirErr2').textContent"))
+        await pg.evaluate("$('#dirDlg').hidden=true")
         ok('no page errors', not errs, errs)
         await b.close()
     print(f'\n{sum(res)}/{len(res)} passed')
