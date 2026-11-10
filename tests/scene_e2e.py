@@ -83,7 +83,7 @@ async def main():
         ok3 = True
         try: await pg.wait_for_function("!$('#dirS2').hidden&&!$('#dirAdd').disabled&&$('#dirBusy').hidden", timeout=240000)
         except Exception: ok3 = False
-        ok('internal critic: 3 frames of the slide go to the critic, and its fix is applied before the user decides', len(crits) == 1 and len(crits[0].get('frames') or []) == 3 and all(len(f) > 2000 for f in crits[0]['frames']) and calls == ['direct', 'critic'] and 'less dust' in await pg.evaluate("$('#dirPrevNote').textContent"), [calls, len(crits)])
+        ok('internal critic: 3 frames of the slide go to the critic, and its fix is applied before the user decides', len(crits) == 1 and len(crits[0].get('frames') or []) == 3 and all(len(f) > 2000 for f in crits[0]['frames']) and calls == ['direct', 'critic'] and 'less dust' not in await pg.evaluate("$('#dirDlg').innerText") and await pg.evaluate("__dirTest.look().fx") == 'none', [calls, len(crits)])
         ok('AI Builder: the director picks an engine and it runs (one call)', ok3 and calls[:1] == ['direct'], [calls, await pg.evaluate("$('#dirErr').textContent+' | '+$('#dirErr2').textContent")])
         ok('the director\'s words fill the fields', await pg.evaluate("$('#dirF_title').value==='WELCOME'&&$('#dirF_kicker').value==='NORTHWIND'"))
         # fix by prompt: the director gets the slide as it is now (with the user's text) + the change; ↶ goes back
