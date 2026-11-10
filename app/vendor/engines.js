@@ -182,6 +182,8 @@ function subject(L){if(!L)return null;let m=0;for(const v of L)m+=v;m/=576;let s
   return {L,mean:m,cx:sw>1e-3?sx/sw/31:.5,cy:sw>1e-3?sy/sw/17:.5,str:sw/576}}
 const lin=v=>v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4);
 function region(fr,x0,x1,y0,y1){if(!fr)return .3;let s=0,n=0;for(let y=Math.max(0,Math.floor(y0*18));y<Math.min(18,Math.ceil(y1*18));y++)for(let x=Math.max(0,Math.floor(x0*32));x<Math.min(32,Math.ceil(x1*32));x++){s+=lin(fr.L[y*32+x]);n++}return n?s/n:.3}
+/* brightness of the brightest part of an area (half peak, half mean): a thin bright band under a line of text counts */
+function regionHi(fr,x0,x1,y0,y1){if(!fr)return .3;let s=0,n=0,mx=0;for(let y=Math.max(0,Math.floor(y0*18));y<Math.min(18,Math.ceil(y1*18));y++)for(let x=Math.max(0,Math.floor(x0*32));x<Math.min(32,Math.ceil(x1*32));x++){const v=lin(fr.L[y*32+x]);s+=v;n++;if(v>mx)mx=v}return n?(s/n+mx)/2:.3}
 /* periodic particle fields (all motion in whole cycles of the loop) */
 function field(S,kind,{n=400,color='#ffffff',ac='#ffd27a',ac2='#7cf5ff',e=.5,seed=3}={}){
   const cfg={dust:{n,size:1,op:.35,rise:0,wob:.6,spread:[26,15,10]},embers:{n:Math.round(n*.6),size:1.3,op:.55,rise:1,wob:.5,spread:[26,16,8],col:'#ffb36b'},
@@ -288,7 +290,13 @@ async function compose(canvas,F,A){
     const gap=g=>g===logo?.55:g===kick?(TAG?.5:.34):g===title?(ruleM&&!orn?.62:.4):g===orn?.36:0,tot=items.reduce((a,g)=>a+g.height+gap(g),0)+(ruleM?.0:0);
     const he=K.he(F.title||F.kicker||''),align=side||L==='top'||L==='bottom'?(L==='left'?(he?'right':'left'):L==='right'?(he?'right':'left'):'center'):'center';
     const bw=Math.max(...items.map(g=>g.width));const m=vw*.05;
-    const cx=L==='left'?-vw/2+m+bw/2:L==='right'?vw/2-m-bw/2:0,top=L==='top'?vh/2-vh*.09:L==='bottom'?-vh/2+vh*.1+tot:tot/2+.15;
+    const cx=L==='left'?-vw/2+m+bw/2:L==='right'?vw/2-m-bw/2:0;let top=L==='top'?vh/2-vh*.09:L==='bottom'?-vh/2+vh*.1+tot:tot/2+.15;
+    /* floor: the words never sit on a bright band (horizon, sun, stage light) — with 'auto', move the block up or down to the darkest third */
+    /* the brightness behind the WORST line (title counts double): used to place the block and to set the scrim */
+    const rows=[];{let o=0;for(const g of items){if(g!==logo&&g!==orn)rows.push([o,g.height,1,g.width]);o+=g.height+gap(g)}}
+    const worst=tp=>fr?Math.max(...rows.map(([o,h,wt,w])=>wt*regionHi(fr,(cx-w/2)/vw+.5,(cx+w/2)/vw+.5,.5-(tp-o)/vh,.5-(tp-o-h)/vh))):null;
+    if(fr&&lk.layout==='auto'&&L!=='top'&&L!=='bottom'&&rows.length){const lim=vh/2-vh*.06,c0=worst(top);let best=top,bl=c0;
+      for(let tp=lim;tp-tot>=-lim;tp-=.2){const l=worst(tp)+Math.abs(tp-top)*.004;if(l<bl){bl=l;best=tp}}if(c0>.06&&bl<c0*.7)top=best}
     let y=top;items.forEach(g=>{g.position.y=y-g.height/2;g.position.x=align==='center'?cx:align==='right'?cx+bw/2-g.width/2:cx-bw/2+g.width/2;
       if(g===title&&ruleM){const rw=Math.min(2.6,bw*.3);ruleM.scale.set(rw,.035,1);ruleM.userData={w:rw,x:align==='center'?cx:align==='right'?cx+bw/2-rw/2:cx-bw/2+rw/2,dir:align==='right'?1:align==='left'?-1:0};ruleM.position.set(ruleM.userData.x,y-g.height-.3,0)}
       y-=g.height+gap(g)});
@@ -298,8 +306,8 @@ async function compose(canvas,F,A){
     if(pnl){const sh=PANEL,w=sh===1?vh*.62:sh===2?vw*.34:vw*.4,h=sh===1?vh*.62:sh===2?vh*.86:vh*.62,px=(L==='right'?-1:1)*(vw/2-vw*.05-w/2);pnl.scale.set(w,h,1);pnl.position.set(px,0,-.3);pnl.material.uniforms.pa.value=w/h;pnl.userData={x:px}}
     if(MOT==='arc'&&title){const he2=title.he,x0=blk.x-blk.w/2-.3,x1=blk.x+blk.w/2+.3,yb=sub?sub.position.y-sub.height*.5-.45:title.position.y-title.height*.62,pts=[];for(let i=0;i<=64;i++){const u=i/64,xx=x0+(x1-x0)*u;pts.push(new THREE.Vector3(xx,yb-.35*Math.sin(Math.PI*u)+.25*u*(he2?-1:1),0))}
       const crv=new THREE.CatmullRomCurve3(he2?pts.reverse():pts);mm[0].geometry=new THREE.TubeGeometry(crv,128,.045,8,false);mm[0].userData.cnt=mm[0].geometry.index.count}
-    const u0=(cx-bw/2)/vw+.5,u1=(cx+bw/2)/vw+.5,v0=.5-(top)/vh,v1=.5-(top-tot)/vh,lum=fr?region(fr,u0,u1,v0,v1):(typeof A.lum==='number'?A.lum:.3);
-    if(fr&&fr.mean>.3)dark=Math.min(.75,dark+(fr.mean-.3)*.9);need=K.cl(1-.16/Math.max(lum*(1-dark),.02),.2,.85);if(bgM)need=Math.max(need,FILL?.62:.42);if(INK)need=0};
+    const u0=(cx-bw/2)/vw+.5,u1=(cx+bw/2)/vw+.5,v0=.5-(top)/vh,v1=.5-(top-tot)/vh,lum=fr?Math.max(region(fr,u0,u1,v0,v1),worst(top)||0):(typeof A.lum==='number'?A.lum:.3);
+    if(fr&&fr.mean>.3)dark=Math.min(.75,dark+(fr.mean-.3)*.9);need=K.cl(1-(FILL?.04:.08)/Math.max(lum*(1-dark),.02),FILL?.35:.2,.9); /* floor: a gold/silver/colour title is darker than white — it needs a darker field behind it */if(bgM)need=Math.max(need,FILL?.62:.42);if(INK)need=0};
   /* timeline (calm slides breathe slower) */
   const sp=calm?1.35:1,T0=.9*sp,kickT=T0,titleT=T0+(kick?.45*sp:0),nT=(title&&title.n)||1,stS=Math.min(.06,1.2/nT),tEnd=SCR?titleT+.35+stS*(nT-1)+.45:CNT?titleT+2.2:titleT+RC.dur+RC.st*Math.max(0,nT-1),ruleT=tEnd-.2,subT=tEnd+.05,logoT=T0-.1;
   const POP=titleT+.25;let dark=K.cl(+lk.dark||.45,0,.9);const zoom0=1.04+.1*e;

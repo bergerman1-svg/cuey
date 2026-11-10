@@ -122,6 +122,8 @@ const PICK_SYSTEM = `You are the art director of Cuey's AI Builder. You see stil
 2. It leaves calm, empty space for the words (dark or soft areas); one simple subject off to the side is great; busy, high-contrast, finely patterned or cluttered frames are bad.
 3. It looks premium and cinematic: shallow depth of field, bokeh, beautiful light, rich but not garish colour, no watermark-like text, no faces as the subject.
 4. Medium-dark is better than bright.
+5. The main thing you SEE must belong to this event. A boat, a random street, strangers, an unrelated object or place are wrong even when the frame is beautiful — unless the request asked for it. When no candidate shows a fitting subject, choose the most neutral one (soft bokeh, light, abstract texture).
+6. Follow the LESSONS LEARNED below when they talk about footage.
 Call pick once.`;
 
 // search Pixabay for candidates and let the model look at them (vision) — returns the chosen hit or null
@@ -157,7 +159,7 @@ function call(key: string, model: string, system: string, tool: any, content: an
   return fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-    body: JSON.stringify({ model, stream: true, system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }, ...(LESSONS && tool.name === "direct" ? [{ type: "text", text: LESSONS }] : [])], tools: [tool], tool_choice: { type: "auto" }, messages: [{ role: "user", content }], ...opts }),
+    body: JSON.stringify({ model, stream: true, system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }, ...(LESSONS && (tool.name === "direct" || tool.name === "pick") ? [{ type: "text", text: LESSONS }] : [])], tools: [tool], tool_choice: { type: "auto" }, messages: [{ role: "user", content }], ...opts }),
   });
 }
 // read the SSE stream; give up before the 150 s edge limit
@@ -232,5 +234,6 @@ Deno.serve(async (req) => {
   if (revise && JSON.stringify(o.footage || []) === JSON.stringify(prev.footage || []) && body?.prev?.pick) o.pick = body.prev.pick;
   else if (body?.pick !== false && (!L.bg || L.bg === "footage" || L.overlay > 0 || (L.panel && L.panel !== "none"))) { try { o.pick = await pickFootage(key, (o.footage || []).map(String), o, T0); } catch (e) { console.error("pick", String(e)); } }
   await db.from("ai_builds").insert({ user_id: user.id, chars: prompt.length + ask.length + (logo ? 1 : 0), cues: revise ? -2 : -1, ok: true });
+  if (revise) { try { await db.from("ai_fixes").insert({ user_id: user.id, ask, prompt: prompt.slice(0, 2000) || null, look: o.look || null }); } catch { /* */ } }
   return json({ direct: o, model: r.model, left: cap - (count || 0) - 1 });
 });
