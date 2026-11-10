@@ -44,7 +44,7 @@ LOOK — the design, built from Cuey's blocks:
 - motif: none | dots | stripes | rings | arc | bars | sparkle (the logo's star/sparkle shape scattered across the slide, gently breathing — use it when the logo has a star, spark or twinkle) — the LEADING graphic element built from the logo's colours and shapes (see Brand language). With no logo it uses your accents.
 - panel: none | window | circle | strip — real footage shown INSIDE a framed shape beside the words (rounded window, circle, slanted strip) over a drawn background: great for conferences, brands, travel, people-and-place events. The words go to the reading side, the panel to the other.
 - camera: push (slow push-in) | drift | still.
-- intro: none (default) | countdown (a big 3-2-1 in a glowing ring before the slide — the whole hall counts together; openings, launches, New Year, sports, the moment a show starts) | curtain (a stage curtain opens to reveal the slide — ceremonies, galas, award nights, premieres, a grand opening; in the brand colour when bg:brand). Use one only when the slide OPENS a moment (the first screen of an event, a launch, a reveal); never for memorial, never for a slide that just sits behind a speaker.
+- intro: none (default) | countdown (a big 3-2-1 in a glowing ring before the slide — the whole hall counts together; openings, launches, New Year, sports, the moment a show starts) | curtain (a stage curtain opens to reveal the slide — ceremonies, galas, award nights, premieres, a grand opening; in the brand colour when bg:brand). ONLY when the user ASKS for it (a countdown, 3-2-1, a curtain, a reveal, a big opening moment). Otherwise always none — an opening effect on every slide is a cliché and gives the tool away; the slide's own reveal is the opening.
 - dark: 0.2–0.7 how much the footage is darkened; blur: 0–4 how defocused the footage is (more blur = text pops).
 - Memorial / remembrance: energy ≤ 0.15, no confetti/fireworks/flash/spots, a serif (frankLight / bellefair / david), veil, often rule:true and embers or none.
 
@@ -231,6 +231,8 @@ Deno.serve(async (req) => {
   for (const k of keep) if (!seen.has(k)) o.fields.push({ k, label: k, type: k.startsWith("accent") ? "color" : "text", value: k === "accent" ? "#ffcf6b" : k === "accent2" ? "#7cf5ff" : "" });
   console.log("direct", r.model, Date.now() - T0, "ms", o.concept, JSON.stringify(o.look), JSON.stringify(o.footage), JSON.stringify(r.usage));
   L.overlay = Math.max(0, Math.min(.5, +L.overlay || 0));
+  // opening effects only on request: the curtain on 5 of 12 test slides made the builder easy to spot
+  if (L.intro && L.intro !== "none" && !/count ?down|3.?2.?1|curtain|reveal|grand opening|premiere|ספיר|וילון|מסך נפתח|מסך עולה|פרגוד|חשיפ|בכורה|פתיחה גדולה|הפתיחה הגדולה/i.test(prompt + " " + ask)) L.intro = "none";
   if (revise && JSON.stringify(o.footage || []) === JSON.stringify(prev.footage || []) && body?.prev?.pick) o.pick = body.prev.pick;
   else if (body?.pick !== false && (!L.bg || L.bg === "footage" || L.overlay > 0 || (L.panel && L.panel !== "none"))) { try { o.pick = await pickFootage(key, (o.footage || []).map(String), o, T0); } catch (e) { console.error("pick", String(e)); } }
   await db.from("ai_builds").insert({ user_id: user.id, chars: prompt.length + ask.length + (logo ? 1 : 0), cues: revise ? -2 : -1, ok: true });
