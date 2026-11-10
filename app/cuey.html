@@ -1384,7 +1384,7 @@ function tlUpdate(){
   $('#inBtn').textContent=vid&&itc.in>0?'IN '+fmt(itc.in):'IN ⇥';$('#outBtn').textContent=vid&&itc.out>0?fmt(itc.out)+' OUT':'⇤ OUT';
   const mi=$('#mkIn'),mo=$('#mkOut');if(vid&&m.duration){mi.hidden=!(itc.in>0);mo.hidden=!(itc.out>0);mi.style.left=(itc.in/m.duration*100)+'%';mo.style.left=(itc.out/m.duration*100)+'%'}else{mi.hidden=mo.hidden=true}
   rem.textContent='−'+fmt(isFinite(left)?Math.max(0,left):NaN);
-  const hot=isFinite(left)&&left<=5.05&&!m.loop&&!m.paused&&m.currentTime>0&&!(itc&&itc.grp);
+  const hot=isFinite(left)&&left<=5.05&&!m.loop&&!m.paused&&m.currentTime>0&&!(itc&&(itc.grp||itc.scene)); /* an AI slide never ends: it loops back into its loop part */
   rem.classList.toggle('hot',hot);
   const n=Math.ceil(left-0.05);
   if(hot&&n>=1){if($('#cdN').textContent!==String(n)){$('#cdN').textContent=n;cd.classList.remove('on');void cd.offsetWidth}cd.classList.add('on')}else cd.classList.remove('on');

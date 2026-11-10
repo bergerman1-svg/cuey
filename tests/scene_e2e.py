@@ -39,6 +39,8 @@ async def main():
         await pg.evaluate("go()"); await pg.wait_for_timeout(1500)
         v = await pg.evaluate("(()=>{const m=pvStage.media;return m?{tag:m.tagName,loop:m.loop,paused:m.paused}:null})()")
         ok('GO plays the slide', v and v['tag'] == 'VIDEO' and not v['paused'], v)
+        cdon = await pg.evaluate("""new Promise(r=>{const m=pvStage.media;m.currentTime=Math.max(0,m.duration-3);let on=false;const iv=setInterval(()=>{if($('#cd').classList.contains('on')||$('#rem').classList.contains('hot'))on=true},50);setTimeout(()=>{clearInterval(iv);r(on)},1500)})""")
+        ok('an AI slide shows no "to end" countdown (it never ends)', not cdon)
         jump = await pg.evaluate("""new Promise(r=>{const m=pvStage.media;m.currentTime=Math.max(0,m.duration-0.4);setTimeout(()=>r([m.currentTime,m.duration]),1600)})""")
         ok('at the end it loops back into the loop part (not to 0)', jump and jump[0] > 4.5 and jump[0] < jump[1]-0.2, jump)
         # duplicate + edit = a second slide with another title
