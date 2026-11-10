@@ -154,12 +154,39 @@ async function pickFootage(key: string, qs: string[], o: any, T0: number) {
   return { ...cands[i], why: r.out?.why || "", n: cands.length };
 }
 
+// the internal critic: looks at 3 rendered frames of the slide and the director's design, scores it, and proposes the smallest fix
+const LOOKP = (DIRECT_TOOL.input_schema.properties.look as any).properties;
+const CRITIC_TOOL = {
+  name: "critique",
+  description: "Score the slide and propose the smallest fix.",
+  input_schema: { type: "object", properties: {
+    score: { type: "integer", description: "1-10: would a top event designer project this as is" },
+    issues: { type: "array", maxItems: 5, items: { type: "string" }, description: "the main problems, short, most important first" },
+    look: { type: "object", description: "ONLY the look fields to change (allowed values as in the design schema); {} if none" },
+    fields: { type: "array", items: { type: "object", properties: { k: { type: "string", enum: ["kicker", "title", "sub", "accent", "accent2"] }, value: { type: "string" } }, required: ["k", "value"] }, description: "ONLY texts/colours to change; [] if none" },
+    notes: { type: "array", maxItems: 3, items: { type: "string" }, description: "1-3 very short lines in the slide language telling the user what you improved (empty if nothing)" } },
+    required: ["score", "issues", "look", "fields", "notes"] },
+};
+const GALLERY_TITLES = ["לכל איש יש שם", "מרימים כוסית!", "And the winner is…", "נועה & איתי", "יאלי בת 6!", "חג אורים שמח", "תודה, דליה", "Here's to 2027", "שנה טובה ומתוקה"];
+const CRITIC_SYSTEM = `You are the senior art director at Cuey. Before the client sees a slide made by Cuey's AI Builder, you review it. A slide is one full-screen motion piece for a live event screen (LED wall / projector): an intro, then a loop that holds until the operator presses GO.
+You get 3 frames (1: mid-intro — the reveal may still be moving, that is fine; 2: the hero frame just after the intro; 3: mid-loop) and the director's design as JSON. Score 1-10: "would a top event designer project this as is?" 8+ = yes.
+Check, in this order:
+1. Readable from the back of a hall: every line clear, strong contrast against what is behind it, nothing cut off, touching an edge or overlapping the logo; the title is the biggest, brightest words.
+2. Composition: the words sit in calm space, balanced, not cramped; the logo is a signature, not a billboard.
+3. Restraint: at most ONE particle effect and ONE light. Particles, glow, bokeh and lens-light everywhere look generic and AI-made; fewer is better. Prefer removing an effect over adding one.
+4. Life in the loop: frames 2 and 3 must differ visibly (something moves: a light sweep, the letters, a motif, the footage). A dead hold is a flaw.
+5. Fit: the feeling matches the occasion; the words are in one language; Latin text uses a face that suits it; no fact the user did not give; the title is NOT one of these example lines: ${GALLERY_TITLES.join(" | ")} (if it is, write a new, specific title).
+6. Clichés that give the tool away: an opening curtain/countdown nobody asked for; gold on everything; the same glossy dark look for every occasion.
+Then the fix: ONLY the smallest changes that fix the main issues — look fields (with the allowed values below) and/or texts/colours. Never touch footage. If the score is 8 or more, leave look {} and fields [].
+Allowed look values: ${JSON.stringify(Object.fromEntries(Object.entries(LOOKP).map(([k, v]: any) => [k, v.enum || v.type])))}
+Call critique once.`;
+
 let LESSONS = "";
 function call(key: string, model: string, system: string, tool: any, content: any[], opts: any) {
   return fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-    body: JSON.stringify({ model, stream: true, system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }, ...(LESSONS && (tool.name === "direct" || tool.name === "pick") ? [{ type: "text", text: LESSONS }] : [])], tools: [tool], tool_choice: { type: "auto" }, messages: [{ role: "user", content }], ...opts }),
+    body: JSON.stringify({ model, stream: true, system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }, ...(LESSONS && (tool.name === "direct" || tool.name === "pick" || tool.name === "critique") ? [{ type: "text", text: LESSONS }] : [])], tools: [tool], tool_choice: { type: "auto" }, messages: [{ role: "user", content }], ...opts }),
   });
 }
 // read the SSE stream; give up before the 150 s edge limit
@@ -185,11 +212,43 @@ async function run(key: string, models: string[], system: string, tool: any, con
   let status = 0, detail = "";
   for (const m of models) {
     const t0 = Date.now(); const r = await call(key, m, system, tool, content, opts); status = r.status;
-    if (r.ok) { const c = await collect(r, T0 + 142000); console.log(tool.name, m, Date.now() - t0, "ms", c.stop, JSON.stringify(c.usage)); if (c.input && ok(c.input)) return { out: c.input, model: m, usage: c.usage }; detail = c.stop || "no output"; break; }
+    if (r.ok) { const c = await collect(r, T0 + 142000); console.log(tool.name, m, Date.now() - t0, "ms", c.stop, JSON.stringify(c.usage)); if (c.input && ok(c.input)) return { out: c.input, model: m, usage: c.usage }; detail = c.stop || "no output"; if (Date.now() - T0 > 70000) break; continue; } // a broken answer: try the next model while there is time
     detail = (await r.text()).slice(0, 300); console.error(tool.name, m, r.status, detail);
     if (r.status === 400 || r.status === 401 || r.status === 403 || r.status === 429 || (r.status >= 500 && r.status !== 529)) break;
   }
   return { out: null, status, detail };
+}
+
+async function critic(key: string, db: any, uid: string, body: any, prompt: string, lang: string, T0: number) {
+  const d = body?.direct, frames = Array.isArray(body?.frames) ? body.frames.filter((f: any) => typeof f === "string" && f.length < 600_000).slice(0, 3) : [];
+  if (!d || typeof d !== "object" || !d.look || frames.length < 2 || JSON.stringify(d).length > 20000) return json({ error: "bad critic" }, 400);
+  const { count } = await db.from("ai_critic").select("id", { count: "exact", head: true }).eq("user_id", uid).gte("created_at", new Date(Date.now() - 864e5).toISOString());
+  if ((count || 0) >= (ADMINS.includes(uid) ? 900 : 120)) return json({ error: "limit" }, 429);
+  try { const { data: ls } = await db.from("ai_lessons").select("lesson").eq("status", "active").order("id").limit(60); LESSONS = (ls && ls.length) ? "LESSONS LEARNED from reviewed Cuey slides (they apply to your review too):\n" + ls.map((l: any, i: number) => `${i + 1}. ${l.lesson}`).join("\n") : ""; } catch { LESSONS = ""; }
+  const clean = { ...d }; delete clean.pick; delete clean.captions;
+  const content: any[] = frames.map((f: string, i: number) => [{ type: "text", text: `Frame ${i + 1}:` }, { type: "image", source: { type: "base64", media_type: "image/jpeg", data: f } }]).flat();
+  content.push({ type: "text", text: `Slide language: ${lang === "he" ? "Hebrew" : "English"}.\nThe user's request:\n${prompt || "(none)"}\n\nThe director's design:\n${JSON.stringify(clean)}\n\nCall critique now.` });
+  const r = await run(key, ["claude-sonnet-5-5", "claude-opus-5-5"], CRITIC_SYSTEM, CRITIC_TOOL, content, { max_tokens: 2500, thinking: { type: "between_tools" }, output_config: { effort: "low" } }, (i) => Number.isInteger(i.score), T0);
+  if (!r.out) return json({ error: "ai", status: r.status }, 502);
+  const c = r.out, score = Math.max(1, Math.min(10, c.score | 0)), issues = (c.issues || []).map(String).slice(0, 5);
+  // the fix: only allowed look values, only known fields
+  const look: any = {}, lp = c.look && typeof c.look === "object" ? c.look : {};
+  for (const [k, v] of Object.entries(lp)) { const sp: any = LOOKP[k]; if (!sp) continue;
+    if (sp.enum) { if (sp.enum.includes(v)) look[k] = v; } else if (sp.type === "number") { if (Number.isFinite(+v)) look[k] = +v; } else if (sp.type === "boolean") look[k] = !!v; else if (k === "fx") look[k] = String(v); }
+  const fp = Array.isArray(c.fields) ? c.fields.filter((f: any) => ["kicker", "title", "sub", "accent", "accent2"].includes(f?.k) && typeof f.value === "string") : [];
+  const patched = score < 8 && (Object.keys(look).length > 0 || fp.length > 0);
+  let out: any = null;
+  if (patched) {
+    out = { ...d, look: { ...d.look, ...look }, fields: (d.fields || []).map((f: any) => { const n = fp.find((x: any) => x.k === f.k); return n ? { ...f, value: String(n.value).slice(0, f.k === "sub" ? 60 : 44) } : f; }) };
+    const L = out.look, FX = ["dust", "embers", "snow", "glitter", "bokeh", "confetti", "fireworks", "vortex"];
+    L.energy = Math.max(0, Math.min(1, +L.energy || 0)); L.fx = String(L.fx || "none").split(/[+, ]+/).filter((f: string) => FX.includes(f)).slice(0, 2).join("+") || "none";
+    L.dark = Math.max(.15, Math.min(.75, L.dark == null ? .45 : +L.dark)); L.blur = Math.max(0, Math.min(4, L.blur == null ? 1.5 : +L.blur)); L.overlay = Math.max(0, Math.min(.5, +L.overlay || 0));
+    if (d.mood === "memorial") { L.energy = Math.min(L.energy, .15); if (["spots", "rays", "ripple"].includes(L.light)) L.light = "none"; }
+    if (L.intro && L.intro !== "none" && (d.look?.intro || "none") === "none") L.intro = "none"; // the critic never adds an opening effect
+  }
+  console.log("critic", r.model, Date.now() - T0, "ms", score, JSON.stringify(issues), patched ? JSON.stringify({ look, fp }) : "-", JSON.stringify(r.usage));
+  try { await db.from("ai_critic").insert({ user_id: uid, prompt: prompt.slice(0, 2000) || null, score, issues, patched, look_before: d.look, look_after: patched ? out.look : null }); } catch { /* */ }
+  return json({ score, issues, notes: patched ? (c.notes || []).map(String).slice(0, 3) : [], direct: out });
 }
 
 Deno.serve(async (req) => {
@@ -203,6 +262,7 @@ Deno.serve(async (req) => {
   const user = u?.user; if (!user) return json({ error: "sign in" }, 401);
   let body: any; try { body = await req.json(); } catch { return json({ error: "bad json" }, 400); }
   const prompt = String(body?.prompt || "").trim().slice(0, MAX_CHARS), lang = body?.lang === "he" ? "he" : "en";
+  if (body?.step === "critic") return critic(key, db, user.id, body, prompt, lang, T0);
   // fix by prompt: the slide as it is now + what to change (3 per slide in the app; here up to 3x the daily build cap, counted apart as cues -2)
   const revise = body?.step === "revise", ask = String(body?.ask || "").trim().slice(0, 300);
   let prev: any = null; if (revise) { try { const p = body?.prev; if (p && typeof p === "object" && JSON.stringify(p).length < 20000) { prev = { ...p }; delete prev.pick; delete prev.captions; } } catch { prev = null; } if (!prev || ask.length < 2) return json({ error: "bad revise" }, 400); }

@@ -63,9 +63,12 @@ async def main():
         sc = [c for c in d['cues'] if c.get('scene')]
         ok('Save keeps each slide\'s scene and texts', len(sc) == 2 and sc[1]['scene']['fields']['title'] == 'SECOND' and 'code' in sc[1]['scene']['src'], len(sc))
         # AI Builder v3 with a mocked server: the director picks an engine + footage; the engine plays over the real footage
-        calls = []; revs = []; FOOT = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fixtures', 'footage.webm'), 'rb').read()
+        calls = []; revs = []; crits = []; FOOT = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fixtures', 'footage.webm'), 'rb').read()
         async def fake(route):
             b = json.loads(route.request.post_data or '{}'); calls.append(b.get('step')); revs.append(b) if b.get('step') == 'revise' else None
+            if b.get('step') == 'critic':
+                crits.append(b)
+                await route.fulfill(status=200, body=json.dumps({'score': 6, 'issues': ['too many effects'], 'notes': ['less dust'], 'direct': {**b['direct'], 'look': {**b['direct']['look'], 'fx': 'none'}}}), headers={'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}); return
             body = {'direct': {'engine': 'compose', 'mood': 'corporate', 'look': {'layout': 'auto', 'font': 'heebo', 'reveal': 'rise', 'energy': .5, 'light': 'halo', 'fx': 'dust', 'rule': True, 'camera': 'push', 'dark': .45, 'blur': 1.5}, 'footage': ['sunset clouds'], 'title': 'Test', 'captions': ['🎬 one', '✨ two'],
                     'fields': [{'k': 'kicker', 'label': 'Kicker', 'type': 'text', 'value': 'NORTHWIND'}, {'k': 'title', 'label': 'Title', 'type': 'text', 'value': 'FIXED' if b.get('step') == 'revise' else 'WELCOME'},
                                {'k': 'sub', 'label': 'Sub', 'type': 'text', 'value': 'TEL AVIV 2026'}, {'k': 'accent', 'label': 'Accent', 'type': 'color', 'value': '#ffcf6b'}, {'k': 'accent2', 'label': 'Accent 2', 'type': 'color', 'value': '#7cf5ff'}]}}
@@ -78,9 +81,10 @@ async def main():
         n0 = await pg.evaluate("items.length")
         await pg.evaluate("window.token=async()=>'test';openDirector();$('#dirPrompt').value='Opening slide for our employees evening';$('#dirGo').click()")
         ok3 = True
-        try: await pg.wait_for_function("!$('#dirS2').hidden&&!$('#dirAdd').disabled", timeout=180000)
+        try: await pg.wait_for_function("!$('#dirS2').hidden&&!$('#dirAdd').disabled&&$('#dirBusy').hidden", timeout=240000)
         except Exception: ok3 = False
-        ok('AI Builder: the director picks an engine and it runs (one call)', ok3 and calls == ['direct'], [calls, await pg.evaluate("$('#dirErr').textContent+' | '+$('#dirErr2').textContent")])
+        ok('internal critic: 3 frames of the slide go to the critic, and its fix is applied before the user decides', len(crits) == 1 and len(crits[0].get('frames') or []) == 3 and all(len(f) > 2000 for f in crits[0]['frames']) and calls == ['direct', 'critic'] and 'less dust' in await pg.evaluate("$('#dirPrevNote').textContent"), [calls, len(crits)])
+        ok('AI Builder: the director picks an engine and it runs (one call)', ok3 and calls[:1] == ['direct'], [calls, await pg.evaluate("$('#dirErr').textContent+' | '+$('#dirErr2').textContent")])
         ok('the director\'s words fill the fields', await pg.evaluate("$('#dirF_title').value==='WELCOME'&&$('#dirF_kicker').value==='NORTHWIND'"))
         # fix by prompt: the director gets the slide as it is now (with the user's text) + the change; ↶ goes back
         await pg.evaluate("$('#dirF_kicker').value='MY TEXT';$('#dirF_kicker').dispatchEvent(new Event('input'))")
@@ -104,7 +108,7 @@ async def main():
         await pg.evaluate("""(()=>{const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80"><rect width="200" height="80" rx="16" fill="#1e40af"/><text x="100" y="52" font-size="36" text-anchor="middle" fill="#fff">LOGO</text></svg>';
           const f=new File([svg],'logo.svg',{type:'image/svg+xml'});const dt=new DataTransfer();dt.items.add(f);const i=$('#dirLogo');openDirector();i.files=dt.files;i.dispatchEvent(new Event('change'));$('#dirPrompt').value='Opening slide with our logo';$('#dirGo').click()})()""")
         ok4 = True
-        try: await pg.wait_for_function("!$('#dirS2').hidden&&!$('#dirAdd').disabled", timeout=180000)
+        try: await pg.wait_for_function("!$('#dirS2').hidden&&!$('#dirAdd').disabled&&$('#dirBusy').hidden", timeout=240000)
         except Exception: ok4 = False
         ok('an SVG logo: the slide still runs (no decode error)', ok4 and not await pg.evaluate("$('#dirErr2').textContent"), await pg.evaluate("$('#dirErr').textContent+' | '+$('#dirErr2').textContent"))
         # rating the slide: 5 stars go straight to public.ratings with the prompt and the director's look
