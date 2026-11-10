@@ -262,7 +262,7 @@ Deno.serve(async (req) => {
   const user = u?.user; if (!user) return json({ error: "sign in" }, 401);
   let body: any; try { body = await req.json(); } catch { return json({ error: "bad json" }, 400); }
   const prompt = String(body?.prompt || "").trim().slice(0, MAX_CHARS), lang = body?.lang === "he" ? "he" : "en";
-  if (body?.step === "critic") return critic(key, db, user.id, body, prompt, lang, T0);
+  if (body?.step === "polish" || body?.step === "critic") return critic(key, db, user.id, body, prompt, lang, T0);
   // fix by prompt: the slide as it is now + what to change (3 per slide in the app; here up to 3x the daily build cap, counted apart as cues -2)
   const revise = body?.step === "revise", ask = String(body?.ask || "").trim().slice(0, 300);
   let prev: any = null; if (revise) { try { const p = body?.prev; if (p && typeof p === "object" && JSON.stringify(p).length < 20000) { prev = { ...p }; delete prev.pick; delete prev.captions; } } catch { prev = null; } if (!prev || ask.length < 2) return json({ error: "bad revise" }, 400); }

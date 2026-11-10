@@ -66,7 +66,7 @@ async def main():
         calls = []; revs = []; crits = []; FOOT = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fixtures', 'footage.webm'), 'rb').read()
         async def fake(route):
             b = json.loads(route.request.post_data or '{}'); calls.append(b.get('step')); revs.append(b) if b.get('step') == 'revise' else None
-            if b.get('step') == 'critic':
+            if b.get('step') == 'polish':
                 crits.append(b)
                 await route.fulfill(status=200, body=json.dumps({'score': 6, 'issues': ['too many effects'], 'notes': ['less dust'], 'direct': {**b['direct'], 'look': {**b['direct']['look'], 'fx': 'none'}}}), headers={'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}); return
             body = {'direct': {'engine': 'compose', 'mood': 'corporate', 'look': {'layout': 'auto', 'font': 'heebo', 'reveal': 'rise', 'energy': .5, 'light': 'halo', 'fx': 'dust', 'rule': True, 'camera': 'push', 'dark': .45, 'blur': 1.5}, 'footage': ['sunset clouds'], 'title': 'Test', 'captions': ['🎬 one', '✨ two'],
@@ -83,7 +83,7 @@ async def main():
         ok3 = True
         try: await pg.wait_for_function("!$('#dirS2').hidden&&!$('#dirAdd').disabled&&$('#dirBusy').hidden", timeout=240000)
         except Exception: ok3 = False
-        ok('internal critic: 3 frames of the slide go to the critic, and its fix is applied before the user decides', len(crits) == 1 and len(crits[0].get('frames') or []) == 3 and all(len(f) > 2000 for f in crits[0]['frames']) and calls == ['direct', 'critic'] and 'less dust' not in await pg.evaluate("$('#dirDlg').innerText") and await pg.evaluate("__dirTest.look().fx") == 'none', [calls, len(crits)])
+        ok('finishing pass: 3 frames of the slide go to a second look, and its fix is applied before the user decides', len(crits) == 1 and len(crits[0].get('frames') or []) == 3 and all(len(f) > 2000 for f in crits[0]['frames']) and calls == ['direct', 'polish'] and 'less dust' not in await pg.evaluate("$('#dirDlg').innerText") and await pg.evaluate("__dirTest.look().fx") == 'none', [calls, len(crits)])
         ok('AI Builder: the director picks an engine and it runs (one call)', ok3 and calls[:1] == ['direct'], [calls, await pg.evaluate("$('#dirErr').textContent+' | '+$('#dirErr2').textContent")])
         ok('the director\'s words fill the fields', await pg.evaluate("$('#dirF_title').value==='WELCOME'&&$('#dirF_kicker').value==='NORTHWIND'"))
         # fix by prompt: the director gets the slide as it is now (with the user's text) + the change; ↶ goes back

@@ -3196,7 +3196,7 @@ const HOST=`<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Secur
 let frameWait={};let fid=0;
 addEventListener('message',e=>{if(e.source!==ifr.contentWindow)return;const d=e.data||{};
   if(d.sc==='host'){st.hostOk=true;const p=st.pend.splice(0);p.forEach(m=>ifr.contentWindow.postMessage(m,'*'))}
-  else if(d.sc==='ready'){st.ready=true;$('#dirErr2').textContent='';$('#dirAdd').disabled=!!st.critOn;if(st.scene&&st.scene.engine&&st.wantPlay)footPlay()}
+  else if(d.sc==='ready'){st.ready=true;$('#dirErr2').textContent='';$('#dirAdd').disabled=!!st.polOn;if(st.scene&&st.scene.engine&&st.wantPlay)footPlay()}
   else if(d.sc==='error'){st.ready=false;st.lastErr=d.msg;$('#dirAdd').disabled=true;$('#dirErr2').textContent=dt('scerr')+d.msg;const w=frameWait.cur;if(w){frameWait.cur=null;w.no(new Error(d.msg))}}
   else if(d.sc==='frame'){const w=frameWait.cur;if(w&&w.id===d.id){frameWait.cur=null;w.ok(d.bm)}else if(d.bm)d.bm.close()}});
 function post(m){if(st.hostOk)ifr.contentWindow.postMessage(m,'*');else st.pend.push(m)}
@@ -3318,27 +3318,27 @@ async function fromDirect(dd,keepFoot){let fo=null;
   const [I0,L]=ENGT[dd.engine],I=I0+({countdown:3.4,curtain:.8}[dd.look&&dd.look.intro]||0); /* opening moment (countdown / curtain) lengthens the intro */
   const raw={...dd};delete raw.captions;
   return {title:dd.title||'AI Builder',mode:'engine',engine:dd.engine,mood:['corporate','gala','tech','party','memorial'].includes(dd.mood)?dd.mood:null,look:dd.look&&typeof dd.look==='object'?dd.look:null,intro:I,loop:L,fields:dd.fields||[],code:'',foot:fo?{q:fo.q,id:fo.id}:null,dir:raw,prompt:st.prompt||''}}
-/* the internal critic: 3 frames of the slide (mid-intro, hero, mid-loop) go to a second pair of eyes; below 8/10 it sends the smallest fix, applied before the user decides */
-const critReady=async(ms=25000)=>{const t0=Date.now();while(!st.ready){if(st.lastErr||Date.now()-t0>ms)throw new Error("not ready");await new Promise(r=>setTimeout(r,150))}};
+/* finishing pass */
+const polReady=async(ms=25000)=>{const t0=Date.now();while(!st.ready){if(st.lastErr||Date.now()-t0>ms)throw new Error("not ready");await new Promise(r=>setTimeout(r,150))}};
 const b64=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(String(f.result).split(',')[1]);f.readAsDataURL(b)});
-async function critFrames(s){footStop();post({sc:'stop'});const I=+s.intro||6,L=+s.loop||8,out=[];
+async function polFrames(s){footStop();post({sc:'stop'});const I=+s.intro||6,L=+s.loop||8,out=[];
   for(const t of [I*.55,I+1.1,I+L*.6]){const bm=await frameAt(t,s.engine?await footFrame(s,t):null);const c=document.createElement('canvas');c.width=768;c.height=432;c.getContext('2d').drawImage(bm,0,0,768,432);bm.close();
     out.push(await b64(await new Promise(r=>c.toBlob(r,'image/jpeg',.72))))}return out}
-async function critique(){if(window.__noCritic||!st.scene||!st.scene.dir)return;const s=st.scene;st.busy=true;st.critOn=true;busy(true,dt('making'));
-  try{await critReady();const frames=await critFrames(s);const tk=await token();if(!tk||st.scene!==s)return;
+async function polish(){if(window.__noPolish||!st.scene||!st.scene.dir)return;const s=st.scene;st.busy=true;st.polOn=true;busy(true,dt('making'));
+  try{await polReady();const frames=await polFrames(s);const tk=await token();if(!tk||st.scene!==s)return;
     const dir={...s.dir,fields:(s.dir.fields||[]).map(f=>({...f,value:st.fields[f.k]!=null?st.fields[f.k]:f.value}))};
-    const {r,d}=await scCall(tk,{step:'critic',prompt:st.prompt||'',lang:promptLang(st.prompt||''),direct:dir,frames});
-    st.crit=d&&d.score||null;if(r.ok&&d&&d.direct&&ENGT[d.direct.engine]&&st.scene===s){await useScene(await fromDirect(d.direct,true));track('scene-critic-fixed');return} /* behind the scenes: the user never sees the critic */
+    const {r,d}=await scCall(tk,{step:'polish',prompt:st.prompt||'',lang:promptLang(st.prompt||''),direct:dir,frames});
+    st.crit=d&&d.score||null;if(r.ok&&d&&d.direct&&ENGT[d.direct.engine]&&st.scene===s){await useScene(await fromDirect(d.direct,true));track('scene-polished');return}
     if(st.scene===s)loadScene(true)}
-  catch(e){try{if(st.scene===s)loadScene(true)}catch(_){}}finally{st.busy=false;st.critOn=false;busy(false);if(st.ready)$('#dirAdd').disabled=false}}
-async function scCall(tk,body){const r=await fetch(body.step==='direct'||body.step==='revise'||body.step==='critic'?DIR_FN:SC_FN,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify(body)});let d=null;try{d=await r.json()}catch(e){}return {r,d}}
+  catch(e){try{if(st.scene===s)loadScene(true)}catch(_){}}finally{st.busy=false;st.polOn=false;busy(false);if(st.ready)$('#dirAdd').disabled=false}}
+async function scCall(tk,body){const r=await fetch(body.step==='direct'||body.step==='revise'||body.step==='polish'?DIR_FN:SC_FN,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify(body)});let d=null;try{d=await r.json()}catch(e){}return {r,d}}
 $('#dirGo').onclick=async()=>{const p=$('#dirPrompt').value.trim();if(p.length<6){$('#dirErr').textContent=dt('short');return}if(st.busy)return;st.busy=true;$('#dirErr').textContent='';magic(true,true);
   try{const tk=await token();if(!tk){st.busy=false;magic(true,false);$('#dirErr').textContent=dt('need');openAcct('build');return}
     st.prompt=p;const {r,d}=await scCall(tk,{prompt:p,mode:st.mode,lang:promptLang(p),logo:await logoData(),step:'direct'});
     if(r.status===404||r.status===503||!d){$('#dirErr').textContent=dt('soon');return}
     if(r.status===429){$('#dirErr').textContent=t('be_limit');return}
     const dd=r.ok&&d.direct;if(!dd||!ENGT[dd.engine]){$('#dirErr').textContent=dt('err');return}
-    captions(dd.captions);st.hist=[];st.used=0;await useScene(await fromDirect(dd));track('scene-built');await critique()}
+    captions(dd.captions);st.hist=[];st.used=0;await useScene(await fromDirect(dd));track('scene-built');await polish()}
   catch(e){$('#dirErr').textContent=dt('soon')}finally{clearInterval(capT);st.busy=false;if(!$('#dirS1').hidden)magic(true,false)}};
 $('#dirAdd').onclick=async()=>{if(!st.ready||st.busy)return;st.busy=true;$('#dirAdd').disabled=true;busy(true,dt('rec'));
   try{const s=st.scene;const f=await record();await keepGen(f);
