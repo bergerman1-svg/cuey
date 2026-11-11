@@ -362,7 +362,7 @@ footer .legal .em{margin:0 10px;white-space:nowrap}
   <section id="ai">
     <div class="aiband">
       <div><span class="aitag">AI Builder · Beta</span><h2>Write one sentence. Let the magic happen.</h2><p class="lead" style="margin-bottom:0">Describe the moment in your own words — “an opening slide for our team evening, with our logo” — and AI Builder directs an animated slide over real footage: a striking entrance, then gentle motion that keeps going until your next <b>GO</b>.</p><ul><li>Add a logo, a photo or your programme — the slide takes its colours, shapes and style from it</li><li>Name a concept (“around the world”) — it shows in the design, not only in the words</li><li>Hebrew or English — whichever you write in</li><li>Everything stays editable: change the text and it updates instantly, or ask for a change in words (“a blue background”)</li></ul></div>
-      <video class="aiv" src="ai-en.mp4?v=2" poster="ai-en.jpg?v=2" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>
+      <video class="aiv" src="ai-en.mp4?v=3" poster="ai-en.jpg?v=3" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>
     </div>
   </section>
 
@@ -489,7 +489,7 @@ footer .legal .em{margin:0 10px;white-space:nowrap}
   // promo: 16:9 on computers, 9:16 on phones held upright
   const tall=matchMedia('(max-width:700px) and (orientation:portrait)').matches, src='promo-en-'+(tall?'v':'h');
   if(tall)box.classList.add('tall'); v.poster=src+'.jpg?v=6';
-  document.getElementById('play').onclick=()=>{box.classList.add('on');if(!v.getAttribute('src'))v.src=src+'.mp4?v=9';v.muted=false;v.controls=true;v.play()};
+  document.getElementById('play').onclick=()=>{box.classList.add('on');if(!v.getAttribute('src'))v.src=src+'.mp4?v=10';v.muted=false;v.controls=true;v.play()};
   // highlight the right download
   const isMac=/Mac/i.test(ua)&&!isIOS;
   // one download button: pick the right file for this computer

@@ -364,10 +364,12 @@ async function compose(canvas,F,A){
       else if(MOT==='bars'){const n=mm.length;mm.forEach((d,i)=>{const lt=E.o3(K.k(t,T0+i*.03,T0+.8+i*.03)),hh=(.25+1.1*Math.abs(Math.sin(ph*2+i*.55))*(.4+.6*e))*lt;d.scale.set(vw/n*.55,Math.max(.001,hh),1);d.position.set(-vw/2+(i+.5)*vw/n,-vh/2+.05,-1);d.material.opacity=.7*lt})}
       else if(MOT==='sparkle'){mm.forEach((d,i)=>{const U=d.userData;let x=(U.u-.5)*vw*.94,y=(U.v-.5)*vh*.9;if(Math.abs(x-blk.x)<blk.w/2+.8&&Math.abs(y-blk.y)<blk.h/2+.6)x=blk.x+(x<blk.x?-1:1)*(blk.w/2+1.2+U.u*2);const lt=E.o3(K.k(t,T0-.2+i*.07,T0+.9+i*.07)),br=.5+.5*Math.sin(ph*2+U.p);d.position.set(x,y,-1.5);d.scale.setScalar(Math.max(.001,U.s*lt*(.75+.35*br*amp)));d.rotation.z=.15*Math.sin(ph+U.p);d.material.opacity=lt*(.45+.55*br)})}
       else if(MOT==='arc'&&mm[0].userData.cnt){const p2=E.io3(K.k(t,ruleT-.3,ruleT+1.1));mm[0].geometry.setDrawRange(0,Math.floor(mm[0].userData.cnt*p2/3)*3);mm[0].material.opacity=.95*(.75+.25*Math.sin(ph*2)*amp)*(p2>0?1:0)}}
-    if(ICG.length)ICG.forEach((m,i)=>{const U=m.userData;let x=(U.u-.5)*vw,y=(.5-U.v)*vh;const hw=blk.w/2+U.s*.75,hh=blk.h/2+U.s*.7;
+    if(ICG.length)ICG.forEach((m,i)=>{const U=m.userData;let x=(U.u-.5)*vw,y=(.5-U.v)*vh;const hw=blk.w/2*1.12+U.s*.8,hh=blk.h/2+U.s*.7;
       if(Math.abs(x-blk.x)<hw&&Math.abs(y-blk.y)<hh){if(vh/2-(blk.y+blk.h/2)>U.s*1.3&&y>=blk.y)y=blk.y+hh;else if((blk.y-blk.h/2)+vh/2>U.s*1.3&&y<blk.y)y=blk.y-hh;else x=blk.x+(x<blk.x?-1:1)*hw}
       if(pnl&&Math.abs(x-pnl.position.x)<pnl.scale.x/2+U.s*.6){m.visible=false;return}
-      x=K.cl(x,-vw/2+U.s*.62,vw/2-U.s*.62);y=K.cl(y,-vh/2+U.s*.62,vh/2-U.s*.62);const lt=E.o3(K.k(t,titleT+.5+i*.14,titleT+1.5+i*.14)),pop=1+.18*Math.sin(Math.PI*K.k(t,titleT+.5+i*.14,titleT+1.3+i*.14));
+      x=K.cl(x,-vw/2+U.s*.62,vw/2-U.s*.62);y=K.cl(y,-vh/2+U.s*.62,vh/2-U.s*.62);
+      /* no room beside the words: better no illustration than one on top of a line */
+      if(Math.abs(x-blk.x)<blk.w/2*1.12+U.s*.45&&Math.abs(y-blk.y)<blk.h/2+U.s*.4){m.visible=false;return}m.visible=true;const lt=E.o3(K.k(t,titleT+.5+i*.14,titleT+1.5+i*.14)),pop=1+.18*Math.sin(Math.PI*K.k(t,titleT+.5+i*.14,titleT+1.3+i*.14));
       m.position.set(x+.1*Math.sin(ph+U.p)*amp,y+.16*Math.cos(ph+U.p)*amp,-.6);m.rotation.z=U.r+.1*Math.sin(ph+U.p*2)*amp;m.scale.setScalar(Math.max(.001,U.s*lt*pop));m.material.opacity=U.o*lt});
     if(pnl){const pr=E.io3(K.k(t,T0-.3,T0+1.1));pnl.material.uniforms.prog.value=pr;pnl.material.uniforms.zoom.value=1.12-.06*E.io3(K.k(t,0,I))+.02*Math.sin(ph)*amp;pnl.position.y=.08*Math.sin(ph)*amp}
     if(prop){const cyc=(((t-I)/A.loop)%1+1)%1,on=E.o3(K.k(t,.8,2.4));
