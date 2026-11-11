@@ -1,10 +1,10 @@
 {
   "name": "cuey",
   "productName": "Cuey",
-  "version": "0.53.1",
+  "version": "0.54.0",
   "description": "Simple video & slide playback for live events. One button. GO.",
   "author": "Avi Berger Productions",
-  "license": "MIT",
+  "license": "UNLICENSED",
   "main": "main.js",
   "scripts": {
     "start": "electron .",

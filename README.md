@@ -61,7 +61,7 @@ build/          icon
 
 ## License
 
-MIT — © Avi Berger Productions
+© Avi Berger Productions. All rights reserved (see LICENSE). Versions before 0.54.0 were MIT.
 
 ## Architecture
 
