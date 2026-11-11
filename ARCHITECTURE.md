@@ -294,7 +294,7 @@ Direct "cue list + GO" tools: Mitti (closest; Mac only, paid, for technicians), 
 
 ## 21. The Cuey show-design skill — v0.33.0
 "Build my event" now designs, not just lists. Two halves that must stay in sync:
-- **The skill (AI side)** — `ai/build-event.ts` (deployed as the Supabase function `build-event`). The system prompt is a design playbook: what Cuey can render, 6 themes (gala, memorial, conference, school, wedding, party), 3 looks (center, editorial, frame), loop-search rules, writing rules (never invent facts), and a show-shaped running order (walk-in → opening → agenda → sections/speakers/videos → closing). Every cue has a `kicker`.
+- **The skill (AI side)** — `build-event.ts` (in the private repo `cuey-ai`) (deployed as the Supabase function `build-event`). The system prompt is a design playbook: what Cuey can render, 6 themes (gala, memorial, conference, school, wedding, party), 3 looks (center, editorial, frame), loop-search rules, writing rules (never invent facts), and a show-shaped running order (walk-in → opening → agenda → sections/speakers/videos → closing). Every cue has a `kicker`.
 - **The engine (app side)** — `BE_THEMES` in `app/cuey.html`: per theme the font (serif = Playfair Display / Frank Ruhl Libre), caps kickers, entrance motion (`anim`: '' rise, `slow` blur-in, `zoom` pop — CSS on `img.ov`), vignette, accent glow on colour cards, and the default look per cue kind. `drawCardLayer` draws the looks (`T.look`), kicker, accent rule/bar, frame. New saved text fields: look, font, caps, anim, glow, br (body ratio, agenda 0.6).
 - **Programme picture** — uploading a PNG/JPG (or a PDF, whose page 1 is rendered) sends a ≤1400px JPEG with the text (`body.image`). The skill then takes the programme's own design language: sampled colours, serif/sans (`style.font` overrides the theme font), frames/ornaments → looks, mood → theme and loops. `style.from='programme'`.
 - Lower thirds stay `box` cards at y .83 regardless of theme.
@@ -308,7 +308,7 @@ With a programme picture, the skill also returns `style.brand` {paper, light, mo
 
 ## 23. AI Builder — v0.34.1 → v0.37.0
 - **Name:** "Build my event" → **AI Builder** (app, menus, landing pages EN/HE, new AI Builder section on the site). Marked **Pro · Beta** — open to every signed-in user during the beta.
-- **Two kinds of input** (`ai/build-event.ts`, deployed as Supabase function `build-event`, now v9):
+- **Two kinds of input** (`build-event.ts` (in the private repo `cuey-ai`), deployed as Supabase function `build-event`, now v9):
   1. **Programme** (text / PDF / Word / PNG / JPG) → the full show-shaped running order, in the programme's design language (§21–22).
   2. **Prompt** ("a memorial ceremony screen with a candle and a moment of silence") → builds **exactly** the slides asked for, no more. Minimum length is 4 characters (was 20).
 - **Text rules:** the user's own words are kept as written. Original text (a short line, a dedication) is written **only when asked**, and then the cue gets the note "Check this text before showing it". Never copies an existing poem/song/prayer — a named one becomes a slide with its title and the note "Paste the text here".

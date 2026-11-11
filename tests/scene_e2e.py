@@ -72,6 +72,11 @@ async def main():
             body = {'direct': {'engine': 'compose', 'mood': 'corporate', 'look': {'layout': 'auto', 'font': 'heebo', 'reveal': 'rise', 'energy': .5, 'light': 'halo', 'fx': 'dust', 'rule': True, 'camera': 'push', 'dark': .45, 'blur': 1.5}, 'footage': ['sunset clouds'], 'title': 'Test', 'captions': ['🎬 one', '✨ two'],
                     'fields': [{'k': 'kicker', 'label': 'Kicker', 'type': 'text', 'value': 'NORTHWIND'}, {'k': 'title', 'label': 'Title', 'type': 'text', 'value': 'FIXED' if b.get('step') == 'revise' else 'WELCOME'},
                                {'k': 'sub', 'label': 'Sub', 'type': 'text', 'value': 'TEL AVIV 2026'}, {'k': 'accent', 'label': 'Accent', 'type': 'color', 'value': '#ffcf6b'}, {'k': 'accent2', 'label': 'Accent 2', 'type': 'color', 'value': '#7cf5ff'}]}}
+            if b.get('step') == 'revise':
+                if 'second logo' in b.get('ask', ''): body = {'direct': b['prev'], 'done': False, 'note': 'CANNOT: one logo per slide'}
+                else: body['done'] = True; body['note'] = 'title changed'
+            if 'programme' in b.get('prompt', ''): body['direct']['upload'] = 'program'
+            if 'our hall photo' in b.get('prompt', ''): body['direct']['upload'] = 'background'
             await route.fulfill(status=200, body=json.dumps(body), headers={'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'})
         async def pbx(route):
             await route.fulfill(status=200, body=json.dumps({'total': 1, 'hits': [{'id': 7, 'full': 'https://cdn.pixabay.com/test/footage.webm', 'w': 640, 'h': 360, 'dur': 20}]}), headers={'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'})
@@ -93,6 +98,7 @@ async def main():
         try: await pg.wait_for_function("$('#dirF_title').value==='FIXED'&&!$('#dirAdd').disabled&&!$('#dirUndo').hidden", timeout=180000)
         except Exception: okf = False
         ok('fix by prompt: one revise call with the change and the user\'s current texts', okf and len(revs) == 1 and revs[0].get('ask') == 'make the background blue' and any(f['k'] == 'kicker' and f['value'] == 'MY TEXT' for f in revs[0]['prev']['fields']), [okf, len(revs), await pg.evaluate("$('#dirFixErr').textContent")])
+        ok('fix by prompt: says in one line what was changed', await pg.evaluate("$('#dirFixNote').textContent.includes('title changed')"), await pg.evaluate("$('#dirFixNote').textContent"))
         ok('fix by prompt: shows fixes left', await pg.evaluate("$('#dirFixN').textContent.includes('2')"), await pg.evaluate("$('#dirFixN').textContent"))
         await pg.click('#dirUndo')
         oku = True
@@ -111,13 +117,31 @@ async def main():
         try: await pg.wait_for_function("!$('#dirS2').hidden&&!$('#dirAdd').disabled&&$('#dirBusy').hidden", timeout=240000)
         except Exception: ok4 = False
         ok('an SVG logo: the slide still runs (no decode error)', ok4 and not await pg.evaluate("$('#dirErr2').textContent"), await pg.evaluate("$('#dirErr').textContent+' | '+$('#dirErr2').textContent"))
+        # a change that can't be made: said plainly, nothing changes, the fix isn't used up
+        ok('a logo upload is placed as the logo', await pg.evaluate("__dirTest.logo()"))
+        await pg.fill('#dirFix', 'add a second logo'); await pg.click('#dirFixGo')
+        okn = True
+        try: await pg.wait_for_function("$('#dirFixErr').textContent.includes('CANNOT')&&$('#dirBusy').hidden", timeout=60000)
+        except Exception: okn = False
+        ok("fix by prompt: a change Cuey can't make is said plainly and costs nothing", okn and await pg.evaluate("$('#dirFixN').textContent.includes('3')&&$('#dirUndo').hidden&&$('#dirF_title').value==='WELCOME'"), await pg.evaluate("$('#dirFixN').textContent+' | '+$('#dirFixErr').textContent"))
+        # what was uploaded? a programme is read, never placed as a logo; a photo becomes the background
+        async def again(prompt):
+            await pg.evaluate("p=>{$('#dirBack').click();$('#dirPrompt').value=p;$('#dirGo').click()}", prompt)
+            await pg.wait_for_function("$('#dirS1').hidden===false||true"); await pg.wait_for_timeout(600)
+            try: await pg.wait_for_function("!$('#dirS2').hidden&&!$('#dirAdd').disabled&&$('#dirBusy').hidden", timeout=240000); return True
+            except Exception: return False
+        okp = await again('A slide from our programme')
+        ok('an uploaded programme is not placed as a logo', okp and not await pg.evaluate("__dirTest.logo()"), await pg.evaluate("$('#dirErr').textContent+' | '+$('#dirErr2').textContent"))
+        okb = await again('Welcome slide over our hall photo')
+        ft = await pg.evaluate("__dirTest.foot()")
+        ok('an uploaded photo becomes the slide background (no stock footage)', okb and ft and ft.get('id') == 'upload' and not await pg.evaluate("__dirTest.logo()"), ft)
         # rating the slide: 5 stars go straight to public.ratings with the prompt and the director's look
         rated = []
         async def rt(route):
             rated.append(json.loads(route.request.post_data or '{}')); await route.fulfill(status=201, body='', headers={'Access-Control-Allow-Origin': '*'})
         await pg.route('**/rest/v1/ratings', rt)
         await pg.evaluate("$('#dirStars').querySelector('[data-n=\"5\"]').click()"); await pg.wait_for_timeout(800)
-        ok('rate the slide: 5 stars are sent with the prompt and look', len(rated) == 1 and rated[0].get('kind') == 'slide' and rated[0].get('stars') == 5 and 'logo' in (rated[0].get('prompt') or '') and rated[0]['meta'].get('engine') == 'compose', rated)
+        ok('rate the slide: 5 stars are sent with the prompt and look', len(rated) == 1 and rated[0].get('kind') == 'slide' and rated[0].get('stars') == 5 and 'hall photo' in (rated[0].get('prompt') or '') and rated[0]['meta'].get('engine') == 'compose', rated)
         # rating Cuey: after shows on 3 days, 2 stars ask what to improve and send it
         await pg.evaluate("localStorage.setItem('cuey.rate.days',JSON.stringify(['2026-01-01','2026-01-02','2026-01-03']));appRateMaybe()")
         await pg.click('#appRate .stars [data-n="2"]'); await pg.fill('#appRate textarea', 'more fonts'); await pg.click('#appRate .pri'); await pg.wait_for_timeout(800)
