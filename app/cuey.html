@@ -3258,7 +3258,12 @@ const footRate=(s,D=ft.D)=>D?Math.min(1,(D-.3)/((+s.intro||6)+(+s.loop||8)))*Mat
 /* seamless loop: the last second of the loop cross-fades into the footage at the loop's start */
 function footTimes(s,t,D=ft.D){const I=+s.intro||6,L=+s.loop||8,r=footRate(s,D),F=Math.min(1,L/4);const tau=t-I;if(tau>L-F&&tau<L)return [t*r,(t-L)*r,(tau-(L-F))/F];return [t*r]}
 /* seek and wait until that frame is really presented (seeked alone can hand back the previous frame) */
-const vseek=(v,t,D=ft.D)=>new Promise(r=>{if(Math.abs(v.currentTime-t)<.004){r();return}let fin=false;const end=()=>{if(fin)return;fin=true;v.removeEventListener('seeked',on);r()};const on=()=>{if(v.requestVideoFrameCallback){v.requestVideoFrameCallback(()=>end());setTimeout(end,250)}else end()};v.addEventListener('seeked',on);v.currentTime=Math.max(0,Math.min(D-.05,t));setTimeout(end,3000)});
+const vseek=(v,t,D=ft.D)=>new Promise(r=>{if(Math.abs(v.currentTime-t)<.004){r();return}let fin=false;const end=()=>{if(fin)return;fin=true;v.removeEventListener('seeked',on);r()};const T=Math.max(0,Math.min(D-.05,t));
+  /* after a seek, wait until the picture really is the one for this time. The frame's own timestamp says so directly, and does not depend on the
+     window being drawn: waiting for the next painted frame took 250 ms per frame whenever the window was covered or on another desktop. */
+  const old=()=>{if(v.requestVideoFrameCallback){v.requestVideoFrameCallback(()=>end());setTimeout(end,250)}else end()};
+  const on=async()=>{if(!window.VideoFrame||window.__seekOld)return old();for(let i=0;i<40&&!fin;i++){let ts;try{const f=new VideoFrame(v);ts=f.timestamp/1e6;f.close()}catch(e){return old()}if(Math.abs(ts-T)<.07)return end();await new Promise(x=>setTimeout(x,5))}end()};
+  v.addEventListener('seeked',on);v.currentTime=T;setTimeout(end,3000)});
 async function footFrame(s,t){if(!ft.D)return {};const [a,b,m]=footTimes(s,t);await vseek(ft.v1,a);const bg=await createImageBitmap(ft.v1);if(b==null)return {bg,bg2:null,mix:0};await vseek(ft.v2,b);return {bg,bg2:await createImageBitmap(ft.v2),mix:m}}
 function footStop(){ft.on=false;try{ft.v1&&ft.v1.pause()}catch(e){}}
 async function footPlay(){const s=st.scene;if(!s||!s.engine)return;footStop();ft.on=true;const I=+s.intro||6,L=+s.loop||8,r=footRate(s);let t0=performance.now();
@@ -3312,7 +3317,7 @@ function fieldsUI(){const box=$('#dirFields');box.innerHTML='';(st.scene.fields|
     r.innerHTML=`<label for="${id}"></label><span><input id="${id}" type="${f.type==='color'?'color':'text'}" dir="auto"></span>`;r.querySelector('label').textContent=loc(f.label||f.k);const inp=r.querySelector('input');inp.value=st.fields[f.k]!=null?st.fields[f.k]:(f.value||'');
     let tm=null;inp.addEventListener('input',()=>{st.fields[f.k]=inp.value;clearTimeout(tm);tm=setTimeout(()=>loadScene(true),350)});box.appendChild(r)})}
 async function useScene(s,fields){st.lastErr='';st.scene=s;if(s.engine){if(!st.footFile&&s.foot&&s.foot.q){const r=await footFetch([s.foot.q]);if(r)st.footFile=r.file}await footLoad(st.footFile);try{st.footLum=await footLum()}catch(e){st.footLum=undefined}}else footLoad(null);st.fields={};(s.fields||[]).forEach(f=>st.fields[f.k]=f.value);if(fields)Object.assign(st.fields,fields);fieldsUI();texts();rateReset();fixUI();step(2);bootHost();loadScene(true)}
-window.openDirector=function(it){st.edit=it||null;st.footFile=null;st.busy=false;$('#dirErr').textContent='';$('#dirErr2').textContent='';busy(false);texts();$('#dirDlg').hidden=false;
+window.openDirector=function(it){st.edit=it||null;st.footFile=null;st.busy=false;st.ready=false;$('#dirAdd').disabled=true;$('#dirErr').textContent='';$('#dirErr2').textContent='';busy(false);texts();$('#dirDlg').hidden=false;
   const isc=it&&(it.pend&&it.pend.scene||it.scene);if(isc){st.logoFile=isc.logoFile||null;st.footFile=isc.footFile||null;st.prompt=isc.src&&isc.src.prompt||'';st.hist=[];st.used=isc.src&&isc.src.fixes||0;useScene(JSON.parse(JSON.stringify(isc.src)),isc.fields)}else{step(1);bootHost();magic(true)}}
 function close(){if(rate.n&&!rate.sent)rateSend('');post({sc:'stop'});footStop();$('#dirDlg').hidden=true;ifr.srcdoc='';st.hostOk=false}
 $('#dirDlg').addEventListener('click',e=>{if(e.target.id==='dirDlg'&&!st.busy)close()});
