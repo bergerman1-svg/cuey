@@ -48,7 +48,27 @@ async def main():
         await pg.evaluate("editText(items[items.length-1])"); await pg.wait_for_function("!$('#dirAdd').disabled", timeout=20000)
         ok('editing a slide opens it with its own texts', await pg.evaluate("$('#dirF_title').value==='ACME 2027'"))
         await pg.fill('#dirF_title', 'SECOND'); await pg.wait_for_timeout(500); await pg.wait_for_function("!$('#dirAdd').disabled", timeout=20000)
-        await pg.click('#dirAdd'); await pg.wait_for_function("$('#dirDlg').hidden", timeout=180000)
+        old = await pg.evaluate("items[items.length-1].file.name")
+        import time as _t; t0 = _t.time()
+        await pg.click('#dirAdd'); await pg.wait_for_function("$('#dirDlg').hidden", timeout=5000); dtc = _t.time() - t0
+        mid = await pg.evaluate("(()=>{const it=items[items.length-1];return {pend:!!it.pend,file:it.file.name,name:it.name,old:it.scene.fields.title,tag:!!document.querySelector('#list [data-bk=\"'+it.id+'\"]')}})()")
+        ok('saving an edited slide closes the window at once', dtc < 3, dtc)
+        ok('…the cue keeps its previous video while the new one is made, and says so', mid['pend'] and mid['file'] == old and mid['tag'] and mid['name'] == 'SECOND' and mid['old'] == 'ACME 2027', mid)
+        # meanwhile the builder is free: open another slide, type, save — a second job waits its turn
+        await pg.evaluate("(()=>{const i=items.length-1;items.splice(i+1,0,cloneCue(items[i-1]));render()})()")
+        await pg.evaluate("editText(items[items.length-1])"); await pg.wait_for_function("!$('#dirAdd').disabled", timeout=30000)
+        ok('…and the builder opens on another slide meanwhile', await pg.evaluate("$('#dirF_title').value==='ACME 2027'&&!!items[items.length-2].pend"), await pg.evaluate("[$('#dirF_title').value,!!items[items.length-2].pend]"))
+        await pg.fill('#dirF_title', 'THIRD'); await pg.wait_for_timeout(500); await pg.wait_for_function("!$('#dirAdd').disabled", timeout=20000)
+        await pg.click('#dirAdd'); await pg.wait_for_function("$('#dirDlg').hidden", timeout=5000)
+        # reopening a waiting slide shows the text that is on its way
+        await pg.evaluate("editText(items[items.length-1])"); await pg.wait_for_function("!$('#dirAdd').disabled", timeout=30000)
+        ok('…a waiting slide reopens with its new text', await pg.evaluate("$('#dirF_title').value==='THIRD'"))
+        await pg.evaluate("$('#dirDlg').hidden=true")
+        await pg.wait_for_function("items.every(x=>!x.pend)", timeout=400000)
+        three = await pg.evaluate("items.slice(-3).map(x=>[x.name,x.scene.fields.title,x.file.name,x.file.size>20000,!!x.thumb||true])")
+        ok('both background saves finish: each cue has its own new video and text', three[1][1] == 'SECOND' and three[2][1] == 'THIRD' and three[1][2] != old and len({x[2] for x in three}) == 3 and all(x[3] for x in three), three)
+        ok('…and the tag is gone', await pg.evaluate("!document.querySelector('#list [data-bk]')"))
+        await pg.evaluate("items.splice(items.length-1,1);render()")
         two = await pg.evaluate("items.slice(-2).map(x=>[x.name,x.scene.fields.title,x.file.name])")
         ok('the copy changed, the original did not', two[0][1] == 'ACME 2027' and two[1][1] == 'SECOND' and two[0][2] != two[1][2], two)
         # 3D example

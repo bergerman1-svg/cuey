@@ -1098,7 +1098,7 @@ function render(){
     d.addEventListener('pointerdown',e=>{d.draggable=!e.target.closest('input,button,select')});
     d.addEventListener('pointerup',()=>{d.draggable=false});
     d.innerHTML=`<div class="n" data-k="sel" title="${esc(t('sel_tip'))}"><i class="ck${fx.tick===it.id?' tickpop':''}">${sel.has(it.id)?'✓':''}</i>${num[i]}</div>
-      <img class="th" src="${it.thumb||''}" alt="" onerror="this.style.opacity=0"><div class="name" data-k="rename" title="${esc(t('rn_tip'))}${it.text?'':' · '+esc(it.file.name)}"><small>${it.type==='video'?'🎬':it.type==='audio'?'♪':it.text?'T':'🖼'}</small>${it.web?`<span class="webtag${it.web.err?' err':''}" title="${esc(it.web.err?errText(it).replace(/<[^>]+>/g,' '):t('web_tip'))}">${it.web.err?'⚠ ':'🌐 '}${esc(it.web.err?t('web_tagerr'):t('web_tag'))}</span>`:''}<span class="nmtxt">${esc(it.name)}</span>${it.bad&&(!it.text||it.type==='video')&&!it.web?`<br><button class="relink" data-k="relink">⚠ ${esc(t('relink'))}</button>`:''}</div>
+      <img class="th" src="${it.thumb||''}" alt="" onerror="this.style.opacity=0"><div class="name" data-k="rename" title="${esc(t('rn_tip'))}${it.text?'':' · '+esc(it.file.name)}"><small>${it.type==='video'?'🎬':it.type==='audio'?'♪':it.text?'T':'🖼'}</small>${it.web?`<span class="webtag${it.web.err?' err':''}" title="${esc(it.web.err?errText(it).replace(/<[^>]+>/g,' '):t('web_tip'))}">${it.web.err?'⚠ ':'🌐 '}${esc(it.web.err?t('web_tagerr'):t('web_tag'))}</span>`:''}${it.pend?`<span class="webtag" data-bk="${it.id}">⟳ ${esc(lang==='he'?'מתעדכן':'UPDATING')}</span>`:''}<span class="nmtxt">${esc(it.name)}</span>${it.bad&&(!it.text||it.type==='video')&&!it.web?`<br><button class="relink" data-k="relink">⚠ ${esc(t('relink'))}</button>`:''}</div>
       <div class="ctl">
         <span class="tags">${cueTags(it)}</span>
         <span class="spacer"></span>
@@ -2621,7 +2621,7 @@ function cueTargets(){const t1=items.filter(x=>sel.has(x.id));return t1.length?t
 function cueMove(dir){const ts=cueTargets();if(!ts.length){flash(t('m_pick'));return}
   (dir<0?ts:[...ts].reverse()).forEach(x=>{const i=items.indexOf(x);if(dir<0&&i>0)moveItem(i,i-1);else if(dir>0&&i<items.length-1)moveItem(i,i+2)});render()}
 function cueDup(){const ts=cueTargets();if(!ts.length){flash(t('m_pick'));return}
-  ts.forEach(x=>{const i=items.indexOf(x);items.splice(i+1,0,cloneCue(x));if(cur>i)cur++});render()}
+  ts.forEach(x=>{const i=items.indexOf(x);const c=cloneCue(x);items.splice(i+1,0,c);if(cur>i)cur++;if(c.pend&&window.sceneRebake)sceneRebake(c)});render()}
 function liveOk(ids){const L=cur>=0&&items[cur]?items[cur].id:null;return (L&&ids.includes(L))?uiAsk(t('del_live'),{ok:t('m_del'),danger:true}):Promise.resolve(true)}
 async function cueDel(){const ts=cueTargets();if(!ts.length){flash(t('m_pick'));return}
   if(!(await liveOk(ts.map(x=>x.id))))return;
@@ -3200,8 +3200,8 @@ setTimeout(()=>{if(!document.querySelector('dialog[open]'))cuTour(false)},docume
    recorded once into a looping video cue, so the event screen, share screen, export and save work as with any video.
    Duplicate the cue and change the text = a new slide, no AI needed. */
 (function(){
-const DS={en:{h:'AI Builder',lbl:'Describe the slide you want',ph:'e.g. Opening slide for our team evening, with our logo. Festive and golden, "Welcome".\n\nMore ideas: a quiet memorial evening with a candle · a clean, confident medical conference · an end-of-year party with confetti · Yali turns 6',logo:'⬆ Logo, photo or programme (optional)',go:'✨ Let the magic happen',magic:'Let the magic happen',making:'The magic is happening…',add:'Add to the cue list',save:'Save changes',back:'← Back',tip:'Change any text and the slide updates right away. Need the same slide for more people? Add it, then duplicate the cue and change the name.',rec:'Making your slide…',recs:'Making second {a} of {b}…',prev:'Preview — it keeps moving until the next GO.',soon:'The AI Builder isn\'t open yet — try again soon.',need:'Sign in (free) to build a slide with AI.',short:'Write a little more about the slide.',err:'Couldn\'t build it right now — try again.',scerr:'This slide has a problem and can\'t play: ',review:'Claude is watching the result and polishing it…',busy:'Building your slide… (about half a minute)',added:'Slide added ✓',saved:'Slide updated ✓',rate:'How did it turn out?',rnote:'What didn\'t work? (helps the AI learn)',rsend:'Send',rthx:'Thanks — this helps the AI get better ✓',fixph:'What to change? e.g. a blue background, more sparkle, bigger logo',fixgo:'✨ Fix',fixing:'Fixing your slide…',fixn:'{n} fixes left for this slide',fix0:'No fixes left for this slide — build a new one',undo:'↶ Previous version',fixerr:'Couldn\'t fix it right now — try again.'},
- he:{h:'AI Builder',lbl:'תארו את השקופית שאתם רוצים',ph:'למשל: שקופית פתיחה לערב העובדים שלנו, עם הלוגו. חגיגי ובזהב, "ברוכים הבאים".\n\nעוד רעיונות: ערב זיכרון שקט עם נר · כנס רפואה נקי ובטוח · מסיבת סוף שנה עם קונפטי · יאלי בת 6',logo:'⬆ לוגו, תמונה או תוכנייה (לא חובה)',go:'✨ Let the magic happen',magic:'Let the magic happen',making:'הקסם קורה…',add:'הוספה לרשימה',save:'שמירת שינויים',back:'→ חזרה',tip:'משנים טקסט והשקופית מתעדכנת מיד. צריך אותה שקופית לעוד אנשים? מוסיפים, משכפלים את הקיו ומחליפים שם.',rec:'מכינים את השקופית…',recs:'מכינים שנייה {a} מתוך {b}…',prev:'תצוגה מקדימה — זזה עד ה-GO הבא.',soon:'ה-AI Builder עוד לא פתוח — נסו שוב בקרוב.',need:'התחברו (בחינם) כדי לבנות שקופית עם AI.',short:'כתבו עוד קצת על השקופית.',err:'לא הצלחנו לבנות עכשיו — נסו שוב.',scerr:'יש בעיה בשקופית והיא לא יכולה לרוץ: ',review:'Claude צופה בתוצאה ומלטש אותה…',busy:'בונים את השקופית… (בערך חצי דקה)',added:'השקופית נוספה ✓',saved:'השקופית עודכנה ✓',rate:'איך יצא?',rnote:'מה לא עבד? (עוזר ל-AI ללמוד)',rsend:'שליחה',rthx:'תודה — זה עוזר ל-AI להשתפר ✓',fixph:'מה לשנות? למשל: רקע כחול, יותר נצנצים, לוגו גדול יותר',fixgo:'✨ תקן',fixing:'מתקן את השקופית…',fixn:'נשארו {n} תיקונים לשקופית הזו',fix0:'נגמרו התיקונים לשקופית הזו — אפשר לבנות חדשה',undo:'↶ לגרסה הקודמת',fixerr:'לא הצלחנו לתקן כרגע — נסו שוב.'}};
+const DS={en:{h:'AI Builder',lbl:'Describe the slide you want',ph:'e.g. Opening slide for our team evening, with our logo. Festive and golden, "Welcome".\n\nMore ideas: a quiet memorial evening with a candle · a clean, confident medical conference · an end-of-year party with confetti · Yali turns 6',logo:'⬆ Logo, photo or programme (optional)',go:'✨ Let the magic happen',magic:'Let the magic happen',making:'The magic is happening…',add:'Add to the cue list',save:'Save changes',back:'← Back',tip:'Change any text and the slide updates right away. Need the same slide for more people? Add it, then duplicate the cue and change the name.',rec:'Making your slide…',recs:'Making second {a} of {b}…',saving:'Updating the slide in the background — you can carry on',bkerr:'Could not update the slide — open it and save again',bktag:'UPDATING',prev:'Preview — it keeps moving until the next GO.',soon:'The AI Builder isn\'t open yet — try again soon.',need:'Sign in (free) to build a slide with AI.',short:'Write a little more about the slide.',err:'Couldn\'t build it right now — try again.',scerr:'This slide has a problem and can\'t play: ',review:'Claude is watching the result and polishing it…',busy:'Building your slide… (about half a minute)',added:'Slide added ✓',saved:'Slide updated ✓',rate:'How did it turn out?',rnote:'What didn\'t work? (helps the AI learn)',rsend:'Send',rthx:'Thanks — this helps the AI get better ✓',fixph:'What to change? e.g. a blue background, more sparkle, bigger logo',fixgo:'✨ Fix',fixing:'Fixing your slide…',fixn:'{n} fixes left for this slide',fix0:'No fixes left for this slide — build a new one',undo:'↶ Previous version',fixerr:'Couldn\'t fix it right now — try again.'},
+ he:{h:'AI Builder',lbl:'תארו את השקופית שאתם רוצים',ph:'למשל: שקופית פתיחה לערב העובדים שלנו, עם הלוגו. חגיגי ובזהב, "ברוכים הבאים".\n\nעוד רעיונות: ערב זיכרון שקט עם נר · כנס רפואה נקי ובטוח · מסיבת סוף שנה עם קונפטי · יאלי בת 6',logo:'⬆ לוגו, תמונה או תוכנייה (לא חובה)',go:'✨ Let the magic happen',magic:'Let the magic happen',making:'הקסם קורה…',add:'הוספה לרשימה',save:'שמירת שינויים',back:'→ חזרה',tip:'משנים טקסט והשקופית מתעדכנת מיד. צריך אותה שקופית לעוד אנשים? מוסיפים, משכפלים את הקיו ומחליפים שם.',rec:'מכינים את השקופית…',recs:'מכינים שנייה {a} מתוך {b}…',saving:'השקופית מתעדכנת ברקע — אפשר להמשיך לעבוד',bkerr:'לא הצלחנו לעדכן את השקופית — פתחו אותה ושמרו שוב',bktag:'מתעדכן',prev:'תצוגה מקדימה — זזה עד ה-GO הבא.',soon:'ה-AI Builder עוד לא פתוח — נסו שוב בקרוב.',need:'התחברו (בחינם) כדי לבנות שקופית עם AI.',short:'כתבו עוד קצת על השקופית.',err:'לא הצלחנו לבנות עכשיו — נסו שוב.',scerr:'יש בעיה בשקופית והיא לא יכולה לרוץ: ',review:'Claude צופה בתוצאה ומלטש אותה…',busy:'בונים את השקופית… (בערך חצי דקה)',added:'השקופית נוספה ✓',saved:'השקופית עודכנה ✓',rate:'איך יצא?',rnote:'מה לא עבד? (עוזר ל-AI ללמוד)',rsend:'שליחה',rthx:'תודה — זה עוזר ל-AI להשתפר ✓',fixph:'מה לשנות? למשל: רקע כחול, יותר נצנצים, לוגו גדול יותר',fixgo:'✨ תקן',fixing:'מתקן את השקופית…',fixn:'נשארו {n} תיקונים לשקופית הזו',fix0:'נגמרו התיקונים לשקופית הזו — אפשר לבנות חדשה',undo:'↶ לגרסה הקודמת',fixerr:'לא הצלחנו לתקן כרגע — נסו שוב.'}};
 const loc=s=>{const p=String(s||'').split('|');return (lang==='he'&&p[1])?p[1]:p[0]};
 const dt=(k,v)=>{let s=(DS[lang]||DS.en)[k]||DS.en[k]||k;if(v)for(const n in v)s=s.replace('{'+n+'}',v[n]);return s};
 const SC_FN=SB_URL+'/functions/v1/build-scene',DIR_FN=SB_URL+'/functions/v1/ai-director';
@@ -3247,11 +3247,11 @@ async function footLoad(file){footStop();if(ft.url)URL.revokeObjectURL(ft.url);f
 async function footLum(){if(!ft.D)return undefined;const c=document.createElement('canvas');c.width=48;c.height=27;const x=c.getContext('2d',{willReadFrequently:true});let sum=0,n=0;
   for(const f of [.15,.35,.55,.75]){await vseek(ft.v1,ft.D*f);x.drawImage(ft.v1,0,0,48,27);const d=x.getImageData(10,6,28,15).data;for(let i=0;i<d.length;i+=4){const L=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)};sum+=.2126*L(d[i])+.7152*L(d[i+1])+.0722*L(d[i+2]);n++}}
   return n?sum/n:undefined}
-const footRate=s=>ft.D?Math.min(1,(ft.D-.3)/((+s.intro||6)+(+s.loop||8)))*Math.max(.15,Math.min(1,s.look&&s.look.speed!=null?+s.look.speed||1:1)):1;
+const footRate=(s,D=ft.D)=>D?Math.min(1,(D-.3)/((+s.intro||6)+(+s.loop||8)))*Math.max(.15,Math.min(1,s.look&&s.look.speed!=null?+s.look.speed||1:1)):1;
 /* seamless loop: the last second of the loop cross-fades into the footage at the loop's start */
-function footTimes(s,t){const I=+s.intro||6,L=+s.loop||8,r=footRate(s),F=Math.min(1,L/4);const tau=t-I;if(tau>L-F&&tau<L)return [t*r,(t-L)*r,(tau-(L-F))/F];return [t*r]}
+function footTimes(s,t,D=ft.D){const I=+s.intro||6,L=+s.loop||8,r=footRate(s,D),F=Math.min(1,L/4);const tau=t-I;if(tau>L-F&&tau<L)return [t*r,(t-L)*r,(tau-(L-F))/F];return [t*r]}
 /* seek and wait until that frame is really presented (seeked alone can hand back the previous frame) */
-const vseek=(v,t)=>new Promise(r=>{if(Math.abs(v.currentTime-t)<.004){r();return}let fin=false;const end=()=>{if(fin)return;fin=true;v.removeEventListener('seeked',on);r()};const on=()=>{if(v.requestVideoFrameCallback){v.requestVideoFrameCallback(()=>end());setTimeout(end,250)}else end()};v.addEventListener('seeked',on);v.currentTime=Math.max(0,Math.min(ft.D-.05,t));setTimeout(end,3000)});
+const vseek=(v,t,D=ft.D)=>new Promise(r=>{if(Math.abs(v.currentTime-t)<.004){r();return}let fin=false;const end=()=>{if(fin)return;fin=true;v.removeEventListener('seeked',on);r()};const on=()=>{if(v.requestVideoFrameCallback){v.requestVideoFrameCallback(()=>end());setTimeout(end,250)}else end()};v.addEventListener('seeked',on);v.currentTime=Math.max(0,Math.min(D-.05,t));setTimeout(end,3000)});
 async function footFrame(s,t){if(!ft.D)return {};const [a,b,m]=footTimes(s,t);await vseek(ft.v1,a);const bg=await createImageBitmap(ft.v1);if(b==null)return {bg,bg2:null,mix:0};await vseek(ft.v2,b);return {bg,bg2:await createImageBitmap(ft.v2),mix:m}}
 function footStop(){ft.on=false;try{ft.v1&&ft.v1.pause()}catch(e){}}
 async function footPlay(){const s=st.scene;if(!s||!s.engine)return;footStop();ft.on=true;const I=+s.intro||6,L=+s.loop||8,r=footRate(s);let t0=performance.now();
@@ -3273,18 +3273,19 @@ async function loadScene(play){const s=st.scene;if(!s)return;st.ready=false;$('#
 function frameAt(t,bgs){return new Promise((ok,no)=>{const id=++fid;frameWait.cur={id,ok,no};const b=bgs||{},tr=[b.bg,b.bg2].filter(Boolean);if(st.hostOk)ifr.contentWindow.postMessage({sc:'frame',t,id,...b},'*',tr);else post({sc:'frame',t,id});setTimeout(()=>{if(frameWait.cur&&frameWait.cur.id===id){frameWait.cur=null;no(new Error('timeout'))}},8000)})}
 /* record intro + one loop into a video file, frame by frame with exact timestamps (WebCodecs + WebM),
    so a slow computer gives the same smooth video, only slower to make. The loop starts on a key frame. */
-async function record(){const s=st.scene,FPS=window.__sceneFps||30,intro=+s.intro||0,dur=intro+(+s.loop||6),n=Math.round(dur*FPS),W=1920,H=1080;post({sc:'stop'});
+async function record(o){const s=o?o.s:st.scene,F=o?o.fields:st.fields,FPS=window.__sceneFps||30,intro=+s.intro||0,dur=intro+(+s.loop||6),n=Math.round(dur*FPS),W=1920,H=1080;if(!o)post({sc:'stop'});
+  const fr=o?o.frame:(async t=>frameAt(t,s.engine?await footFrame(s,t):null));
   if(!window.WebMMuxer)await loadScript('vendor/webm-muxer.js');
   let cfg={codec:'vp09.00.10.08',width:W,height:H,bitrate:12e6,framerate:FPS},mc='V_VP9';
   try{if(!(await VideoEncoder.isConfigSupported(cfg)).supported){cfg={...cfg,codec:'vp8'};mc='V_VP8'}}catch(e){cfg={...cfg,codec:'vp8'};mc='V_VP8'}
   const target=new WebMMuxer.ArrayBufferTarget(),mux=new WebMMuxer.Muxer({target,video:{codec:mc,width:W,height:H,frameRate:FPS}});
   let err=null;const enc=new VideoEncoder({output:(c,m)=>mux.addVideoChunk(c,m),error:e=>{err=e}});enc.configure(cfg);
   const kf=Math.round(intro*FPS);
-  footStop();for(let i=0;i<n;i++){if(err)throw err;const bm=await frameAt(i/FPS,s.engine?await footFrame(s,i/FPS):null);const vf=new VideoFrame(bm,{timestamp:Math.round(i*1e6/FPS),duration:Math.round(1e6/FPS)});enc.encode(vf,{keyFrame:i===0||i===kf||i%(FPS*2)===0});vf.close();bm.close();
+  if(!o)footStop();for(let i=0;i<n;i++){if(err)throw err;if(o&&o.dead&&o.dead()){try{enc.close()}catch(e){}throw new Error('superseded')}const bm=await fr(i/FPS);const vf=new VideoFrame(bm,{timestamp:Math.round(i*1e6/FPS),duration:Math.round(1e6/FPS)});enc.encode(vf,{keyFrame:i===0||i===kf||i%(FPS*2)===0});vf.close();bm.close();
     while(enc.encodeQueueSize>6)await new Promise(r=>setTimeout(r,5));
-    $('#dirBar').style.width=Math.round((i+1)/n*100)+'%';$('#dirBusyT').textContent=dt('recs',{a:Math.floor(i/FPS),b:Math.round(dur)})}
+    if(o){o.prog&&o.prog((i+1)/n)}else{$('#dirBar').style.width=Math.round((i+1)/n*100)+'%';$('#dirBusyT').textContent=dt('recs',{a:Math.floor(i/FPS),b:Math.round(dur)})}}
   await enc.flush();enc.close();mux.finalize();if(err)throw err;
-  const nm=(st.fields.title||st.fields.name||s.title||'Slide').toString().replace(/[\\/:*?"<>|]/g,'').slice(0,40)+' · '+Date.now().toString(36)+'.webm';
+  const nm=(F.title||F.name||s.title||'Slide').toString().replace(/[\\/:*?"<>|]/g,'').slice(0,40)+' · '+Date.now().toString(36)+'.webm';
   return new File([target.buffer],nm,{type:'video/webm'})}
 function busy(on,txt){$('#dirBusy').hidden=!on;if(txt)$('#dirBusyT').textContent=txt;$('#dirBar').style.width='0%'}
 function texts(){$('#dirH').textContent=dt('h');$('#dirLbl').textContent=dt('lbl');$('#dirPrompt').placeholder=dt('ph');$('#dirLogoBtn').textContent=dt('logo');$('#dirGo').textContent=dt('go');$('#dirBack').textContent=dt('back');$('#dirTip').textContent=dt('tip');$('#dirPrevNote').textContent=dt('prev');$('#dirAdd').textContent=st.edit?dt('save'):dt('add')}
@@ -3305,7 +3306,7 @@ function fieldsUI(){const box=$('#dirFields');box.innerHTML='';(st.scene.fields|
     let tm=null;inp.addEventListener('input',()=>{st.fields[f.k]=inp.value;clearTimeout(tm);tm=setTimeout(()=>loadScene(true),350)});box.appendChild(r)})}
 async function useScene(s,fields){st.lastErr='';st.scene=s;if(s.engine){if(!st.footFile&&s.foot&&s.foot.q){const r=await footFetch([s.foot.q]);if(r)st.footFile=r.file}await footLoad(st.footFile);try{st.footLum=await footLum()}catch(e){st.footLum=undefined}}else footLoad(null);st.fields={};(s.fields||[]).forEach(f=>st.fields[f.k]=f.value);if(fields)Object.assign(st.fields,fields);fieldsUI();texts();rateReset();fixUI();step(2);bootHost();loadScene(true)}
 window.openDirector=function(it){st.edit=it||null;st.footFile=null;st.busy=false;$('#dirErr').textContent='';$('#dirErr2').textContent='';busy(false);texts();$('#dirDlg').hidden=false;
-  if(it&&it.scene){st.logoFile=it.scene.logoFile||null;st.footFile=it.scene.footFile||null;st.prompt=it.scene.src&&it.scene.src.prompt||'';st.hist=[];st.used=it.scene.src&&it.scene.src.fixes||0;useScene(JSON.parse(JSON.stringify(it.scene.src)),it.scene.fields)}else{step(1);bootHost();magic(true)}}
+  const isc=it&&(it.pend&&it.pend.scene||it.scene);if(isc){st.logoFile=isc.logoFile||null;st.footFile=isc.footFile||null;st.prompt=isc.src&&isc.src.prompt||'';st.hist=[];st.used=isc.src&&isc.src.fixes||0;useScene(JSON.parse(JSON.stringify(isc.src)),isc.fields)}else{step(1);bootHost();magic(true)}}
 function close(){if(rate.n&&!rate.sent)rateSend('');post({sc:'stop'});footStop();$('#dirDlg').hidden=true;ifr.srcdoc='';st.hostOk=false}
 $('#dirDlg').addEventListener('click',e=>{if(e.target.id==='dirDlg'&&!st.busy)close()});
 $('#dirDlg').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Escape'&&!st.busy)close()});
@@ -3383,7 +3384,46 @@ $('#dirGo').onclick=async()=>{const p=$('#dirPrompt').value.trim();if(p.length<6
     const dd=r.ok&&d.direct;if(!dd||!ENGT[dd.engine]){$('#dirErr').textContent=dt('err');return}
     captions(dd.captions);st.hist=[];st.used=0;await useScene(await fromDirect(dd));track('scene-built');await polish()}
   catch(e){$('#dirErr').textContent=dt('soon')}finally{clearInterval(capT);st.busy=false;if(!$('#dirS1').hidden)magic(true,false)}};
-$('#dirAdd').onclick=async()=>{if(!st.ready||st.busy)return;st.busy=true;$('#dirAdd').disabled=true;busy(true,dt('rec'));
+/* saving an edited slide: the window closes at once and the slide is re-made in the background, in its own hidden frame.
+   The cue keeps its previous video (and plays it) until the new one is ready; a newer save of the same cue replaces an older one still waiting. */
+const bk={q:[],run:false,ifr:null,w:null,fw:null,fid:0};
+addEventListener('message',e=>{if(!bk.ifr||e.source!==bk.ifr.contentWindow)return;const d=e.data||{};
+  if(d.sc==='frame'){const w=bk.fw;if(w&&w.id===d.id){bk.fw=null;w.ok(d.bm)}else if(d.bm)d.bm.close()}
+  else if(d.sc==='error'){const m=new Error(d.msg);if(bk.fw){const w=bk.fw;bk.fw=null;w.no(m)}if(bk.w){const w=bk.w;bk.w=null;w.no(m)}}
+  else if(bk.w&&bk.w.k===d.sc){const w=bk.w;bk.w=null;w.ok()}});
+const bkWait=(k,ms)=>new Promise((ok,no)=>{const w=bk.w={k,ok,no};setTimeout(()=>{if(bk.w===w){bk.w=null;no(new Error('timeout'))}},ms)});
+const bkTag=(it,txt)=>{const e=document.querySelector('#list [data-bk="'+it.id+'"]');if(e)e.textContent='⟳ '+txt};
+async function bkMake(job){const s=job.s;if(bk.ifr)bk.ifr.remove();
+  const f=bk.ifr=document.createElement('iframe');f.setAttribute('sandbox','allow-scripts');f.setAttribute('aria-hidden','true');f.tabIndex=-1;f.style.cssText='position:fixed;left:-4000px;top:0;width:480px;height:270px;border:0;opacity:0;pointer-events:none';
+  const hw=bkWait('host',20000);f.srcdoc=HOST;document.body.appendChild(f);await hw;
+  const m={sc:'load',code:s.code,eng:s.engine||null,intro:s.intro,loop:s.loop,lum:job.lum,mood:s.mood||null,look:s.look||null,fields:{...job.fields},logo:job.logo,play:false};
+  if(s.mode==='3d'||s.engine)m.three=await three();m.kit=await kit();if(s.engine)m.engsrc=await engines();
+  const rw=bkWait('ready',40000);f.contentWindow.postMessage(m,'*');await rw;
+  let url=null,v1=null,v2=null,D=0;
+  try{if(s.engine&&job.foot){url=URL.createObjectURL(job.foot);const mk=()=>{const v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='auto';v.src=url;return v};v1=mk();v2=mk();
+      await Promise.all([v1,v2].map(v=>new Promise(r=>{v.onloadeddata=r;v.onerror=r;setTimeout(r,15000)})));D=v1.duration||0}
+    const frame=async t=>{let b={};if(D){const [a,c,mx]=footTimes(s,t,D);await vseek(v1,a,D);const bg=await createImageBitmap(v1);if(c==null)b={bg,bg2:null,mix:0};else{await vseek(v2,c,D);b={bg,bg2:await createImageBitmap(v2),mix:mx}}}
+      return new Promise((ok,no)=>{const id=++bk.fid,w=bk.fw={id,ok,no};f.contentWindow.postMessage({sc:'frame',t,id,...b},'*',[b.bg,b.bg2].filter(Boolean));setTimeout(()=>{if(bk.fw===w){bk.fw=null;no(new Error('timeout'))}},8000)})};
+    return await record({s,fields:job.fields,frame,prog:job.prog,dead:job.dead})}
+  finally{try{v1&&v1.removeAttribute('src');v2&&v2.removeAttribute('src')}catch(e){}if(url)URL.revokeObjectURL(url);f.remove();if(bk.ifr===f)bk.ifr=null}}
+async function bkRun(){if(bk.run)return;bk.run=true;
+  try{while(bk.q.length){const job=bk.q.shift(),it=job.it,live=()=>it.pend===job.pend&&items.includes(it);if(!live())continue;
+      job.dead=()=>!live();job.prog=p=>bkTag(it,Math.round(p*100)+'%');
+      try{const f=await bkMake(job);if(!live())continue;await keepGen(f);if(!live())continue;
+        if(it._vurl)URL.revokeObjectURL(it._vurl);it.file=f;it.url=it._vurl=URL.createObjectURL(f);it.scene=job.pend.scene;it.pend=null;it.thumb=null;it.outUrl=null;it.bad=false;makeThumb(it);if(items[cur]===it)show(cur,true);render();flash(dt('saved'));track('scene-saved-bg')}
+      catch(e){if(live()){if(job.pend.name0!=null&&!it.renamed)it.name=job.pend.name0;it.pend=null;render();flash(dt('bkerr'))}}}}
+  finally{bk.run=false}}
+function bkAdd(it,pend,logo,lum){it.pend=pend;bk.q=bk.q.filter(j=>j.it!==it);bk.q.push({it,pend,s:pend.scene.src,fields:pend.scene.fields,logo,lum,foot:pend.scene.footFile});bkRun()}
+/* a duplicate of a cue that is still being re-made gets its own turn */
+window.sceneRebake=async c=>{if(!c||!c.pend)return;const p=c.pend={...c.pend,scene:{...c.pend.scene,fields:{...c.pend.scene.fields}}};let logo=null;try{const sv=[st.logoFile,st.scene];st.logoFile=p.scene.logoFile;st.scene=p.scene.src;try{logo=await logoPng()}finally{[st.logoFile,st.scene]=sv}}catch(e){}bkAdd(c,p,logo,p.lum)};
+$('#dirAdd').onclick=async()=>{if(!st.ready||st.busy)return;
+  if(st.edit&&!window.__noBgSave){const s=st.scene,it=st.edit;
+    const scene={src:{...s,fixes:st.hist?st.hist.length:0},fields:{...st.fields},intro:+s.intro||0,loop:+s.loop||6,logoFile:st.logoFile||null,footFile:st.footFile||null};
+    const name=String(st.fields.title||st.fields.name||st.fields.kicker||loc(s.title)).slice(0,60);
+    let logo=null;try{logo=await logoPng()}catch(e){}
+    const pend={scene,name0:it.pend?it.pend.name0:it.name,lum:st.footLum};if(!it.renamed)it.name=name;
+    bkAdd(it,pend,logo,st.footLum);render();close();flash(dt('saving'));return}
+  st.busy=true;$('#dirAdd').disabled=true;busy(true,dt('rec'));
   try{const s=st.scene;const f=await record();await keepGen(f);
     const scene={src:{...s,fixes:st.hist?st.hist.length:0},fields:{...st.fields},intro:+s.intro||0,loop:+s.loop||6,logoFile:st.logoFile||null,footFile:st.footFile||null};
     const name=String(st.fields.title||st.fields.name||st.fields.kicker||loc(s.title)).slice(0,60);
