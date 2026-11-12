@@ -38,8 +38,36 @@ async def main():
             await pg.evaluate("go()"); await pg.wait_for_timeout(900)
             ok(L + 'the added cue really plays on GO', await pg.evaluate("cur===0&&!slideAudio.paused&&slideAudio.currentTime>0"), await pg.evaluate("[cur,slideAudio.paused,slideAudio.currentTime]"))
             ok(L + 'whole songs: the Pixabay way is still offered', await pg.evaluate("!$('#fmGo').hidden&&$('#fmGo').offsetParent!==null"))
-            await pg.click('#fmList .mt[data-id="doors_open_1"] .pl'); await pg.wait_for_timeout(300); await pg.click('#fmX')
+            await pg.click('#fmList .mt[data-id="doors_open_1"] .pl'); await pg.wait_for_timeout(300)
+            other = 'he' if lang == 'en' else 'en'
+            await pg.evaluate(f"setLang('{other}')"); await pg.wait_for_timeout(150)
+            sw = await pg.evaluate("({chip:$('#fmChips button[data-c=\"feel\"]').textContent===t('mc_feel'),name:document.querySelector('#fmList .mt[data-id=\"winner_1\"] .mn').textContent===MUS.find(m=>m[0]==='winner_1')[lang==='he'?3:2],add:document.querySelector('#fmList .ad').textContent===t('fm_add'),on:!!document.querySelector('#fmList .mt.on[data-id=\"doors_open_1\"]')&&!musA.paused})")
+            ok(L + 'switching language with the drawer open switches the whole drawer, and the preview keeps playing', all(sw.values()), sw)
+            await pg.evaluate(f"setLang('{lang}')"); await pg.wait_for_timeout(150)
+            await pg.click('#fmX')
             ok(L + 'closing the drawer stops the preview', await pg.evaluate("$('#fmDlg').hidden&&musA.paused"))
+            # free backgrounds: a thumbnail the browser cannot load comes through our own server
+            import json as _j
+            png = open(os.path.join(ROOT, 'tests', 'fixtures', 'green.png'), 'rb').read()
+            async def pbx(route):
+                u = route.request.url
+                if 'dl=' in u:
+                    await route.fulfill(status=200, content_type='image/png', headers={'Access-Control-Allow-Origin': '*'}, body=png); return
+                await route.fulfill(status=200, content_type='application/json', headers={'Access-Control-Allow-Origin': '*'}, body=_j.dumps({'total': 2, 'hits': [{'id': 1, 'thumb': 'https://pixabay.com/get/blocked1_640.jpg', 'full': 'https://pixabay.com/get/f1.jpg', 'user': 'u'}, {'id': 2, 'thumb': 'https://pixabay.com/get/blocked2_640.jpg', 'full': 'https://pixabay.com/get/f2.jpg', 'user': 'u'}]}))
+            await pg.route('**/functions/v1/pixabay**', pbx); await pg.route('https://pixabay.com/get/**', lambda r: r.fulfill(status=429, body='slow down'))
+            await pg.evaluate("openLib('bg')"); await pg.wait_for_timeout(1500)
+            th = await pg.evaluate("[...document.querySelectorAll('#pbGrid .cell img')].map(i=>[i.naturalWidth>0,i.src.includes('dl=')])")
+            ok(L + 'free backgrounds: a blocked thumbnail still shows (through our server)', len(th) == 2 and all(a and b for a, b in th), th)
+            await pg.evaluate("document.querySelector('#pbGrid .cell')._h.full2='https://cdn.pixabay.com/ok.jpg'")
+            await pg.route('https://cdn.pixabay.com/ok.jpg', lambda r: r.fulfill(status=200, content_type='image/png', headers={'Access-Control-Allow-Origin': '*'}, body=png))
+            await pg.unroute('**/functions/v1/pixabay**')
+            async def pbx2(route):
+                u = route.request.url
+                await route.fulfill(status=502 if ('dl=' in u and 'ok.jpg' not in u) else 200, content_type='image/png', headers={'Access-Control-Allow-Origin': '*'}, body=png)
+            await pg.route('**/functions/v1/pixabay**', pbx2)
+            n0 = await pg.evaluate("items.length"); await pg.evaluate("pb.mode='add';pbPick(document.querySelector('#pbGrid .cell'))"); await pg.wait_for_timeout(1500)
+            ok(L + 'free backgrounds: a blocked full image is fetched from its second address', await pg.evaluate("items.length") == n0 + 1, errs[:2])
+            await pg.evaluate("try{closeLib()}catch(e){}")
             ok(L + 'no page errors', not errs, errs[:2])
             await pg.close()
         await b.close()
