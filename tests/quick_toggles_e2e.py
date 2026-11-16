@@ -61,6 +61,8 @@ async def main():
             ok(L + 'a toggle that is at work on the live cue is highlighted; the others are not', live[0] and not live[1] and live[2] == 'qbLive', live)
             box = await pg.evaluate(f"(()=>{{const r={q(iv,'auto')}.getBoundingClientRect();return [r.width,r.height]}})()")
             ok(L + 'the toggles are big enough to hit', box[0] >= 28 and box[1] >= 24, box)
+            off = await pg.evaluate(f"""[{q(iv,'loop')},{q(iv,'auto')}].map(b=>{{const r=b.getBoundingClientRect();let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;b.querySelectorAll('path').forEach(p=>{{const g=p.getBBox(),m=p.getScreenCTM();[[g.x,g.y],[g.x+g.width,g.y+g.height]].forEach(([x,y])=>{{const X=m.a*x+m.c*y+m.e,Y=m.b*x+m.d*y+m.f;x0=Math.min(x0,X);y0=Math.min(y0,Y);x1=Math.max(x1,X);y1=Math.max(y1,Y)}})}});return [+((x0+x1)/2-(r.left+r.width/2)).toFixed(2),+((y0+y1)/2-(r.top+r.height/2)).toFixed(2)]}})""")
+            ok(L + 'each icon sits in the middle of its button (within half a pixel)', all(abs(v) <= 0.5 for pr in off for v in pr), off)
             tags = await pg.evaluate("[...document.querySelectorAll('#list .tg')].map(x=>x.textContent)")
             ok(L + 'the old Loop / Next chips are gone (the toggles show it)', not any('🔁' in x or x.startswith('→') for x in tags), tags)
             if '--shot' in sys.argv:
