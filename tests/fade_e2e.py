@@ -23,7 +23,7 @@ async def main():
             ok(L + 'no fade button in the GO bar', await pg.evaluate("!document.querySelector('.side [data-k=fade],#fadeBtn')"))
             ok(L + 'only sound files show "Fade out" (not videos, not pictures)', await pg.evaluate("[...document.querySelectorAll('.item')].map(r=>!!r.querySelector('[data-k=fade]')).join()") == 'true,false,false')
             label = await pg.evaluate("document.querySelector('.item [data-k=fade]').textContent")
-            ok(L + 'the button says fade out', label in ('Fade out', 'פייד אאוט'), label)
+            ok(L + 'the button says fade', label in ('Fade', 'פייד'), label)
             xs = await pg.evaluate("[...document.querySelectorAll('.item [data-k=fade]')].map(b=>Math.round(b.getBoundingClientRect().right))")
             ok(L + 'fade buttons line up on every row', len(set(xs)) == 1, xs)
             await pg.evaluate("go()"); await pg.wait_for_timeout(500)
