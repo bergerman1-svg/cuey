@@ -57,6 +57,10 @@ async def main():
             # music loop reaches the player
             await pg.evaluate(f"show({ia})"); await pg.wait_for_timeout(400); await pg.evaluate(f"{q(ia,'loop')}.click()"); await pg.wait_for_timeout(150)
             ok(L + 'loop on a live music cue reaches the player', await pg.evaluate(f"items[{ia}].loop===true&&slideAudio.loop===true"), await pg.evaluate(f"[items[{ia}].loop,slideAudio.loop]"))
+            live = await pg.evaluate(f"[{q(ia,'loop')}.classList.contains('live'),{q(iv,'loop')}.classList.contains('live'),getComputedStyle({q(ia,'loop')}).animationName]")
+            ok(L + 'a toggle that is at work on the live cue is highlighted; the others are not', live[0] and not live[1] and live[2] == 'qbLive', live)
+            box = await pg.evaluate(f"(()=>{{const r={q(iv,'auto')}.getBoundingClientRect();return [r.width,r.height]}})()")
+            ok(L + 'the toggles are big enough to hit', box[0] >= 28 and box[1] >= 24, box)
             tags = await pg.evaluate("[...document.querySelectorAll('#list .tg')].map(x=>x.textContent)")
             ok(L + 'the old Loop / Next chips are gone (the toggles show it)', not any('🔁' in x or x.startswith('→') for x in tags), tags)
             if '--shot' in sys.argv:

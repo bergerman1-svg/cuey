@@ -302,10 +302,14 @@ aside{border-inline-end:1px solid var(--line);display:flex;flex-direction:column
 .item .tg.hot{color:var(--go);border-color:#3d4a12}
 /* quick toggles on the cue: loop, and "go on by itself when it ends" */
 .item .qk{display:inline-flex;gap:4px;flex:none}
-.item .qb{width:24px;height:22px;padding:0;display:grid;place-items:center;border-radius:6px;border:1px solid var(--line);background:#121216;color:#6f7280;cursor:pointer;transition:color .15s,border-color .15s,background .15s,transform .1s}
-.item .qb svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
-.item .qb:hover{color:#d7d9e0;border-color:#3a3c46}.item .qb:active{transform:scale(.92)}
-.item .qb.on{color:var(--go);border-color:#56691a;background:#1c220b}
+.item .qb{width:28px;height:24px;padding:0;display:grid;place-items:center;border-radius:7px;border:1px solid var(--line);background:#121216;color:#7b7e8c;cursor:pointer;transition:color .15s,border-color .15s,background .15s,transform .1s,box-shadow .2s}
+.item .qb svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.item .qb:hover{color:#fff;border-color:#565a68;background:#1d1e25}.item .qb:active{transform:scale(.9)}
+.item .qb.on{color:#10130a;border-color:var(--go);background:var(--go)}.item .qb.on:hover{color:#10130a;background:#d9ff4a;border-color:#d9ff4a}
+/* the cue is on screen and this is at work right now */
+.item .qb.on.live{animation:qbLive 1.8s ease-in-out infinite}
+@keyframes qbLive{0%,100%{box-shadow:0 0 0 0 rgba(200,240,38,.0)}50%{box-shadow:0 0 0 4px rgba(200,240,38,.28)}}
+@media (prefers-reduced-motion:reduce){.item .qb.on.live{animation:none;box-shadow:0 0 0 3px rgba(200,240,38,.25)}}
 .item .qb:focus-visible{outline:2px solid var(--go);outline-offset:1px}
 .item .tg.amb{color:var(--amb);border-color:#5a2e12}
 .item .ctl input[type=range]{width:78px;padding:0}
@@ -1109,7 +1113,7 @@ function render(){
       <div class="ctl">
         <span class="tags">${cueTags(it)}</span>
         <span class="spacer"></span>
-        ${G?'':`<span class="qk">${avOf(it)&&!it.scene?`<button type="button" data-k="loop" class="qb${it.loop?' on':''}" aria-pressed="${!!it.loop}" title="${esc(t('ic_loop'))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2.5 20.5 6 17 9.5"/><path d="M3.5 11.5V10a4 4 0 0 1 4-4h13"/><path d="M7 21.5 3.5 18 7 14.5"/><path d="M20.5 12.5V14a4 4 0 0 1-4 4h-13"/></svg></button>`:''}<button type="button" data-k="auto" class="qb${it.onEnd==='next'&&!it.loop?' on':''}" aria-pressed="${it.onEnd==='next'&&!it.loop}" title="${esc(t(still(it)?'ic_auto_s':'ic_auto',{s:it.hold||5}))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5v15l10-7.5z"/><path d="M19 5v14"/></svg></button></span>`}
+        ${G?'':`<span class="qk">${avOf(it)&&!it.scene?`<button type="button" data-k="loop" class="qb${it.loop?' on':''}${it.loop&&i===cur?' live':''}" aria-pressed="${!!it.loop}" title="${esc(t('ic_loop'))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6h4.5a6 6 0 0 1 0 12h-9a6 6 0 0 1 0-12H8"/><path d="M10.5 3 13.5 6l-3 3"/></svg></button>`:''}<button type="button" data-k="auto" class="qb${it.onEnd==='next'&&!it.loop?' on':''}${it.onEnd==='next'&&!it.loop&&i===cur?' live':''}" aria-pressed="${it.onEnd==='next'&&!it.loop}" title="${esc(t(still(it)?'ic_auto_s':'ic_auto',{s:it.hold||5}))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7.5a5.5 5.5 0 0 1 5.5 5.5V19"/><path d="M12.5 15 17 19.5 21.5 15"/></svg></button></span>`}
         ${(it.type==='video'&&!it.text)||it.type==='audio'?`<span class="vl" title="${esc(t('ed_vol'))}">${it.type==='audio'?'♪':'🔊'}</span><input data-k="vol" type="range" min="0" max="100" value="${Math.round(it.vol*100)}" title="${esc(t('ed_vol'))} ${Math.round(it.vol*100)}%">`:it.audio?`<span class="vl" title="${esc(it.audio.name)}">♪</span><input data-k="avol" type="range" min="0" max="100" value="${Math.round(it.avol*100)}" title="${esc(it.audio.name)} ${Math.round(it.avol*100)}%">`:''}${it.type==='audio'?`<button type="button" data-k="fade" class="fdb${i===cur?'':' idle'}" style="--fk:${i===cur?fadeK.toFixed(3):1}" title="${esc(t('fade_tip',{s:it.fadeT||3}))}">${esc(t('fade'))}</button>`:''}
       </div>`;
     d.onclick=e=>{if(e.target.closest('input,button,select,.vl,.n'))return;
