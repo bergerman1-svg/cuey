@@ -76,6 +76,16 @@ ipcMain.handle('read-path', async (_e, p) => {
   if (typeof p !== 'string' || !path.isAbsolute(p) || !MEDIA_EXT.test(p)) return null;
   try { const st = await fs.promises.stat(p); if (!st.isFile()) return null; return await fs.promises.readFile(p); } catch (e) { return null; }
 });
+// ---- a show opened from Finder / Explorer (double-click on a .cuey), also while Cuey is already running
+let pendingShow = null, pageAsked = false;
+try { const a = process.argv.slice(1).find(x => isShow(x) && !x.startsWith('-')); if (a) pendingShow = path.resolve(a); } catch (e) {}
+const readShowFile = async (f) => { try { return { path: f, name: path.basename(f), text: await fs.promises.readFile(f, 'utf8') }; } catch (e) { return null; } };
+const sendShow = async (f) => { if (!isShow(f)) return; const r = await readShowFile(path.resolve(f)); if (r && win && !win.isDestroyed()) { if (win.isMinimized()) win.restore(); win.show(); win.focus(); win.webContents.send('open-show', r); } };
+app.on('open-file', (e, f) => { e.preventDefault(); if (win && !win.isDestroyed() && pageAsked) sendShow(f); else pendingShow = f; }); // Mac
+ipcMain.handle('show-pending', async () => { pageAsked = true; const f = pendingShow; pendingShow = null; return f && isShow(f) ? await readShowFile(f) : null; });
+const gotLock = app.requestSingleInstanceLock(); // one Cuey: a second double-click hands its file to the open window
+if (!gotLock) app.quit();
+else app.on('second-instance', (_e, argv) => { const f = (argv || []).slice(1).find(x => isShow(x) && !x.startsWith('-')); if (win && !win.isDestroyed()) { if (win.isMinimized()) win.restore(); win.show(); win.focus(); } if (f) sendShow(f); });
 ipcMain.handle('show-open', async () => {
   const r = await dialog.showOpenDialog(win, { properties: ['openFile'], filters: SHOW_F });
   if (r.canceled || !r.filePaths[0]) return null;
@@ -363,6 +373,7 @@ const menuTemplate = () => [
 ];
 
 app.whenReady().then(() => {
+  if (!gotLock) return;
   // YouTube / Vimeo players refuse to run inside a page without a web address (error 153). The app is a local file,
   // so we tell those two players which site the request comes from.
   const { session } = require('electron');

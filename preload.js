@@ -12,6 +12,9 @@ contextBridge.exposeInMainWorld('cueyNative', {
   saveShow: (o) => ipcRenderer.invoke('show-save', o),
   openShow: () => ipcRenderer.invoke('show-open'),
   readShow: (p) => ipcRenderer.invoke('show-read', p),
+  // a show opened by double-click: the one Cuey was started with, and any opened later
+  pendingShow: () => ipcRenderer.invoke('show-pending'),
+  onOpenShow: (cb) => ipcRenderer.on('open-show', (_e, r) => cb(r)),
   pptxToPdf: (name, data) => ipcRenderer.invoke('pptx-to-pdf', { name, data }),
   // the show's media folder (next to the .cuey): copy files there, read one back
   filePath: (f) => { try { return webUtils.getPathForFile(f) || ''; } catch (e) { return ''; } },

@@ -78,7 +78,7 @@ async def main():
             ok(f'[{lang}] …take out: it leaves the slide show, the rest stay', await pg.evaluate(f"items.filter(x=>x.grp==='{g}').length") == n0 - 1 and await pg.evaluate("items.length") == 5)
             await pg.click(f'#list .grpc[data-g="{g}"]', button='right'); await pg.wait_for_timeout(150)
             gm = await pg.evaluate("$('#ctxm')?[...$('#ctxm').querySelectorAll('[data-c]')].map(b=>b.dataset.c):[]")
-            ok(f'[{lang}] right-click on a slide show opens its menu', gm == ['tog', 'edit', 'ren', 'copy', 'up', 'down', 'ungroup', 'del'], gm)
+            ok(f'[{lang}] right-click on a slide show opens its menu', gm == ['tog', 'edit', 'ren', 'copy', 'aud', 'up', 'down', 'ungroup', 'del'], gm)
             await pick('copy')
             ok(f'[{lang}] Duplicate slide show', await pg.evaluate("Object.keys(groups).length") == 2)
             g2 = await pg.evaluate("Object.keys(groups)[1]")
