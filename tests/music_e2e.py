@@ -1,6 +1,6 @@
 """Cuey Music: our own short cues in a side drawer — listen, add with one click, or drag into the cue list.
 The drawer sits beside the cue list (never on it), the old Pixabay way is still there for whole songs."""
-import asyncio, os
+import asyncio, os, json as _j0
 from playwright.async_api import async_playwright
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 res = []
@@ -37,6 +37,15 @@ async def main():
             ok(L + 'dragging a cue into the cue list adds it', it == ['audio', 'audio'], it)
             await pg.evaluate("go()"); await pg.wait_for_timeout(900)
             ok(L + 'the added cue really plays on GO', await pg.evaluate("cur===0&&!slideAudio.paused&&slideAudio.currentTime>0"), await pg.evaluate("[cur,slideAudio.paused,slideAudio.currentTime]"))
+            # a show saved with library music opens with it again (found at a real event on Windows, 17.11)
+            ok(L + 'an added cue is kept with the show (it goes into the media folder on Save)', await pg.evaluate("(async()=>{for(const i of items){const g=await idbGet('gen:'+i.file.name);if(!(g&&g.size>20000))return false}return true})()"))
+            js = await pg.evaluate("JSON.stringify(showData())")
+            await pg.evaluate("(async()=>{const d=await idb();for(const i of items)await new Promise(r=>{const t=d.transaction(ST,'readwrite');t.objectStore(ST).delete('gen:'+i.file.name);t.oncomplete=r;t.onerror=r})})()")
+            await pg.evaluate("(async(j)=>{savedFp=showFp();await loadShowFromText(j)})(%s)" % _j0.dumps(js)); await pg.wait_for_timeout(1200)
+            back = await pg.evaluate("[items.length,items.every(i=>!i.bad&&i.file.size>20000),!$('#pickDlg')||$('#pickDlg').hidden]")
+            ok(L + 'a show that lost its music files gets the library cues back from the app, without asking', back == [2, True, True], back)
+            await pg.evaluate("go()"); await pg.wait_for_timeout(900)
+            ok(L + 'and they play', await pg.evaluate("!slideAudio.paused&&slideAudio.currentTime>0"))
             ok(L + 'whole songs: the Pixabay way is still offered', await pg.evaluate("!$('#fmGo').hidden&&$('#fmGo').offsetParent!==null"))
             await pg.click('#fmList .mt[data-id="doors_open_1"] .pl'); await pg.wait_for_timeout(300)
             other = 'he' if lang == 'en' else 'en'
