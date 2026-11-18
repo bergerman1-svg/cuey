@@ -463,7 +463,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 .side button:hover{background:#1F1F26}
 /* TAKE: pick any cue to play next; BACK made narrower to make room (asked for after the second event, 18.11) */
 #take{flex:1.1;color:#FF9A4D;border-color:#4a2c14}#back{flex:.8}
-#take.arm{background:rgba(255,117,31,.16);border-color:#FF751F;color:#FFB27A;animation:takeArm 1s ease-in-out infinite}
+#take.arm{font-size:13px;line-height:1.15;background:rgba(255,117,31,.16);border-color:#FF751F;color:#FFB27A;animation:takeArm 1s ease-in-out infinite}
 #take.set{background:rgba(255,117,31,.22);border-color:#FF751F;color:#fff;box-shadow:inset 0 0 0 1px #FF751F}
 @keyframes takeArm{50%{box-shadow:0 0 0 3px rgba(255,117,31,.32)}}
 body.taking #list .item:not(.cur){cursor:copy}body.taking #list .item:not(.cur):hover{box-shadow:inset 0 0 0 2px #FF751F}
@@ -1146,7 +1146,7 @@ function render(){
       </div>`;
     d.onclick=e=>{if(e.target.closest('input,button,select,.vl,.n'))return;
       if(takeMode){takeSet(i);return} // TAKE is on: this click chooses the next cue, it does not put it live
-      if(performance.now()-takeAt<450)return; // the second click of a double-click on the chosen cue must not put it live
+      if(takeEcho(it))return;
       if(sel.size){sel.clear();selAnchor=null;render();return} // ticks on: a plain click just clears them (and never puts a cue live by surprise)
       if(e.target.closest('.name')){clearTimeout(d._ct);d._ct=setTimeout(()=>{if(!d.querySelector('input.rn'))show(i)},260);return}
       show(i)};
@@ -2893,7 +2893,7 @@ function clearStages(){clearTimeout(holdTimer);holdTimer=null;holdInfo=null;pvSt
 function show(i,force){fadeReset();
   if(i<0||i>=items.length)return;
   const it=items[i];
-  if(takeId===it.id)takeId=null;if(takeRet&&!(it.id===takeRet.at||(takeRet.grp&&it.grp===takeRet.grp)))takeRet=null;takeOff();
+  if(takeId===it.id)takeId=null;if(takeRet&&!(it.id===takeRet.at||(takeRet.grp&&it.grp===takeRet.grp)))takeRet=null;
   cur=i;haltGrp=null;frozen=false;cueDone=false;setFrz();grpMusic(it,sndFadeT(it));
   armed=it.type==='video'&&it.standby&&!it.bad&&!autoMode&&!it.grp;setGoLabel();
   if(it.web&&it.bad&&!['blocked','gone'].includes(it.web.err)){it.bad=false;delete it.web.err} // online hiccup: try again
@@ -2934,7 +2934,7 @@ function advance(fromGo){if(exportFinishing)return;
   if(n>=0)show(n);else if(exporting){finishExport()}else if((autoMode||loopShow)&&items.length)show(0);else if(fromGo&&items.length===1&&replayable())show(cur,true)} // the only cue in the list finished: GO runs it again (Avi: only when it is the only cue)
 /* the live cue played to its end (video / music, not a still picture) — GO or Play runs it again from IN */
 function replayable(){const it=items[cur];return !!(it&&cueDone&&!exporting&&(it.type==='audio'||(it.type==='video'&&!it.text)))}
-function go(){if(items.length){appRateDay();track1('go-first');trackEver('go-first-ever');wentLive=true}if(takeMode){takeOff();takeUi()}if(armed){armed=false;pvStage.play();outStage&&outStage.play();if(slideAudio.src)slideAudio.play().catch(()=>{});setGoLabel();render();return}advance(true)}
+function go(){if(items.length){appRateDay();track1('go-first');trackEver('go-first-ever');wentLive=true}if(armed){armed=false;pvStage.play();outStage&&outStage.play();if(slideAudio.src)slideAudio.play().catch(()=>{});setGoLabel();render();return}advance(true)}
 $('#list').addEventListener('click',e=>{if(e.target===e.currentTarget&&sel.size){sel.clear();selAnchor=null;render()}}); // click on the empty part of the list clears the ticks
 $('#ssMake').onclick=()=>makeGroup();$('#ssCancel').onclick=()=>{selDismiss=sel.size;render()}; // keep the ticks (for editing them together) — just hide the question
 /* ---------- Slide show groups ---------- */
@@ -2943,27 +2943,30 @@ function grpRange(g){let a=-1,b=-1;items.forEach((x,i)=>{if(x.grp===g){if(a<0)a=
 function applyGrp(g){const G=groups[g];if(!G)return;items.forEach(x=>{if(x.grp===g){x.trans=G.trans;x.dur=G.dur;x.hold=G.hold;x.loop=false;x.standby=false}})}
 function fixGroups(){const live=new Set(items.map(x=>x.grp).filter(Boolean));for(const g in groups)if(!live.has(g)){delete groups[g];delete grpAud[g];if(grpAon===g)grpMusicStop(0)}items.forEach(x=>{if(x.grp&&!groups[x.grp])x.grp=null})}
 /* TAKE: one cue, chosen by the operator, plays next out of order; after it the show goes back to the order it left */
-let takeMode=false,takeId=null,takeRet=null,takeAt=0,takeTm=null; // takeRet={at:id of the taken cue, grp, from:id of the cue the show left}
+let takeMode=false,takeId=null,takeRet=null,takeBtnAt=0,takeSetAt=0,takeSetId=null; // takeRet={at:id of the taken cue, grp, from:id of the cue the show left, to:id of the cue that followed it then}
 function takeIdx(){if(takeId==null)return -1;const k=items.findIndex(x=>x.id===takeId);if(k<0||k===cur){takeId=null;return -1}return k}
 /* the next cue in list order after cue i (a slide show counts as one) */
 function natAfter(i){const it=items[i];if(!it)return -1;if(it.grp&&groups[it.grp]){const [a,b]=grpRange(it.grp);return b+1<items.length?b+1:-1}return i+1<items.length?i+1:-1}
 /* the way back from a taken cue = the cue that follows the place the show left, as the list is NOW (cues may have been removed or moved meanwhile).
    undefined = no way back pending (also when the show had left from the end of the list: then it simply goes on from the taken cue) */
 function takeRetIdx(){if(!takeRet)return undefined;const c=items[cur];if(!c||!(c.id===takeRet.at||(takeRet.grp&&c.grp===takeRet.grp)))return undefined;
-  const f=items.findIndex(x=>x.id===takeRet.from);if(f<0)return undefined;const k=natAfter(f);if(k<0||k===cur||(takeRet.grp&&items[k].grp===takeRet.grp))return undefined;return k}
+  const f=items.findIndex(x=>x.id===takeRet.from);let k=f>=0?natAfter(f):items.findIndex(x=>x.id===takeRet.to); /* the cue the show left was removed: the cue that followed it then */if(k<0||k===cur||(takeRet.grp&&items[k].grp===takeRet.grp))return undefined;return k}
 function takeFromIdx(){if(takeRetIdx()===undefined)return -1;return items.findIndex(x=>x.id===takeRet.from)}
 /* the cue to go to when the live cue is left: the taken cue, else the way back from a taken cue, else `nat` (the next in order) */
-function leaveIdx(nat){if(exporting)return nat;takeOff();const k=takeIdx();
+function leaveIdx(nat){if(exporting)return nat;const k=takeIdx();
   if(k>=0){const chained=takeRetIdx()!==undefined,from=chained?takeRet.from:(items[cur]?items[cur].id:null); /* a take from a taken cue: the way back is still the place the show first left */
-    takeId=null;takeRet=(k===nat&&!chained)||from==null?null:{at:items[k].id,grp:items[k].grp||null,from};track('take-go');return k}
+    takeId=null;takeRet=(k===nat&&!chained)||from==null?null:{at:items[k].id,grp:items[k].grp||null,from,to:chained?takeRet.to:(nat>=0&&items[nat]?items[nat].id:null)};track('take-go');return k}
   const r=takeRetIdx();if(r!==undefined){takeRet=null;return r}return nat}
-function takeOff(){takeMode=false;clearTimeout(takeTm);takeTm=null}
-function takeArm(){takeMode=true;clearTimeout(takeTm);takeTm=setTimeout(()=>{if(takeMode){takeOff();render()}},12000)} // an armed TAKE that is not used lets go by itself, so a later click is never "eaten"
-function takeSet(i){takeOff();takeAt=performance.now();const it=items[i];if(it&&i!==cur){takeId=it.id;track('take-set')}render()} // the live cue cannot be taken: the take that was chosen (if any) stays
-function takeToggle(){const now=performance.now();if(now-takeAt<350)return;takeAt=now; // a double press is one press
+/* An armed TAKE stays armed until a cue is picked, TAKE is pressed again or Esc: it never lets go by itself (not on a timer, not when the
+   live cue advances), because a click that the operator means as "take this" must never turn into "put this live". */
+function takeOff(){takeMode=false}
+function takeSet(i){takeOff();const it=items[i];takeSetAt=performance.now();takeSetId=it?it.id:null;if(it&&i!==cur){takeId=it.id;track('take-set')}render()} // the live cue cannot be taken: the take that was chosen (if any) stays
+function takeToggle(){const now=performance.now();if(now-takeBtnAt<500)return;takeBtnAt=now; // a double press is one press
   if(takeMode){takeOff();takeId=null}                      // armed + TAKE again = cancel everything
-  else if(items.length>1||(items.length&&cur<0)){takeArm();flash(t('take_pick'))} // idle, or a cue already chosen (the next click replaces it)
+  else if(items.length>1||(items.length&&cur<0)){takeMode=true;flash(t('take_pick'))} // idle, or a cue already chosen (the next click replaces it)
   render()}
+/* the later clicks of a double-click on the cue that was just chosen must not put it live (other cues answer at once) */
+function takeEcho(it){return !!it&&it.id===takeSetId&&performance.now()-takeSetAt<800}
 function takeCancel(){takeOff();takeId=null;render()}
 function takeUi(){const b=$('#take');if(!b)return;const k=takeIdx();b.classList.toggle('arm',takeMode);b.classList.toggle('set',!takeMode&&k>=0);document.body.classList.toggle('taking',takeMode);
   b.textContent=takeMode?t('take_arm'):k>=0?t('take')+' ✓':t('take');b.title=t('take_tip')}
@@ -3012,7 +3015,7 @@ function grpHeader(g){
       <span class="tags">${licensed?'':tg('STUDIO','st')}${tg('⏱ '+G.hold+t('sec'))}${tg(G.trans==='cut'?t('cut'):t('dissolve')+' '+G.dur+t('sec'))}${tg(G.end==='loop'?'🔁 '+t('ss_loop'):G.end==='next'?'→ '+t('ss_next'):'■ Black',G.end==='loop'?'hot':'')}${grpAud[g]?tg('♪ '+grpAud[g].name,'gmus'):''}</span>
     </div>${live?`<div class="gbar"><i style="width:${(cur-a+1)/n*100}%"></i></div>`:''}`;
   h.addEventListener('click',e=>{if(takeMode&&!e.target.closest('button,input')){e.stopPropagation();e.preventDefault();takeSet(a)}},true); // TAKE is on: a click anywhere on the header chooses the slide show
-  h.onclick=e=>{if(e.target.closest('.ctl,.rn,button,.gname'))return;if(performance.now()-takeAt<450)return;show(a)};
+  h.onclick=e=>{if(e.target.closest('.ctl,.rn,button,.gname'))return;if(takeEcho(items[a]))return;show(a)};
   h.oncontextmenu=e=>{e.preventDefault();openGrpCtx(e,g)};
   h.draggable=false;
   h.addEventListener('pointerdown',e=>{h.draggable=!e.target.closest('.ctl,.rn')});
@@ -3090,7 +3093,7 @@ function startGrpRename(h,g){
   inp.addEventListener('blur',()=>fin(true));['click','dblclick','pointerdown'].forEach(ev=>inp.addEventListener(ev,e=>e.stopPropagation()));
 }
 function setGoLabel(){$('#go').textContent=armed?t('play'):t('go');$('#go').style.background=armed?'var(--amb)':'';$('#go').style.color=armed?'#fff':''}
-function back(){takeOff();const f=takeFromIdx();if(f>=0){show(f);return} /* BACK from a taken cue = back to the cue the show came from */ if(cur>0)show(cur-1);else render()}
+function back(){const f=takeFromIdx();if(f>=0){show(f);return} /* BACK from a taken cue = back to the cue the show came from */ if(cur>0)show(cur-1);else render()}
 function setBlack(on){blackOn=on;setTimeout(()=>shWebTick(true),0);$('#blk').classList.toggle('on',on);pvStage.black(on);outStage&&outStage.black(on)}
 function holdPause(p){if(!holdInfo)return;const it=items[cur];
   if(p){if(holdInfo.paused)return;clearTimeout(holdTimer);holdTimer=null;holdInfo.left=Math.max(0,holdInfo.dur*1000-(performance.now()-holdInfo.start));holdInfo.paused=true}
