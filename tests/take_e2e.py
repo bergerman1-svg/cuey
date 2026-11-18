@@ -47,6 +47,9 @@ async def main():
             s = await pg.evaluate(ST); ok(L + 'T + click on an earlier cue (C1) + GO: C1 is live, next is C6', s['cur'] == 0 and s['next'] == 5, s)
             await pg.keyboard.press('Space'); await pg.wait_for_timeout(250)
             s = await pg.evaluate(ST); ok(L + 'and back to C6', s['cur'] == 5 and s['next'] == 6, s)
+            # the phone remote shows the same NEXT as the computer (it used to show the cue below the live one)
+            rm = await pg.evaluate("""(()=>{let got=null;rmOn=true;const c0=rmCount,s0=rmSend;rmCount=()=>1;rmSend=o=>{if(o&&o.t==='st')got=o};takeId=items[1].id;rmStateS='';rmState(true);const a=got&&got.next&&got.next.name;takeId=null;rmStateS='';rmState(true);const b=got&&got.next&&got.next.name;rmOn=false;rmCount=c0;rmSend=s0;return [items[cur].name,a,b]})()""")
+            ok(L + 'Cuey Remote: NEXT on the phone is the taken cue, and the normal next cue without a take', rm == ['C6', 'C2', 'C7'], rm)
             # cancelling
             await pg.wait_for_timeout(550); await pg.click('#take'); await pg.wait_for_timeout(550); await pg.click('#take'); await pg.wait_for_timeout(150)
             s = await pg.evaluate(ST); ok(L + 'TAKE, then TAKE again = cancelled; the next click works as always', not s['mode'] and not s['arm'], s)

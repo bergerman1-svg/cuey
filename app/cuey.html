@@ -1675,7 +1675,7 @@ function rmThumb(it){if(!it||!it.thumb)return '';if(rmThumbs[it.id]&&rmThumbs[it
   let v='';try{const im=new Image();im.src=it.thumb;const c=document.createElement('canvas');const w=320,h=180;c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='#000';x.fillRect(0,0,w,h);
     if(im.complete&&im.naturalWidth){const r=Math.min(w/im.naturalWidth,h/im.naturalHeight);x.drawImage(im,(w-im.naturalWidth*r)/2,(h-im.naturalHeight*r)/2,im.naturalWidth*r,im.naturalHeight*r);v=c.toDataURL('image/jpeg',.6)}}catch(e){}
   if(v)rmThumbs[it.id]={src:it.thumb,v};return v}
-function rmState(force){if(!rmOn||!rmCount())return;const it=items[cur],nx=items[cur+1],m=(outStage&&outStage.media)||pvStage.media;
+function rmState(force){if(!rmOn||!rmCount())return;const it=items[cur],nx=items[nextIdx()],m=(outStage&&outStage.media)||pvStage.media; // the real next cue: a taken cue, the cue after a slide show…
   const kind=i=>i?(i.web?'web':i.type==='video'?'video':i.type==='audio'?'audio':i.text?'text':'image'):'';
   const st={t:'st',lg:lang==='he'?'he':'en',n:items.length,i:cur,live:it?{name:it.name,k:kind(it),id:it.id}:null,next:nx?{name:nx.name,k:kind(nx),id:nx.id}:null,black:!!blackOn,frz:!!frozen,armed:!!armed,out:!!(outWin&&!outWin.closed)||!!exporting,show:($('#showName')&&$('#showName').textContent)||''};
   const key=JSON.stringify(st);
