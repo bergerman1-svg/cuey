@@ -2966,7 +2966,7 @@ function takeToggle(){const now=performance.now();if(now-takeBtnAt<500)return;ta
   render()}
 /* For a moment after a cue was picked, a click on a cue is still part of the picking — a double- or triple-click, or "no, I meant this one" —
    so it re-picks and never puts a cue live. Each such click renews the moment; GO or any cue going live ends it. */
-function takeGrace(){return performance.now()-takeSetAt<1500}
+function takeGrace(){return takeSetAt>0&&performance.now()-takeSetAt<1500}
 function takeCancel(){takeOff();takeId=null;takeSetAt=0;render()}
 function takeUi(){const b=$('#take');if(!b)return;const k=takeIdx();b.classList.toggle('arm',takeMode);b.classList.toggle('set',!takeMode&&k>=0);document.body.classList.toggle('taking',takeMode);
   b.textContent=takeMode?t('take_arm'):k>=0?t('take')+' ✓':t('take');b.title=t('take_tip')}

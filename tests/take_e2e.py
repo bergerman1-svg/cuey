@@ -15,7 +15,10 @@ async def main():
             L = f'[{lang}] '
             pg = await (await b.new_context(viewport={'width': 1440, 'height': 860})).new_page(); errs = []
             pg.on('pageerror', lambda e: errs.append(str(e)))
-            await pg.goto('file://' + ROOT + f'/app/cuey.html?nosplash&notour&lang={lang}'); await pg.wait_for_timeout(700)
+            await pg.goto('file://' + ROOT + f'/app/cuey.html?nosplash&notour&lang={lang}')
+            await pg.wait_for_function("typeof takeGrace==='function'")
+            ok(L + 'in the first moments after Cuey opens a click is a normal click (no pick is pending)', await pg.evaluate("takeGrace()===false&&performance.now()<1500"), await pg.evaluate("performance.now()"))
+            await pg.wait_for_timeout(700)
             names = ['red.png', 'green.png', 'blue.png', 'yellow.png', 'red.png', 'green.png', 'blue.png', 'yellow.png']
             await pg.set_input_files('#fileIn', [os.path.join(FIX, n) for n in names[:4]]); await pg.wait_for_timeout(700)
             await pg.set_input_files('#fileIn', [os.path.join(FIX, n) for n in names[4:]]); await pg.wait_for_timeout(900)
