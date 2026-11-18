@@ -45,14 +45,32 @@ async def main():
             await pg.keyboard.press('Space'); await pg.wait_for_timeout(250)
             s = await pg.evaluate(ST); ok(L + 'and back to C6', s['cur'] == 5 and s['next'] == 6, s)
             # cancelling
-            await pg.click('#take'); await pg.wait_for_timeout(100); await pg.click('#take'); await pg.wait_for_timeout(100)
-            s = await pg.evaluate(ST); ok(L + 'TAKE pressed twice = cancelled; the next click works as always', not s['mode'] and not s['arm'], s)
-            await pg.click('#take'); await pg.click('#list .item >> nth=1'); await pg.wait_for_timeout(200); await pg.click('#take'); await pg.wait_for_timeout(200)
-            s = await pg.evaluate(ST); ok(L + 'a chosen take is removed by pressing TAKE again', s['next'] == 6 and not s['set'] and s['tag'] == -1, s)
-            await pg.click('#take'); await pg.click('#list .item >> nth=1'); await pg.wait_for_timeout(200); await pg.keyboard.press('Escape'); await pg.wait_for_timeout(200)
+            await pg.wait_for_timeout(450); await pg.click('#take'); await pg.wait_for_timeout(450); await pg.click('#take'); await pg.wait_for_timeout(150)
+            s = await pg.evaluate(ST); ok(L + 'TAKE, then TAKE again = cancelled; the next click works as always', not s['mode'] and not s['arm'], s)
+            await pg.wait_for_timeout(450); await pg.dblclick('#take'); await pg.wait_for_timeout(200)
+            s = await pg.evaluate(ST); ok(L + 'a double press on TAKE is one press (still armed, a click will not go live by surprise)', s['mode'] and s['arm'], s)
+            lbl = await pg.evaluate("$('#take').textContent")
+            ok(L + 'the armed button says what to do', lbl == ('PICK A CUE' if lang == 'en' else 'בחר קיו'), lbl)
+            await pg.dblclick('#list .item >> nth=1'); await pg.wait_for_timeout(700)
+            s = await pg.evaluate(ST); ok(L + 'a double-click on a cue while armed chooses it and does NOT put it live', s['cur'] == 5 and s['next'] == 1 and s['set'], s)
+            ok(L + 'the button shows the take is set', await pg.evaluate("$('#take').textContent") == 'TAKE ✓')
+            # changing your mind: TAKE again + another cue replaces the choice, nothing goes live
+            await pg.click('#take'); await pg.wait_for_timeout(150)
+            s = await pg.evaluate(ST); ok(L + 'TAKE with a cue already chosen arms again and keeps the choice meanwhile', s['mode'] and s['next'] == 1 and s['cur'] == 5, s)
+            await pg.click('#list .item >> nth=3'); await pg.wait_for_timeout(600)
+            s = await pg.evaluate(ST); ok(L + 'the next click replaces the chosen cue — nothing goes live', s['cur'] == 5 and s['next'] == 3 and s['tag'] == 3 and not s['mode'], s)
+            await pg.click('#take'); await pg.wait_for_timeout(450); await pg.click('#take'); await pg.wait_for_timeout(200)
+            s = await pg.evaluate(ST); ok(L + 'TAKE, TAKE removes the chosen cue', s['next'] == 6 and not s['set'] and s['tag'] == -1 and not s['mode'], s)
+            await pg.wait_for_timeout(450); await pg.click('#take'); await pg.click('#list .item >> nth=1'); await pg.wait_for_timeout(500); await pg.keyboard.press('Escape'); await pg.wait_for_timeout(200)
             s = await pg.evaluate(ST); ok(L + 'and by Esc', s['next'] == 6 and not s['set'], s)
-            await pg.click('#take'); await pg.keyboard.press('Escape'); await pg.wait_for_timeout(150)
+            await pg.wait_for_timeout(450); await pg.click('#take'); await pg.keyboard.press('Escape'); await pg.wait_for_timeout(150)
             s = await pg.evaluate(ST); ok(L + 'Esc also leaves the armed state', not s['mode'], s)
+            # an armed TAKE that is forgotten: GO drops it, so a later click is not swallowed
+            await pg.wait_for_timeout(450); await pg.click('#take'); await pg.wait_for_timeout(100); await pg.click('#go'); await pg.wait_for_timeout(250)
+            s = await pg.evaluate(ST); ok(L + 'GO with TAKE armed and no cue chosen: plain GO, and TAKE lets go', s['cur'] == 6 and not s['mode'] and not s['arm'], s)
+            await pg.click('#back'); await pg.wait_for_timeout(250); await pg.wait_for_timeout(450); await pg.click('#take'); await pg.wait_for_timeout(100); await pg.evaluate("clearTimeout(takeTm);takeTm=setTimeout(()=>{if(takeMode){takeOff();render()}},600)"); await pg.wait_for_timeout(900)
+            s = await pg.evaluate(ST); ok(L + 'an armed TAKE that is not used lets go by itself', s['cur'] == 5 and not s['mode'] and not s['arm'], s)
+            await pg.wait_for_timeout(450)
             # the natural next cue taken: nothing odd, no return loop
             await pg.click('#take'); await pg.click('#list .item >> nth=6'); await pg.wait_for_timeout(150); await pg.click('#go'); await pg.wait_for_timeout(250)
             s = await pg.evaluate(ST); ok(L + 'taking the cue that was next anyway just plays it and goes on (C7 → next C8)', s['cur'] == 6 and s['next'] == 7, s)
@@ -65,7 +83,12 @@ async def main():
             s = await pg.evaluate(ST); ok(L + 'after a take, putting another cue live by hand drops the way back (C5 → next C6)', s['cur'] == 4 and s['next'] == 5, s)
             # BACK after a take
             await pg.click('#take'); await pg.click('#list .item >> nth=7'); await pg.wait_for_timeout(150); await pg.click('#go'); await pg.wait_for_timeout(250); await pg.click('#back'); await pg.wait_for_timeout(250)
-            s = await pg.evaluate(ST); ok(L + 'BACK from a taken cue goes one cue up in the list, as always', s['cur'] == 6, s)
+            s = await pg.evaluate(ST); ok(L + 'BACK from a taken cue goes back to the cue the show came from (C5), and the order continues from there', s['cur'] == 4 and s['next'] == 5, s)
+            # the cue to return to is removed while the taken cue is live → the one after it
+            await pg.wait_for_timeout(450); await pg.click('#take'); await pg.click('#list .item >> nth=7'); await pg.wait_for_timeout(500); await pg.click('#go'); await pg.wait_for_timeout(250)
+            keep = await pg.evaluate("(()=>{const want=items[6].name;items.splice(5,1);cur--;render();return [want,items[nextIdx()]&&items[nextIdx()].name]})()")
+            ok(L + 'the cue to return to was removed: the show returns to the one after it', keep[0] == keep[1], keep)
+            await pg.evaluate("location.hash='';0"); await pg.click('#back'); await pg.wait_for_timeout(250)
             # the taken cue is deleted before GO
             await pg.click('#list .item >> nth=1'); await pg.wait_for_timeout(200)       # C2 live
             await pg.click('#take'); await pg.click('#list .item >> nth=5'); await pg.wait_for_timeout(150)
@@ -77,11 +100,12 @@ async def main():
             s = await pg.evaluate(ST); ok(L + 'a cue set to continue by itself continues to the taken cue, and the way back is kept', s['cur'] == 5 and s['next'] == 2, s)
             # last cue: take, then the list has nothing to return to
             last = await pg.evaluate("items.length-1")
-            await pg.evaluate(f"items.forEach(x=>{{x.onEnd='hold'}});show({last})"); await pg.wait_for_timeout(200)
+            await pg.evaluate(f"items.forEach(x=>{{x.onEnd='hold'}});show(0);show({last})"); await pg.wait_for_timeout(200)
             await pg.click('#take'); await pg.click('#list .item >> nth=0'); await pg.wait_for_timeout(150); await pg.click('#go'); await pg.wait_for_timeout(250)
-            s = await pg.evaluate(ST); ok(L + 'a take from the last cue: after it there is nothing next, GO does not jump anywhere', s['cur'] == 0 and s['next'] == -1, s)
+            s = await pg.evaluate(ST); ok(L + 'a take from the last cue: the list had ended, so the show simply goes on from the taken cue (next C2)', s['cur'] == 0 and s['next'] == 1, s)
             await pg.click('#go'); await pg.wait_for_timeout(250)
-            ok(L + 'and GO there stays on the cue', await pg.evaluate("cur") == 0)
+            ok(L + 'and every GO does something (no dead press)', await pg.evaluate("cur") == 1)
+            await pg.evaluate("show(0)"); await pg.wait_for_timeout(200)
             # a slide show: the header can be taken; the take waits until the slide show is left
             await pg.evaluate("studioOk=true;sel.clear();sel.add(items[2].id);sel.add(items[3].id);render()"); await pg.wait_for_timeout(150); await pg.click('#ssMake'); await pg.wait_for_timeout(300)
             g = await pg.evaluate("items[2].grp")
