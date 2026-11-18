@@ -81,7 +81,18 @@ async def main():
             # a slow double-click (600 ms) on the chosen cue still does not put it live; another cue answers at once
             await pg.wait_for_timeout(550); await pg.click('#take'); await pg.click('#list .item >> nth=1'); await pg.wait_for_timeout(600); await pg.click('#list .item >> nth=1'); await pg.wait_for_timeout(250)
             s = await pg.evaluate(ST); ok(L + 'a slow double-click on the chosen cue does not put it live', s['cur'] == 5 and s['next'] == 1 and s['set'], s)
-            await pg.keyboard.press('Escape'); await pg.wait_for_timeout(900)
+            await pg.keyboard.press('Escape'); await pg.wait_for_timeout(300)
+            # "no, I meant this one": right after a pick, a click on ANOTHER cue re-picks — it never goes live
+            await pg.wait_for_timeout(550); await pg.click('#take'); await pg.click('#list .item >> nth=7'); await pg.wait_for_timeout(300); await pg.click('#list .item >> nth=2'); await pg.wait_for_timeout(250)
+            s = await pg.evaluate(ST); ok(L + 'a click on another cue right after a pick replaces the pick, nothing goes live', s['cur'] == 5 and s['next'] == 2 and s['tag'] == 2 and s['set'], s)
+            for _ in range(3): await pg.click('#list .item >> nth=2'); await pg.wait_for_timeout(450)
+            await pg.wait_for_timeout(250)
+            s = await pg.evaluate(ST); ok(L + 'nervous repeated clicks on the picked cue never put it live', s['cur'] == 5 and s['next'] == 2, s)
+            await pg.wait_for_timeout(1600); await pg.click('#list .item >> nth=4'); await pg.wait_for_timeout(250)
+            s = await pg.evaluate(ST); ok(L + 'a moment later a click on a cue is a normal click again (live), and the pick stays', s['cur'] == 4 and s['next'] == 2, s)
+            await pg.click('#go'); await pg.wait_for_timeout(120); await pg.click('#list .item >> nth=5'); await pg.wait_for_timeout(250)
+            s = await pg.evaluate(ST); ok(L + 'after GO a click acts at once', s['cur'] == 5, s)
+            await pg.wait_for_timeout(300)
             # the natural next cue taken: nothing odd, no return loop
             await pg.click('#take'); await pg.click('#list .item >> nth=6'); await pg.wait_for_timeout(150); await pg.click('#go'); await pg.wait_for_timeout(250)
             s = await pg.evaluate(ST); ok(L + 'taking the cue that was next anyway just plays it and goes on (C7 → next C8)', s['cur'] == 6 and s['next'] == 7, s)

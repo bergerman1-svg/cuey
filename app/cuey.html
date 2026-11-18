@@ -1145,8 +1145,7 @@ function render(){
         ${(it.type==='video'&&!it.text)||it.type==='audio'?`<span class="vl" title="${esc(t('ed_vol'))}">${it.type==='audio'?'♪':'🔊'}</span><input data-k="vol" type="range" min="0" max="100" value="${Math.round(it.vol*100)}" title="${esc(t('ed_vol'))} ${Math.round(it.vol*100)}%">`:it.audio?`<span class="vl" title="${esc(it.audio.name)}">♪</span><input data-k="avol" type="range" min="0" max="100" value="${Math.round(it.avol*100)}" title="${esc(it.audio.name)} ${Math.round(it.avol*100)}%">`:''}${it.type==='audio'?`<button type="button" data-k="fade" class="fdb${i===cur?'':' idle'}" style="--fk:${i===cur?fadeK.toFixed(3):1}" title="${esc(t('fade_tip',{s:it.fadeT||3}))}">${esc(t('fade'))}</button>`:''}
       </div>`;
     d.onclick=e=>{if(e.target.closest('input,button,select,.vl,.n'))return;
-      if(takeMode){takeSet(i);return} // TAKE is on: this click chooses the next cue, it does not put it live
-      if(takeEcho(it))return;
+      if(takeMode||takeGrace()){takeSet(i);return} // TAKE is on (or a cue was picked a moment ago): this click chooses the next cue, it does not put it live
       if(sel.size){sel.clear();selAnchor=null;render();return} // ticks on: a plain click just clears them (and never puts a cue live by surprise)
       if(e.target.closest('.name')){clearTimeout(d._ct);d._ct=setTimeout(()=>{if(!d.querySelector('input.rn'))show(i)},260);return}
       show(i)};
@@ -2893,7 +2892,7 @@ function clearStages(){clearTimeout(holdTimer);holdTimer=null;holdInfo=null;pvSt
 function show(i,force){fadeReset();
   if(i<0||i>=items.length)return;
   const it=items[i];
-  if(takeId===it.id)takeId=null;if(takeRet&&!(it.id===takeRet.at||(takeRet.grp&&it.grp===takeRet.grp)))takeRet=null;
+  takeSetAt=0;if(takeId===it.id)takeId=null;if(takeRet&&!(it.id===takeRet.at||(takeRet.grp&&it.grp===takeRet.grp)))takeRet=null;
   cur=i;haltGrp=null;frozen=false;cueDone=false;setFrz();grpMusic(it,sndFadeT(it));
   armed=it.type==='video'&&it.standby&&!it.bad&&!autoMode&&!it.grp;setGoLabel();
   if(it.web&&it.bad&&!['blocked','gone'].includes(it.web.err)){it.bad=false;delete it.web.err} // online hiccup: try again
@@ -2962,12 +2961,13 @@ function leaveIdx(nat){if(exporting)return nat;const k=takeIdx();
 function takeOff(){takeMode=false}
 function takeSet(i){takeOff();const it=items[i];takeSetAt=performance.now();takeSetId=it?it.id:null;if(it&&i!==cur){takeId=it.id;track('take-set')}render()} // the live cue cannot be taken: the take that was chosen (if any) stays
 function takeToggle(){const now=performance.now();if(now-takeBtnAt<500)return;takeBtnAt=now; // a double press is one press
-  if(takeMode){takeOff();takeId=null}                      // armed + TAKE again = cancel everything
+  if(takeMode){takeOff();takeId=null;takeSetAt=0}          // armed + TAKE again = cancel everything
   else if(items.length>1||(items.length&&cur<0)){takeMode=true;flash(t('take_pick'))} // idle, or a cue already chosen (the next click replaces it)
   render()}
-/* the later clicks of a double-click on the cue that was just chosen must not put it live (other cues answer at once) */
-function takeEcho(it){return !!it&&it.id===takeSetId&&performance.now()-takeSetAt<800}
-function takeCancel(){takeOff();takeId=null;render()}
+/* For a moment after a cue was picked, a click on a cue is still part of the picking — a double- or triple-click, or "no, I meant this one" —
+   so it re-picks and never puts a cue live. Each such click renews the moment; GO or any cue going live ends it. */
+function takeGrace(){return performance.now()-takeSetAt<1500}
+function takeCancel(){takeOff();takeId=null;takeSetAt=0;render()}
 function takeUi(){const b=$('#take');if(!b)return;const k=takeIdx();b.classList.toggle('arm',takeMode);b.classList.toggle('set',!takeMode&&k>=0);document.body.classList.toggle('taking',takeMode);
   b.textContent=takeMode?t('take_arm'):k>=0?t('take')+' ✓':t('take');b.title=t('take_tip')}
 function nextIdx(){if(!exporting){const k=takeIdx();if(k>=0)return k;const r=takeRetIdx();if(r!==undefined)return r}return nextNat()}
@@ -3014,8 +3014,8 @@ function grpHeader(g){
       <button class="fold" data-g="tog" title="${esc(t('ss_fold'))}"><span class="chev">▸</span> ${G.open?t('ss_close'):t('ss_open')} · ${n}</button>
       <span class="tags">${licensed?'':tg('STUDIO','st')}${tg('⏱ '+G.hold+t('sec'))}${tg(G.trans==='cut'?t('cut'):t('dissolve')+' '+G.dur+t('sec'))}${tg(G.end==='loop'?'🔁 '+t('ss_loop'):G.end==='next'?'→ '+t('ss_next'):'■ Black',G.end==='loop'?'hot':'')}${grpAud[g]?tg('♪ '+grpAud[g].name,'gmus'):''}</span>
     </div>${live?`<div class="gbar"><i style="width:${(cur-a+1)/n*100}%"></i></div>`:''}`;
-  h.addEventListener('click',e=>{if(takeMode&&!e.target.closest('button,input')){e.stopPropagation();e.preventDefault();takeSet(a)}},true); // TAKE is on: a click anywhere on the header chooses the slide show
-  h.onclick=e=>{if(e.target.closest('.ctl,.rn,button,.gname'))return;if(takeEcho(items[a]))return;show(a)};
+  h.addEventListener('click',e=>{if((takeMode||takeGrace())&&!e.target.closest('button,input')){e.stopPropagation();e.preventDefault();takeSet(a)}},true); // TAKE is on: a click anywhere on the header chooses the slide show
+  h.onclick=e=>{if(e.target.closest('.ctl,.rn,button,.gname'))return;show(a)};
   h.oncontextmenu=e=>{e.preventDefault();openGrpCtx(e,g)};
   h.draggable=false;
   h.addEventListener('pointerdown',e=>{h.draggable=!e.target.closest('.ctl,.rn')});
