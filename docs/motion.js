@@ -1,6 +1,6 @@
 /* Cuey site — motion layer (4.11.2026). Adds, without changing the page's content:
    1. moving stage-light beams behind the hero
-   2. a working Cuey in the hero (press GO / Space) — the real layout: cue list, PROGRAM, NEXT, BACK/GO/FREEZE/BLACK
+   2. a working Cuey in the hero (press GO / Space) — the real layout: cue list, PROGRAM, NEXT, TAKE/BACK/GO/FREEZE/BLACK
    3. a soft glow that follows the mouse on the feature cards, and sections that rise gently as they scroll in
    Respects prefers-reduced-motion; draws only while visible. Used by / and /he/. */
 (function () {
@@ -34,16 +34,20 @@
   ".cmo canvas{display:block;width:100%;height:auto;aspect-ratio:16/9}" +
   ".cmo .tag{position:absolute;top:8px;left:8px;font:700 9.5px 'JetBrains Mono',monospace;letter-spacing:.12em;padding:3px 7px;border-radius:6px;background:rgba(0,0,0,.55)}" +
   ".cmo.p{border-color:rgba(200,255,0,.5);box-shadow:0 0 40px -10px rgba(200,255,0,.35)}.cmo.p .tag{color:#C8FF00;border:1px solid #C8FF00}.cmo.x .tag{color:#FF751F;border:1px solid #FF751F}" +
-  ".cmk{display:grid;grid-template-columns:1fr 1.6fr 1fr 1fr;gap:8px}" +
+  ".cmk{display:grid;grid-template-columns:1fr .85fr 1.6fr 1fr 1fr;gap:8px}" +
   ".cmk button{border:1px solid #2A2A34;background:#17171d;color:#dcdce4;border-radius:10px;padding:14px 6px;font:700 12px/1 " + FF + ";letter-spacing:.06em;cursor:pointer;transition:transform .08s}" +
   ".cmk button:active{transform:scale(.97)}.cmk .go{background:#C8FF00;color:#0A0A0C;border-color:#C8FF00;font-size:22px;font-weight:900;letter-spacing:0;position:relative}" +
   ".cmk .go.pulse::after{content:'';position:absolute;inset:-6px;border-radius:14px;border:2px solid #C8FF00;animation:cmRing 1.6s ease-out infinite}" +
   "@keyframes cmRing{from{opacity:.9;transform:scale(.96)}to{opacity:0;transform:scale(1.12)}}" +
   ".cmk .on{background:#2a1010;border-color:#ff3b30;color:#ffb3ad}" +
+  ".cmk .tk{color:#FF9A4D;border-color:#7A4A22}.cmk .tk.arm{background:rgba(255,117,31,.16);border-color:#FF751F;color:#FFB27A;animation:cmTk 1s ease-in-out infinite}.cmk .tk.set{background:rgba(255,117,31,.22);border-color:#FF751F;color:#fff}" +
+  "@keyframes cmTk{50%{box-shadow:0 0 0 3px rgba(255,117,31,.32)}}.cm.taking .cmc:not(.live){cursor:copy}.cm.taking .cmc:not(.live):hover{box-shadow:inset 0 0 0 2px #FF751F}" +
+  ".cmc .tkt{display:none;font:700 9px/1 " + FF + ";letter-spacing:.04em;color:#0A0A0C;background:#FF751F;border-radius:4px;padding:2px 5px;margin-inline-start:6px;vertical-align:middle}.cmc.taken .tkt{display:inline-block}" +
   ".cmf{padding:0 14px 12px;font:500 11px 'JetBrains Mono',monospace;color:#62626e}" +
   "@media (max-width:700px){.cmg{grid-template-columns:minmax(0,1fr)}.cml{flex-direction:row;overflow-x:auto;order:2;scrollbar-width:none}.cml::-webkit-scrollbar{display:none}" +
   ".cmc{grid-template-columns:56px;flex:0 0 auto;width:72px;justify-items:center;gap:4px}.cmc .n,.cmc .tg{display:none}.cmc .nm{font-size:10px;max-width:64px}.cmc canvas{width:56px;height:32px}" +
-  ".cmm{grid-template-columns:minmax(0,1fr)}.cmo.x{display:none}}" +
+  ".cmm{grid-template-columns:minmax(0,1fr)}.cmo.x{display:none}" +
+  ".cmk{grid-template-columns:.95fr .95fr 1.5fr 1fr 1fr;gap:5px}.cmk button{padding:14px 2px;font-size:10px;letter-spacing:.02em;white-space:nowrap}.cmk .go{font-size:18px}.cmc.taken .tkt{display:none}}" +
   ".card{position:relative;overflow:hidden}.card::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(240px circle at var(--mx,50%) var(--my,-40%),rgba(200,255,0,.10),transparent 60%)}" +
   ".cm-rise{transform:translateY(18px);transition:transform .8s cubic-bezier(.2,.8,.2,1)}.cm-rise.in{transform:none}" +
   "@media (prefers-reduced-motion:reduce){#cmBeams{display:none}.cmk .go.pulse::after{animation:none}.cm-rise{transform:none;transition:none}}";
@@ -104,25 +108,30 @@
   box.innerHTML = '<p class="hint">' + (HE ? 'זה Cuey אמיתי — <b>לחצו GO</b> (או רווח)' : 'This is a real Cuey layout — <b>press GO</b> (or Space)') + '</p>' +
     '<div class="cmw" role="region" aria-label="Cuey demo"><div class="cmb"><span><i></i><i></i><i></i></span><span class="t">' + (HE ? 'ערב השקה.cuey' : 'Launch Night.cuey') + '</span><span class="live">● Event screen live</span></div>' +
     '<div class="cmg"><div class="cml"></div><div class="cmr"><div class="cmm"><div class="cmo p"><canvas width="640" height="360"></canvas><span class="tag">PROGRAM</span></div><div class="cmo x"><canvas width="400" height="225"></canvas><span class="tag">NEXT</span></div></div>' +
-    '<div class="cmk"><button type="button" data-a="back">◀ BACK</button><button type="button" class="go pulse" data-a="go">GO ▶</button><button type="button" data-a="freeze">FREEZE</button><button type="button" data-a="black">BLACK</button></div></div></div>' +
+    '<div class="cmk"><button type="button" class="tk" data-a="take">TAKE</button><button type="button" data-a="back">◀ BACK</button><button type="button" class="go pulse" data-a="go">GO ▶</button><button type="button" data-a="freeze">FREEZE</button><button type="button" data-a="black">BLACK</button></div></div></div>' +
     '<div class="cmf"></div></div>';
   var anchor = hero.querySelector('.who');
   hero.insertBefore(box, anchor);
   var list = box.querySelector('.cml'), cvs = box.querySelectorAll('.cmo canvas'), pgm = cvs[0], nxt = cvs[1], px = pgm.getContext('2d'), nx = nxt.getContext('2d'), foot = box.querySelector('.cmf'), goBtn = box.querySelector('.go');
-  CUES.forEach(function (c, i) { var b = document.createElement('button'); b.type = 'button'; b.className = 'cmc'; b.innerHTML = '<span class="n">0' + (i + 1) + '</span><canvas width="128" height="72"></canvas><span style="min-width:0"><div class="nm"></div><div class="tg"></div></span>'; b.querySelector('.nm').textContent = c.nm; b.querySelector('.tg').textContent = c.tg; b.addEventListener('click', function () { take(); set(i); }); list.appendChild(b); });
+  CUES.forEach(function (c, i) { var b = document.createElement('button'); b.type = 'button'; b.className = 'cmc'; b.innerHTML = '<span class="n">0' + (i + 1) + '</span><canvas width="128" height="72"></canvas><span style="min-width:0"><div class="nm"></div><div class="tg"></div></span>'; b.querySelector('.nm').textContent = c.nm; var tt = document.createElement('span'); tt.className = 'tkt'; tt.textContent = 'TAKE'; b.querySelector('.nm').appendChild(tt); b.querySelector('.tg').textContent = c.tg; b.addEventListener('click', function () { take(); if (tkArm) { tkArm = false; tkCue = i === cur ? -1 : i; sync(); kick(); return; } tkBack = -1; set(i); }); list.appendChild(b); });
   var rows = Array.prototype.slice.call(list.children);
   var cur = -1, prev = -1, t0 = 0, tp = 0, black = false, frozen = false, fAt = 0, auto = true, timer = null, vis = true;
+  /* TAKE, as in the app: press it, click a cue, and that cue plays next; after it the show returns to its order */
+  var tkArm = false, tkCue = -1, tkBack = -1, tkBtn = box.querySelector('[data-a=take]');
+  function nextI() { var N = CUES.length; if (tkCue >= 0 && tkCue !== cur) return tkCue; if (tkBack >= 0 && tkBack !== cur) return tkBack; return (cur + 1) % N; }
+  function goNext() { var N = CUES.length, n = nextI(); if (tkCue >= 0 && n === tkCue) { var nat = (cur + 1) % N; tkBack = tkBack >= 0 ? tkBack : (n === nat ? -1 : nat); tkCue = -1; } else tkBack = -1; set(n); }
   function now() { return performance.now() / 1000; }
   function set(i) { i = (i + CUES.length) % CUES.length; prev = cur; tp = t0; cur = i; t0 = now(); black = false; frozen = false; sync(); kick(); }
   function sync() {
-    rows.forEach(function (el, i) { el.classList.toggle('live', i === cur); el.classList.toggle('next', i === (cur + 1) % CUES.length); });
+    rows.forEach(function (el, i) { el.classList.toggle('live', i === cur); el.classList.toggle('next', i === nextI()); el.classList.toggle('taken', i === tkCue && i !== cur); });
+    tkBtn.classList.toggle('arm', tkArm); tkBtn.classList.toggle('set', !tkArm && tkCue >= 0 && tkCue !== cur); tkBtn.textContent = tkArm ? (innerWidth <= 700 ? (HE ? 'בחר' : 'PICK') : (HE ? 'בחר קיו' : 'PICK A CUE')) : (tkCue >= 0 && tkCue !== cur ? 'TAKE ✓' : 'TAKE'); box.classList.toggle('taking', tkArm);
     box.querySelector('[data-a=black]').classList.toggle('on', black); box.querySelector('[data-a=freeze]').classList.toggle('on', frozen);
     foot.textContent = auto ? (HE ? 'הדגמה אוטומטית · לחצו GO כדי לקחת שליטה' : 'Auto demo · press GO to take over') : (HE ? 'אתם מפעילים את המופע' : 'You are running the show');
-    var r = rows[cur]; if (r && list.scrollWidth > list.clientWidth) list.scrollTo({ left: r.offsetLeft - list.clientWidth / 2 + r.offsetWidth / 2, behavior: RM ? 'auto' : 'smooth' });
+    var r = rows[tkCue >= 0 && tkCue !== cur ? tkCue : cur]; if (r && list.scrollWidth > list.clientWidth) list.scrollTo({ left: r.offsetLeft - list.clientWidth / 2 + r.offsetWidth / 2, behavior: RM ? 'auto' : 'smooth' });
   }
   function take() { if (!auto) return; auto = false; clearInterval(timer); goBtn.classList.remove('pulse'); sync(); }
-  box.querySelector('.cmk').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; take(); var a = b.dataset.a; if (a === 'go') set(cur + 1); else if (a === 'back') set(cur - 1); else if (a === 'black') { black = !black; sync(); kick(); } else { frozen = !frozen; fAt = now(); sync(); kick(); } });
-  addEventListener('keydown', function (e) { if (!vis || (e.target.closest && e.target.closest('input,textarea,select,a,button,video'))) return; if (e.code === 'Space' || e.key === 'Enter') { e.preventDefault(); take(); set(cur + 1); } else if (e.key === 'ArrowLeft') { take(); set(cur - 1); } else if (e.key === 'b' || e.key === 'B') { take(); black = !black; sync(); kick(); } });
+  box.querySelector('.cmk').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; take(); var a = b.dataset.a; if (a === 'take') { if (tkArm) { tkArm = false; tkCue = -1; } else tkArm = true; sync(); kick(); } else if (a === 'go') goNext(); else if (a === 'back') { tkBack = -1; set(cur - 1); } else if (a === 'black') { black = !black; sync(); kick(); } else { frozen = !frozen; fAt = now(); sync(); kick(); } });
+  addEventListener('keydown', function (e) { if (!vis || (e.target.closest && e.target.closest('input,textarea,select,a,button,video'))) return; if (e.code === 'Space' || e.key === 'Enter') { e.preventDefault(); take(); goNext(); } else if (e.key === 'ArrowLeft') { take(); tkBack = -1; set(cur - 1); } else if (e.key === 'Escape' && (tkArm || tkCue >= 0)) { tkArm = false; tkCue = -1; sync(); kick(); } else if (e.key === 'b' || e.key === 'B') { take(); black = !black; sync(); kick(); } });
 
   /* ---------- beams ---------- */
   var bc = document.createElement('canvas'); bc.id = 'cmBeams'; bc.setAttribute('aria-hidden', 'true'); hero.insertBefore(bc, hero.firstChild); var bx = bc.getContext('2d');
@@ -139,12 +148,12 @@
     var t = lt(), d = k(t, 0, .8);
     if (prev >= 0 && d < 1) { drawCue(px, pgm.width, pgm.height, prev, now() - tp); px.globalAlpha = eo(d); drawCue(px, pgm.width, pgm.height, cur, t); px.globalAlpha = 1; } else drawCue(px, pgm.width, pgm.height, cur, t);
     if (black) { px.fillStyle = '#000'; px.fillRect(0, 0, pgm.width, pgm.height); }
-    drawCue(nx, nxt.width, nxt.height, (cur + 1) % CUES.length, now() % 6 + 2);
+    drawCue(nx, nxt.width, nxt.height, nextI(), now() % 6 + 2);
     if (!RM) beams();
     if (!RM && vis) raf = requestAnimationFrame(frame);
   }
   function kick() { if (!raf) raf = requestAnimationFrame(frame); }
-  function autoRun() { clearInterval(timer); if (RM) return; timer = setInterval(function () { if (auto && vis && !document.hidden) set(cur + 1); }, 4200); }
+  function autoRun() { clearInterval(timer); if (RM) return; timer = setInterval(function () { if (auto && vis && !document.hidden) goNext(); }, 4200); }
   new IntersectionObserver(function (es) { vis = es[0].isIntersecting; if (vis) { if (auto) autoRun(); kick(); } else clearInterval(timer); }, { threshold: .05 }).observe(hero);
   addEventListener('resize', sizeB);
 
