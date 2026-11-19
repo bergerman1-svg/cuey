@@ -1,5 +1,5 @@
 """Cuey Music: our own short cues in a side drawer — listen, add with one click, or drag into the cue list.
-The drawer sits beside the cue list (never on it), the old Pixabay way is still there for whole songs."""
+The drawer sits beside the cue list (never on it). The old Pixabay hand-off for whole songs was removed (19.11)."""
 import asyncio, os, json as _j0
 from playwright.async_api import async_playwright
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
@@ -46,7 +46,7 @@ async def main():
             ok(L + 'a show that lost its music files gets the library cues back from the app, without asking', back == [2, True, True], back)
             await pg.evaluate("go()"); await pg.wait_for_timeout(900)
             ok(L + 'and they play', await pg.evaluate("!slideAudio.paused&&slideAudio.currentTime>0"))
-            ok(L + 'whole songs: the Pixabay way is still offered', await pg.evaluate("!$('#fmGo').hidden&&$('#fmGo').offsetParent!==null"))
+            ok(L + 'the music drawer does not send people to Pixabay (no "Need a whole song?" line)', await pg.evaluate("$('#fmGo').offsetParent===null&&!/pixabay/i.test($('#fmDlg').innerText)"), await pg.evaluate("$('#fmDlg').innerText.slice(-200)"))
             await pg.click('#fmList .mt[data-id="doors_open_1"] .pl'); await pg.wait_for_timeout(300)
             other = 'he' if lang == 'en' else 'en'
             await pg.evaluate(f"setLang('{other}')"); await pg.wait_for_timeout(150)

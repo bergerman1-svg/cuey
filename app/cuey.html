@@ -829,7 +829,8 @@ requestAnimationFrame(fr);setTimeout(function(){done=1;s.remove()},4000)})()</sc
   <div class="chips" id="fmChips"></div>
   <div id="fmList"></div>
   <p class="dp fmwait" id="fmWait" hidden></p>
-  <div class="mft"><span data-t="fm_more">Need a whole song?</span><button id="fmGo" data-t="fm_open">Open Pixabay Music</button><button id="fmPick" hidden data-t="fm_pick">Add the song I downloaded</button></div>
+  <!-- "Need a whole song? → Pixabay" was taken out (19.11): Cuey does not send people to another site for music. Kept hidden so nothing that refers to it breaks. -->
+  <div class="mft" hidden><span data-t="fm_more">Need a whole song?</span><button id="fmGo" data-t="fm_open">Open Pixabay Music</button><button id="fmPick" hidden data-t="fm_pick">Add the song I downloaded</button></div>
 </div></div>
 <div id="linkDlg" class="dlg" hidden><div class="dbox">
   <h3 data-t="lk_title">Add a YouTube or Vimeo video</h3>
