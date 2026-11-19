@@ -79,7 +79,7 @@ header button,header .status,header .menu,header .plantag{-webkit-app-region:no-
 header .shname{margin-inline-start:10px;font-size:12.5px;color:#B8B8C4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;-webkit-app-region:no-drag}header .shname.dirty:after{content:'●';color:var(--amb);margin-inline-start:6px;font-size:10px;vertical-align:1px}header .shname:empty{display:none}
 /* Mac desktop: the menus live in the Mac menu bar at the top of the screen (no double bar) */
 body.native-darwin #fileMenu,body.native-darwin #cueMenu,body.native-darwin #showMenu,body.native-darwin #helpMenu{display:none}
-header{height:52px;display:flex;align-items:center;gap:6px;padding:0 14px;border-bottom:2px solid var(--line);background:linear-gradient(180deg,#141418,#0F0F13)}
+header{height:52px;display:flex;align-items:center;gap:6px;padding:0 14px;border-bottom:3px solid var(--line);background:linear-gradient(180deg,#141418,#0F0F13)}
 .logo{direction:ltr;display:flex;align-items:center;gap:10px;margin-inline-end:14px;user-select:none}
 .logo a{cursor:pointer;-webkit-app-region:no-drag}.logo a:hover img{filter:brightness(1.15)}
 .logo .lg{height:26px;width:auto;display:block}
@@ -156,13 +156,13 @@ header .menu:not(#profMenu)>.dd{inset-inline-start:auto;right:auto;left:0}
 
 /* layout */
 main{display:grid;grid-template-columns:460px 1fr;height:calc(100% - 52px)}
-aside{border-inline-end:2px solid var(--line);display:flex;flex-direction:column;background:var(--panel);min-height:0}
-.ah{padding:12px 14px;display:flex;align-items:center;gap:8px;border-bottom:2px solid var(--line)}
+aside{border-inline-end:3px solid var(--line);display:flex;flex-direction:column;background:var(--panel);min-height:0}
+.ah{padding:12px 14px;display:flex;align-items:center;gap:8px;border-bottom:3px solid var(--line)}
 .ah h2{font-size:10.5px;margin:0;color:var(--mut);font-weight:600;letter-spacing:1.6px;text-transform:uppercase}
 #list{flex:1;overflow:auto;padding:10px}
 
 /* cue card */
-.item{display:grid;grid-template-columns:26px 96px 1fr;grid-template-rows:auto auto;gap:6px 10px;padding:10px 12px 10px 10px;border:1px solid var(--line);border-radius:var(--r);margin-bottom:8px;background:var(--panel2);cursor:pointer;position:relative;transition:border-color .12s,background .12s}
+.item{display:grid;grid-template-columns:26px 96px 1fr;grid-template-rows:auto auto;gap:6px 10px;padding:9px 11px 9px 9px;border:2px solid var(--line);border-radius:var(--r);margin-bottom:8px;background:var(--panel2);cursor:pointer;position:relative;transition:border-color .12s,background .12s}
 .item:hover{border-color:var(--line2);background:#1B1B21}
 .item.dragging{opacity:.35}
 .item.over-top{box-shadow:0 -3px 0 0 var(--go)}
@@ -405,7 +405,7 @@ body.he .ctxm{direction:rtl}
 /* program / next */
 section{display:flex;flex-direction:column;padding:18px 20px 14px;gap:14px;min-width:0;min-height:0;background:radial-gradient(1200px 600px at 60% -10%,#15151B 0%,var(--bg) 60%)}
 .prev{display:grid;grid-template-columns:3fr 2fr;gap:16px;flex:1;min-height:0;align-content:center;align-items:end}
-.pv{background:#000;border:2px solid var(--line2);border-radius:12px;position:relative;overflow:hidden;aspect-ratio:16/9;width:100%;margin:0 auto}
+.pv{background:#000;border:3px solid var(--line2);border-radius:12px;position:relative;overflow:hidden;aspect-ratio:16/9;width:100%;margin:0 auto}
 .pv.now{border-color:#3A4A00;box-shadow:0 0 0 1px #1C2400,0 20px 60px -30px var(--go-glow)}
 .pv .lbl{position:absolute;top:10px;inset-inline-start:12px;font-family:var(--mono);font-size:10px;letter-spacing:1.6px;padding:3px 9px;border-radius:999px;background:#000c;z-index:4;backdrop-filter:blur(6px)}
 .pv.now .lbl{color:var(--go);border:1px solid var(--go)}
@@ -427,7 +427,7 @@ section{display:flex;flex-direction:column;padding:18px 20px 14px;gap:14px;min-w
 .stage .blk{position:absolute;inset:0;background:#000;opacity:0;transition:opacity .3s;pointer-events:none;z-index:2}
 
 /* transport */
-.tl{direction:ltr;display:flex;align-items:center;gap:8px;flex:none;height:44px;padding:0 10px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.tl{direction:ltr;display:flex;align-items:center;gap:8px;flex:none;height:44px;padding:0 9px;background:var(--panel);border:2px solid var(--line);border-radius:12px}
 .tl .tm{font-family:var(--mono);font-size:12.5px;color:var(--mut);min-width:108px;text-align:center}
 .tl .tm b{color:var(--txt);font-weight:500}
 .tl .rem{font-family:var(--mono);font-size:12.5px;color:var(--amb);min-width:62px;text-align:center}
@@ -459,10 +459,10 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 .gobtn:hover{filter:brightness(1.05)}
 .gobtn:active{transform:scale(.985);filter:brightness(.95)}
 .side{display:flex;gap:10px;align-items:stretch}
-.side button{flex:1;font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.3px;border-radius:14px;background:var(--panel2);border:1px solid var(--line2)}
+.side button{flex:1;font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.3px;border-radius:14px;background:var(--panel2);border:2px solid var(--line2)}
 .side button:hover{background:#1F1F26}
 /* TAKE: pick any cue to play next; BACK made narrower to make room (asked for after the second event, 18.11) */
-#take{flex:1.1;color:#FF9A4D;border-color:#4a2c14}#back{flex:.8}
+#take{flex:1.1;color:#FF9A4D;border-color:#7A4A22}#back{flex:.8}
 #take.arm{font-size:13px;line-height:1.15;background:rgba(255,117,31,.16);border-color:#FF751F;color:#FFB27A;animation:takeArm 1s ease-in-out infinite}
 #take.set{background:rgba(255,117,31,.22);border-color:#FF751F;color:#fff;box-shadow:inset 0 0 0 1px #FF751F}
 @keyframes takeArm{50%{box-shadow:0 0 0 3px rgba(255,117,31,.32)}}
