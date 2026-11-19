@@ -1,0 +1,125 @@
+"""Widgets (asked for 19.11): "Add widget" in the Add window; the first widget is a timer that floats over PROGRAM whatever cue
+is live — count down or up, moved and resized by dragging, with a background colour, and with its own Start / Pause / Reset."""
+import asyncio, os, json
+from playwright.async_api import async_playwright
+ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+FIX = os.environ.get('CUEY_FIXTURES') or os.path.join(ROOT, 'tests', 'fixtures')
+res = []
+def ok(n, c, extra=''):
+    res.append(bool(c)); print(('PASS ' if c else 'FAIL ') + n + (('  -> ' + str(extra)[:300]) if extra and not c else ''))
+PV = "(()=>{const e=document.querySelector('#pvNow #wdgTimer');if(!e)return null;const r=e.getBoundingClientRect(),h=$('#pvNow').getBoundingClientRect(),w=e.querySelector('.wt'),cs=getComputedStyle(w);return {on:getComputedStyle(e).display!=='none',txt:e.querySelector('.wd').textContent,cx:(r.left+r.width/2-h.left)/h.width,cy:(r.top+r.height/2-h.top)/h.height,fs:parseFloat(getComputedStyle(e).fontSize)/h.height,bg:cs.backgroundColor,col:cs.color,cls:e.className,bar:getComputedStyle(e.querySelector('.wb')).display,inside:r.left>=h.left-1&&r.right<=h.right+1&&r.top>=h.top-1&&r.bottom<=h.bottom+1}})()"
+OUT = "(()=>{try{const d=outWin.document,e=d.getElementById('wdgTimer');if(!e)return null;const r=e.getBoundingClientRect(),W=outWin.innerWidth,H=outWin.innerHeight,w=e.querySelector('.wt');return {on:outWin.getComputedStyle(e).display!=='none',txt:e.querySelector('.wd').textContent,cx:(r.left+r.width/2)/W,cy:(r.top+r.height/2)/H,fs:parseFloat(outWin.getComputedStyle(e).fontSize)/H,bg:outWin.getComputedStyle(w).backgroundColor,pe:outWin.getComputedStyle(e).pointerEvents}}catch(x){return 'ERR '+x}})()"
+def secs(t):
+    t = t.lstrip('+'); p = [int(x) for x in t.split(':')]; return p[-1] + p[-2] * 60 + (p[0] * 3600 if len(p) == 3 else 0)
+async def main():
+    async with async_playwright() as p:
+        b = await p.chromium.launch(args=['--allow-file-access-from-files', '--autoplay-policy=no-user-gesture-required'])
+        for lang in ('en', 'he'):
+            L = f'[{lang}] '
+            ctx = await b.new_context(viewport={'width': 1440, 'height': 860}); pg = await ctx.new_page(); errs = []
+            pg.on('pageerror', lambda e: errs.append(str(e)))
+            await pg.goto('file://' + ROOT + f'/app/cuey.html?nosplash&notour&lang={lang}'); await pg.wait_for_timeout(700)
+            await pg.set_input_files('#fileIn', [os.path.join(FIX, n) for n in ('blue.png', 'green.png', 'va.webm')]); await pg.wait_for_timeout(1000)
+            await pg.click('#list .item >> nth=0'); await pg.wait_for_timeout(400)
+            ok(L + 'no timer and no timer bar before one is added', await pg.evaluate("$('#wdgBar').hidden") and not (await pg.evaluate(PV) or {}).get('on'))
+            # --- the way in: Add → Add widget → Timer ---
+            await pg.evaluate("$('#addDlg').hidden=false"); await pg.wait_for_timeout(200)
+            tile = await pg.evaluate("(()=>{const e=$('#adWg'),r=e.getBoundingClientRect(),d=$('#addDlg .dbox').getBoundingClientRect();return {vis:e.offsetParent!==null&&r.width>80,txt:e.innerText,inside:r.left>=d.left&&r.right<=d.right,tiles:[...document.querySelectorAll('#addDlg .tile')].map(x=>x.id)}})()")
+            ok(L + 'the Add window has an "Add widget" tile', tile['vis'] and tile['inside'] and ('widget' in tile['txt'].lower() or 'ווידג' in tile['txt']), tile)
+            ok(L + 'the other Add tiles are all still there', all(x in tile['tiles'] for x in ('adPc', 'adYt', 'adVm', 'adFm', 'adMk', 'adBe', 'adCv')), tile['tiles'])
+            await pg.click('#adWg'); await pg.wait_for_timeout(250)
+            ok(L + 'it opens the widgets window with a Timer', await pg.evaluate("$('#addDlg').hidden&&!$('#wgDlg').hidden&&$('#wgTimer').offsetParent!==null"))
+            await pg.click('#wgTimer'); await pg.wait_for_timeout(250)
+            d0 = await pg.evaluate("({open:!$('#wtDlg').hidden,down:$('#wtDown').classList.contains('on'),min:$('#wtMin').value,sec:$('#wtSec').value,time:$('#wtTimeRow').offsetParent!==null})")
+            ok(L + 'Timer settings open: counts down, 5:00', d0 == {'open': True, 'down': True, 'min': '5', 'sec': '00', 'time': True}, d0)
+            await pg.fill('#wtMin', '0'); await pg.fill('#wtSec', '12'); await pg.evaluate("$('#wtBg').value='#1e40af';$('#wtBg').dispatchEvent(new Event('input'))")
+            await pg.click('#wtOk'); await pg.wait_for_timeout(350)
+            s = await pg.evaluate(PV)
+            ok(L + 'Show on the screen: the timer is on PROGRAM, waiting at 00:12 (not running)', s and s['on'] and s['txt'] == '00:12' and s['inside'], s)
+            ok(L + 'with the background colour that was chosen', s['bg'].replace(' ', '').startswith('rgba(30,64,175'), s['bg'])
+            ok(L + 'the timer bar appears with Start / Reset / Settings / Remove', await pg.evaluate("!$('#wdgBar').hidden&&['wbPlay','wbReset','wbSet','wbOff'].every(i=>$('#'+i).offsetParent!==null)&&$('#wbT').textContent==='00:12'"))
+            await pg.wait_for_timeout(1300)
+            ok(L + 'it does not start by itself', (await pg.evaluate(PV))['txt'] == '00:12')
+            ok(L + 'the live cue did not change', await pg.evaluate("cur") == 0)
+            # --- the event screen ---
+            async with ctx.expect_page() as pop: await pg.click('#openOut')
+            await (await pop.value).wait_for_load_state(); await pg.wait_for_timeout(700)
+            o = await pg.evaluate(OUT); s = await pg.evaluate(PV)
+            ok(L + 'the event screen shows the same timer', isinstance(o, dict) and o['on'] and o['txt'] == '00:12', o)
+            ok(L + 'at the same place and the same relative size as on PROGRAM', isinstance(o, dict) and abs(o['cx'] - s['cx']) < .02 and abs(o['cy'] - s['cy']) < .02 and abs(o['fs'] - s['fs']) < .012, [o, s])
+            ok(L + 'on the event screen it cannot be grabbed', isinstance(o, dict) and o['pe'] == 'none', o)
+            # --- running ---
+            await pg.click('#wbPlay'); await pg.wait_for_timeout(2300)
+            s = await pg.evaluate(PV); o = await pg.evaluate(OUT)
+            ok(L + 'Start: it counts down, on PROGRAM and on the event screen alike', s['txt'] in ('00:10', '00:09') and o['txt'] == s['txt'] and await pg.evaluate("$('#wbT').textContent") == s['txt'], [s['txt'], o['txt']])
+            await pg.click('#list .item >> nth=1'); await pg.wait_for_timeout(1200)
+            s2 = await pg.evaluate(PV)
+            ok(L + 'changing the cue does not touch it: still on, still counting', await pg.evaluate("cur") == 1 and s2['on'] and secs(s2['txt']) < secs(s['txt']), [s['txt'], s2['txt']])
+            await pg.click('#go'); await pg.wait_for_timeout(600)
+            ok(L + 'GO to a video: still there', await pg.evaluate("cur") == 2 and (await pg.evaluate(PV))['on'])
+            await pg.click('#wbPlay'); await pg.wait_for_timeout(200); a = (await pg.evaluate(PV))['txt']; await pg.wait_for_timeout(1300); bb = (await pg.evaluate(PV))['txt']
+            ok(L + 'Pause holds the time', a == bb and await pg.evaluate("!$('#wbPlay').classList.contains('run')"), [a, bb])
+            await pg.click('#wbPlay'); await pg.wait_for_timeout(1300)
+            ok(L + 'Start again goes on from there', secs((await pg.evaluate(PV))['txt']) < secs(a))
+            await pg.wait_for_function("document.querySelector('#pvNow #wdgTimer').classList.contains('warn')", timeout=6000)
+            ok(L + 'the last ten seconds are marked', True)
+            await pg.wait_for_function("document.querySelector('#pvNow #wdgTimer').classList.contains('over')", timeout=12000); await pg.wait_for_timeout(1300)
+            s = await pg.evaluate(PV); o = await pg.evaluate(OUT)
+            ok(L + 'at zero it does not stop: it counts the overtime with a + in red', s['txt'].startswith('+') and secs(s['txt']) >= 1 and 'over' in s['cls'] and s['col'] != 'rgb(255, 255, 255)' and o['txt'].startswith('+'), [s, o])
+            await pg.click('#wbReset'); await pg.wait_for_timeout(250)
+            s = await pg.evaluate(PV)
+            ok(L + 'Reset: back to 00:12, stopped, not red', s['txt'] == '00:12' and 'over' not in s['cls'] and await pg.evaluate("!wdgT.run"), s)
+            # --- BLACK hides it ---
+            await pg.click('#blk'); await pg.wait_for_timeout(350)
+            ok(L + 'BLACK takes the timer off both screens', not (await pg.evaluate(PV))['on'] and not (await pg.evaluate(OUT))['on'])
+            await pg.click('#blk'); await pg.wait_for_timeout(350)
+            ok(L + 'and it is back when BLACK is released', (await pg.evaluate(PV))['on'] and (await pg.evaluate(OUT))['on'])
+            # --- move and resize by dragging on PROGRAM ---
+            s0 = await pg.evaluate(PV); r = await pg.evaluate("(()=>{const r=document.querySelector('#pvNow #wdgTimer').getBoundingClientRect(),h=$('#pvNow').getBoundingClientRect();return [r.left+r.width/2,r.top+r.height/2,h.left,h.top,h.width,h.height]})()")
+            await pg.mouse.move(r[0], r[1]); await pg.mouse.down(); await pg.mouse.move(r[2] + r[4] * .25, r[3] + r[5] * .3, steps=8); await pg.mouse.up(); await pg.wait_for_timeout(250)
+            s = await pg.evaluate(PV); o = await pg.evaluate(OUT)
+            ok(L + 'dragging the timer on PROGRAM moves it', abs(s['cx'] - .25) < .03 and abs(s['cy'] - .3) < .04, s)
+            ok(L + 'and it moves on the event screen too', abs(o['cx'] - s['cx']) < .02 and abs(o['cy'] - s['cy']) < .02, [o, s])
+            ok(L + 'dragging did not put a cue live or pause the video', await pg.evaluate("cur") == 2)
+            await pg.hover('#pvNow #wdgTimer'); await pg.wait_for_timeout(200)
+            hb = await pg.evaluate("(()=>{const r=document.querySelector('#pvNow #wdgTimer .wh').getBoundingClientRect();return [r.left+r.width/2,r.top+r.height/2,getComputedStyle(document.querySelector('#pvNow #wdgTimer .wh')).opacity]})()")
+            ok(L + 'a corner handle shows when the mouse is on the timer', float(hb[2]) > .5, hb)
+            await pg.mouse.move(hb[0], hb[1]); await pg.mouse.down(); await pg.mouse.move(hb[0] + 90, hb[1] + 50, steps=8); await pg.mouse.up(); await pg.wait_for_timeout(250)
+            s3 = await pg.evaluate(PV); o = await pg.evaluate(OUT)
+            ok(L + 'dragging the corner makes it bigger, on both screens, without moving it', s3['fs'] > s['fs'] * 1.25 and abs(s3['cx'] - s['cx']) < .01 and abs(o['fs'] - s3['fs']) < .015, [s['fs'], s3['fs'], o['fs']])
+            await pg.mouse.move(r[2] + r[4] * .25, r[3] + r[5] * .3); await pg.mouse.down(); await pg.mouse.move(r[2] - 300, r[3] - 300, steps=6); await pg.mouse.up(); await pg.wait_for_timeout(200)
+            s = await pg.evaluate(PV)
+            ok(L + 'it cannot be dragged off the screen', 0 < s['cx'] < .2 and 0 < s['cy'] < .2, s)
+            # --- settings: count up; colour off; a running timer keeps running when only the look changes ---
+            await pg.click('#wbSet'); await pg.wait_for_timeout(250)
+            ok(L + 'Settings open with the current values and an Update button', await pg.evaluate("!$('#wtDlg').hidden&&$('#wtSec').value==='12'&&$('#wtBg').value==='#1e40af'") and await pg.evaluate("$('#wtOk').textContent") in ('Update', 'עדכן'))
+            await pg.click('#wtUp'); await pg.wait_for_timeout(100)
+            ok(L + 'Count up needs no time', await pg.evaluate("$('#wtTimeRow').offsetParent===null"))
+            await pg.click('#wtOk'); await pg.wait_for_timeout(250)
+            s = await pg.evaluate(PV); ok(L + 'count up starts at 00:00, without the progress line', s['txt'] == '00:00' and s['bar'] == 'none', s)
+            await pg.click('#wbPlay'); await pg.wait_for_timeout(2200)
+            s = await pg.evaluate(PV); ok(L + 'and counts up', s['txt'] in ('00:02', '00:03'), s)
+            await pg.click('#wbSet'); await pg.wait_for_timeout(200); await pg.evaluate("$('#wtBgOn').click()"); await pg.click('#wtOk'); await pg.wait_for_timeout(1200)
+            s = await pg.evaluate(PV)
+            ok(L + 'the background can be turned off, and that does not restart a running timer', s['bg'] in ('rgba(0, 0, 0, 0)', 'transparent') and secs(s['txt']) >= 3 and await pg.evaluate("wdgT.run"), s)
+            # --- saved with the show ---
+            js = await pg.evaluate("JSON.stringify(showData())"); w = json.loads(js).get('widgets', {}).get('timer')
+            ok(L + 'the timer set-up is saved with the show', w and w['mode'] == 'up' and w['dur'] == 12 and w['bg'] == '#1e40af' and w['bgOn'] is False and 0 < w['x'] < .2, w)
+            # --- Remove ---
+            await pg.click('#wbOff'); await pg.wait_for_timeout(300)
+            ok(L + 'Remove takes it off both screens and hides the bar', not (await pg.evaluate(PV))['on'] and not (await pg.evaluate(OUT))['on'] and await pg.evaluate("$('#wdgBar').hidden"))
+            await pg.evaluate("(j=>{wdgT.mode='down';wdgT.dur=300;wdgT.x=.5;loadShowFromText(j)})(%s)" % json.dumps(js)); await pg.wait_for_timeout(700)
+            await pg.evaluate("if(!$('#pickDlg').hidden)$('#pkSkip').click()"); await pg.wait_for_timeout(500)
+            ok(L + 'opening the show brings the set-up back, with the timer off the screen', await pg.evaluate("wdgT.mode==='up'&&wdgT.dur===12&&wdgT.x<.2&&!wdgT.on&&$('#wdgBar').hidden"))
+            old = json.loads(js); old.pop('widgets')
+            ok(L + 'a show saved before widgets existed opens as always', await pg.evaluate("(async j=>{const p=loadShowFromText(j);await new Promise(r=>setTimeout(r,600));if(!$('#pickDlg').hidden)$('#pkSkip').click();await new Promise(r=>setTimeout(r,400));return items.length===3&&!wdgT.on&&!('widgets' in showData())})(%s)" % json.dumps(json.dumps(old))))
+            # --- shared screen picture, and never in an export ---
+            px = await pg.evaluate("(()=>{wdgT.mode='down';wdgT.dur=75;wdgT.x=.5;wdgT.y=.5;wdgT.size=.2;wdgT.bg='#ff00ff';wdgT.bgOn=true;wtShow();const c=document.createElement('canvas');c.width=640;c.height=360;const x=c.getContext('2d');drawFrame(x,640,360);const a=[...x.getImageData(250,180,1,1).data];exporting=true;drawFrame(x,640,360);const b2=[...x.getImageData(250,180,1,1).data];exporting=false;return [a,b2]})()")
+            ok(L + 'the shared-screen picture carries the timer', px[0][0] > 150 and px[0][2] > 150 and px[0][1] < 130, px)
+            ok(L + 'an exported video never does', px[1][:3] == [0, 0, 0], px)
+            ok(L + 'one hour and more reads h:mm:ss', await pg.evaluate("wtFmt(3725)") == '1:02:05')
+            ok(L + 'no page errors', not errs, errs[:2])
+            await ctx.close()
+        await b.close()
+    print(f'\n{sum(res)}/{len(res)} passed'); raise SystemExit(0 if all(res) else 1)
+asyncio.run(main())
