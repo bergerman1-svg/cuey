@@ -164,9 +164,15 @@ aside{border-inline-end:3px solid var(--line);display:flex;flex-direction:column
 /* cue card */
 .item{display:grid;grid-template-columns:26px 96px 1fr;grid-template-rows:auto auto;gap:6px 10px;padding:9px 11px 9px 9px;border:2px solid var(--line);border-radius:var(--r);margin-bottom:8px;background:var(--panel2);cursor:pointer;position:relative;transition:border-color .12s,background .12s}
 .item:hover{border-color:var(--line2);background:#1B1B21}
-.item.dragging{opacity:.35}
-.item.over-top{box-shadow:0 -3px 0 0 var(--go)}
-.item.over-bot{box-shadow:0 3px 0 0 var(--go)}
+.item.dragging{opacity:.3;outline:2px dashed var(--line2);outline-offset:-2px}
+/* where the cue will land: a bright bar in the gap between two cues (no layout change, so nothing jumps under the mouse) */
+.item.over-top::before,.item.over-bot::after{content:'';position:absolute;left:6px;right:6px;height:5px;border-radius:5px;background:var(--go);box-shadow:0 0 12px rgba(200,255,0,.65);pointer-events:none;z-index:5;animation:dropIn .12s ease-out}
+.item.over-top::before{top:-8px}.item.over-bot::after{bottom:-8px}
+@keyframes dropIn{from{transform:scaleX(.4);opacity:0}to{transform:none;opacity:1}}
+/* after a move the cues glide to their new places and the moved one lights up for a moment */
+.item.gliding,.grpc.gliding{transition:transform .28s cubic-bezier(.2,.8,.2,1)!important;will-change:transform}
+.item.moved{animation:movedCue .9s ease-out;z-index:4}
+@keyframes movedCue{0%{box-shadow:0 0 0 2px var(--go),0 8px 26px rgba(200,255,0,.28)}100%{box-shadow:0 0 0 0 rgba(200,255,0,0)}}
 .item.over-aud{box-shadow:inset 0 0 0 2px var(--go);background:rgba(200,255,0,.06)}
 .item.cur{border-color:var(--go);background:linear-gradient(180deg,#1A2008,#15180C);box-shadow:0 0 0 1px var(--go) inset,0 6px 20px -8px var(--go-glow)}
 .item.nxt{border-color:#5a2e12}
@@ -1153,13 +1159,24 @@ $('#clearAll').onclick=async()=>{if(!items.length||!(await uiAsk(t('c_clear'),{o
 
 function moveItem(from,to){
   if(to>from)to--; if(from===to)return;
+  flipNext={id:items[from]&&items[from].id};
   const curId=cur>=0?items[cur].id:null;
   const [m]=items.splice(from,1);items.splice(to,0,m);
   {const p=items[to-1],n=items[to+1],old=m.grp;if(p&&n&&p.grp&&p.grp===n.grp)m.grp=p.grp;else if(!(m.grp&&((p&&p.grp===m.grp)||(n&&n.grp===m.grp))))m.grp=null;if(m.grp&&m.grp!==old)applyGrp(m.grp)}
   cur=curId===null?-1:items.findIndex(x=>x.id===curId);
   render();
 }
-function render(){
+/* Re-ordering is shown as movement, not as a jump: the places before the redraw are remembered, and after it every cue
+   glides from where it was to where it is now (asked for 19.11). Only after a move — an ordinary redraw is instant. */
+let flipNext=null;
+function flipSnap(){if(!flipNext)return null;const m=new Map();document.querySelectorAll('#list .item[data-id],#list .grpc[data-g]').forEach(el=>m.set(el.dataset.id?'i'+el.dataset.id:'g'+el.dataset.g,el.getBoundingClientRect().top));return {m,moved:flipNext.id}}
+function flipPlay(sn){flipNext=null;if(!sn||(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches))return;const els=[];
+  document.querySelectorAll('#list .item[data-id],#list .grpc[data-g]').forEach(el=>{const k=el.dataset.id?'i'+el.dataset.id:'g'+el.dataset.g,o=sn.m.get(k);if(o===undefined)return;const dy=o-el.getBoundingClientRect().top;
+    if(el.dataset.id&&String(sn.moved)===el.dataset.id)el.classList.add('moved');if(Math.abs(dy)<1)return;el.style.transition='none';el.style.transform='translateY('+dy+'px)';els.push(el)});
+  if(!els.length)return;void $('#list').offsetHeight; // the starting places are applied before the glide begins
+  requestAnimationFrame(()=>els.forEach(el=>{el.classList.add('gliding');el.style.transition='';el.style.transform='';setTimeout(()=>el.classList.remove('gliding'),320)}))}
+function render(){const sn=flipSnap();render0();flipPlay(sn)}
+function render0(){
   const L=$('#list');L.innerHTML='';
   fixGroups();const nx=nextIdx();const tkI=takeIdx();takeUi();
   // micro-animations: what's new since the last draw
@@ -3120,6 +3137,7 @@ function makeGroup(){
 function moveGroup(g,to){
   const curId=cur>=0?items[cur].id:null;const before=items[to]||null;
   if(before&&before.grp===g)return;
+  flipNext={id:null};
   const mem=items.filter(x=>x.grp===g),rest=items.filter(x=>x.grp!==g);
   let j=before?rest.indexOf(before):rest.length;
   while(j>0&&j<rest.length&&rest[j-1].grp&&rest[j-1].grp===rest[j].grp)j++;

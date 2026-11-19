@@ -34,6 +34,22 @@ async def main():
             ok(L + 'a cue dropped on the top half of a far cue still lands before it', o == 'blue,red,yellow,green', o)
             o = await pg.evaluate(DRAG, [0, 2, 'bot'])
             ok(L + 'and on the bottom half, after it', o == 'red,yellow,blue,green', o)
+            # --- a move is shown as movement (19.11): cues glide to their new places, the moved one lights up ---
+            await pg.wait_for_timeout(600)   # let the glide of the drag before this one finish
+            g = await pg.evaluate("""(async()=>{const top=n=>[...document.querySelectorAll('#list .item')].find(r=>r.querySelector('.nmtxt').textContent===n).getBoundingClientRect().top;
+              const names=items.map(i=>i.name),a0=top(names[0]),b0=top(names[1]);moveItem(0,2);   // first cue goes under the second
+              await new Promise(r=>requestAnimationFrame(()=>r()));
+              const rows=[...document.querySelectorAll('#list .item')],moved=rows.find(r=>r.classList.contains('moved')),a1=top(names[0]),b1=top(names[1]);
+              const gl=rows.filter(r=>r.classList.contains('gliding')).length;await new Promise(r=>setTimeout(r,160));const a2=top(names[0]);await new Promise(r=>setTimeout(r,420));
+              const a3=top(names[0]),b3=top(names[1]);return {order:items.map(i=>i.name).join(),want:[names[1],names[0],...names.slice(2)].join(),movedName:moved&&moved.querySelector('.nmtxt').textContent,first:names[0],
+                startNear:Math.abs(a1-a0)<12&&Math.abs(b1-b0)<12,mid:a2>a0+4&&a2<a3-1,endSwapped:Math.abs(a3-b0)<3&&Math.abs(b3-a0)<3,nums:[a0,b0,a1,b1,a2,a3,b3].map(Math.round),gl,left:rows.filter(r=>r.classList.contains('gliding')||r.style.transform).length}})()""")
+            ok(L + 'after a move the order is right', g['order'] == g['want'], g)
+            ok(L + 'the cues start from where they were and glide (no jump)', g['startNear'] and g['gl'] >= 2 and g['mid'], g)
+            ok(L + 'they end exactly in their new places, with nothing left mid-way', g['endSwapped'] and g['left'] == 0, g)
+            ok(L + 'the cue that was moved lights up', g['movedName'] == g['first'], g)
+            bar = await pg.evaluate("""(()=>{const r=document.querySelectorAll('#list .item')[1];r.classList.add('over-top');const c=getComputedStyle(r,'::before');const o={h:parseFloat(c.height),bg:c.backgroundColor,top:parseFloat(c.top)};r.classList.remove('over-top');return o})()""")
+            ok(L + 'while dragging, a bright bar in the gap shows where the cue will land', bar['h'] >= 4 and bar['bg'] == 'rgb(200, 255, 0)' and bar['top'] < 0, bar)
+            await pg.evaluate("moveItem(1,0)"); await pg.wait_for_timeout(500)
             # --- sound between cues ---
             await pg.evaluate("items=[];cur=-1;render()")
             await pg.set_input_files('#fileIn', [os.path.join(FIX, n) for n in ('tone.wav', 'tone.wav', 'va.webm', 'red.png')]); await pg.wait_for_timeout(1200)
