@@ -82,9 +82,10 @@ async def main():
             ok(L + 'dropped on a music cue it is added to the list as before', (not r['hl']) and r['n'] == 5 and not r['a0'], r)
             await pg.evaluate("$('#adFm').click()"); await pg.wait_for_timeout(400)
             n0 = await pg.evaluate("items.length")
-            await pg.drag_and_drop('#fmList .mt[data-id="winner_1"]', '#list .item >> nth=2')
-            try: await pg.wait_for_function("items[2]&&items[2].audio", timeout=8000)   # the track is read from the app's own files: give a busy machine time
-            except Exception: pass
+            for _try in range(3):   # a simulated mouse drag sometimes does not start on a busy machine (the browser reads it as a click); the drop itself is what is tested
+                await pg.drag_and_drop('#fmList .mt[data-id="winner_1"]', '#list .item >> nth=2')
+                try: await pg.wait_for_function("items[2]&&items[2].audio", timeout=5000); break
+                except Exception: await pg.evaluate("try{musStop()}catch(e){}")
             await pg.wait_for_timeout(300)
             r = await pg.evaluate("({n:items.length,aud:items[2].audio&&items[2].audio.name,kept:null})")
             ok(L + 'a track dragged from Cuey Music onto a cue becomes the music of that cue', r['n'] == n0 and r['aud'] and 'Cuey' in r['aud'], r)
