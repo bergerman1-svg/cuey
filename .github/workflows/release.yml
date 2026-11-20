@@ -18,7 +18,7 @@ jobs:
         with: { node-version: 22 }
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
-      - run: pip install playwright==1.56.0 && python -m playwright install --with-deps chromium
+      - run: pip install playwright==1.56.0 opencv-python-headless && python -m playwright install --with-deps chromium
       - run: mkdir -p /tmp/gate && cd /tmp/gate && python "$GITHUB_WORKSPACE/tests/run_all.py"
       - if: failure()
         uses: actions/upload-artifact@v4

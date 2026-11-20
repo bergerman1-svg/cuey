@@ -173,7 +173,8 @@ async def main():
             try:
                 import cv2; dec = cv2.QRCodeDetector().detectAndDecode(cv2.imread(shot))[0]
             except Exception as e: dec = 'ERR ' + str(e)
-            ok(L + 'a phone reads the link from the event screen', dec == URL, dec)
+            if dec.startswith('ERR No module'): print('SKIP ' + L + 'reading the code back needs OpenCV (pip install opencv-python-headless)')
+            else: ok(L + 'a phone reads the link from the event screen', dec == URL, dec)
             await pg.evaluate("wgpTop($('#wxp-qr'))"); await pg.fill('#wxp-qr [data-f=url]', 'https://x.y/' + 'a' * 600); await pg.press('#wxp-qr [data-f=url]', 'Enter'); await pg.wait_for_timeout(800)
             ok(L + 'a link too long to be read takes the code off the screen and the panel says why, at once', not (await m(pg, 'qr'))['on'] and not errs and await pg.evaluate("$('#wxp-qr .wpst').classList.contains('need')&&$('#wxp-qr .wpst').textContent.includes('400')"), errs[:2])
             await setf(pg, 'qr', 'url', URL, 'Enter'); await pg.wait_for_timeout(700)
