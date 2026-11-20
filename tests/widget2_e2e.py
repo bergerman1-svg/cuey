@@ -87,10 +87,17 @@ async def main():
             # a half-typed change stays off the screen until the field is left
             await pg.evaluate("wgpTop($('#wxp-ticker'))"); await pg.click('#wxp-ticker [data-f=text]'); await pg.keyboard.press('End'); await pg.keyboard.type(' XYZQ'); await pg.wait_for_timeout(250)
             ok(L + 'a change being typed is not on the screen yet', 'XYZQ' not in (await m(pg, 'ticker'))['txt'])
-            await pg.evaluate("document.activeElement.blur()"); await pg.wait_for_timeout(300)
-            ok(L + 'it is when the field is left', 'XYZQ' in (await m(pg, 'ticker'))['txt'] and 'XYZQ' in (await m(pg, 'ticker', True))['txt'])
+            c9 = await pg.evaluate("cur"); await pg.click('#back'); await pg.wait_for_timeout(900)
+            ok(L + 'leaving the field for the show (a click on BACK) puts nothing half-typed on the screen; the field waits, marked', 'XYZQ' not in (await m(pg, 'ticker', True))['txt'] and await pg.evaluate("document.querySelector('#wxp-ticker [data-f=text]').classList.contains('wait')&&document.querySelector('#wxp-ticker [data-f=text]').value.endsWith('XYZQ')"))
+            await pg.click('#wxp-ticker [data-f=text]'); await pg.keyboard.press('Escape'); await pg.wait_for_timeout(250)
+            ok(L + 'Esc puts the old text back in the field', await pg.evaluate("(()=>{const e=document.querySelector('#wxp-ticker [data-f=text]');return !e.value.includes('XYZQ')&&!e.classList.contains('wait')&&document.activeElement!==e})()") and 'XYZQ' not in (await m(pg, 'ticker'))['txt'])
+            await pg.click('#wxp-ticker [data-f=text]'); await pg.keyboard.press('End'); await pg.keyboard.type(' XYZQ'); await pg.keyboard.press('Enter'); await pg.wait_for_timeout(300)
+            ok(L + 'Enter puts it on both screens and hands the keyboard back', 'XYZQ' in (await m(pg, 'ticker'))['txt'] and 'XYZQ' in (await m(pg, 'ticker', True))['txt'] and await pg.evaluate("document.activeElement.tagName!=='INPUT'"))
+            await pg.click('#wxp-ticker [data-f=text]'); await pg.keyboard.press('End'); await pg.keyboard.type('W'); await pg.click('#wxp-ticker .wpn'); await pg.wait_for_timeout(300)
+            ok(L + 'so does a press anywhere else in the same panel', 'XYZQW' in (await m(pg, 'ticker', True))['txt'])
+            c9 = await pg.evaluate("cur")
             await pg.keyboard.press('Space'); await pg.wait_for_timeout(1300)
-            ok(L + 'with the panel open and the field left, Space is GO again', await pg.evaluate("cur") == cur0 + 1)
+            ok(L + 'with the panel open and the field left, Space is GO again', await pg.evaluate("cur") == c9 + 1, [c9, await pg.evaluate('cur')])
             ok(L + 'the ticker stays over the next cue', (await m(pg, 'ticker'))['on'] and (await m(pg, 'ticker', True))['on'])
             # ---------- BLACK ----------
             await pg.click('#blk'); await pg.wait_for_timeout(600)
@@ -99,14 +106,22 @@ async def main():
             ok(L + 'and they are back after BLACK', (await m(pg, 'ticker'))['on'] and (await m(pg, 'ticker', True))['on'])
             # ---------- brand frame ----------
             await opn(pg, 'frame'); await col(pg, 'frame', 'col', '#ff00aa'); await rng(pg, 'frame', 'thick', 3); await show(pg, 'frame')
-            fr = "(o=>{const W=o?outWin:window,L=W.document.getElementById('wxLayer'),e=L.querySelector('.wx-frame'),cs=W.getComputedStyle(e),b=L.getBoundingClientRect();return {bw:parseFloat(cs.borderTopWidth)/b.height,bc:cs.borderTopColor,band:e.querySelector('.fb').getBoundingClientRect().height/b.height,bt:e.querySelector('.fb').textContent}})"
+            fr = "(o=>{const W=o?outWin:window,L=W.document.getElementById('wxLayer'),e=L.querySelector('.wx-frame'),b=L.getBoundingClientRect(),w=e.querySelector('.fs').getBoundingClientRect(),fb=e.querySelector('.fb'),t=fb.getBoundingClientRect();return {bw:(w.top-b.top)/b.height,bl:(w.left-b.left)/b.width,bb:(b.bottom-w.bottom)/b.height,bc:W.getComputedStyle(e.querySelector('.ff')).backgroundColor,band:t.height/b.height,bt:fb.textContent,ty:(t.top+t.height/2-b.top)/b.height,tj:W.getComputedStyle(fb).justifyContent,rad:parseFloat(W.getComputedStyle(e.querySelector('.fs')).borderRadius)/b.height,shd:W.getComputedStyle(e.querySelector('.fs')).boxShadow!=='none',anim:W.getComputedStyle(e.querySelector('.sh')).animationName}})"
             f1 = await pg.evaluate(fr + "(false)"); f2 = await pg.evaluate(fr + "(true)"); a = await m(pg, 'frame'); o = await m(pg, 'frame', True)
-            ok(L + 'the frame goes round the whole picture in the colour and thickness chosen, on both', a['on'] and o['on'] and near(a['w'], 1) and near(a['h'], 1) and near(f1['bw'], .03, .004) and near(f2['bw'], .03, .004) and f1['bc'].replace(' ', '') == 'rgb(255,0,170)' and f1['band'] == 0, [f1, f2, a])
+            ok(L + 'the frame goes round the whole picture in the colour and thickness chosen, on both', a['on'] and o['on'] and near(a['w'], 1) and near(a['h'], 1) and near(f1['bw'], .03, .004) and near(f2['bw'], .03, .004) and near(f1['bl'], .03 * 9 / 16, .004) and near(f1['bb'], .03, .004) and f1['bc'].replace(' ', '') == 'rgb(255,0,170)' and f1['band'] == 0, [f1, f2, a])
             t = await m(pg, 'ticker'); to = await m(pg, 'ticker', True)
             ok(L + 'the ticker moves inside the frame', near(t['y'] + t['h'], .97, .008) and near(t['x'], .03 * 9 / 16, .006) and near(to['y'] + to['h'], .97, .008), [t, to])
             BT = 'כנס המוצר 2026' if he else 'Product Summit 2026'
             await setf(pg, 'frame', 'text', BT, 'Enter'); await pg.wait_for_timeout(700); f1 = await pg.evaluate(fr + "(false)"); f2 = await pg.evaluate(fr + "(true)"); t = await m(pg, 'ticker')
-            ok(L + 'a text gives the frame a band at the bottom, and the ticker sits above it', f1['bt'] == BT and f2['bt'] == BT and f1['band'] > .03 and near(f1['band'], f2['band'], .006) and near(t['y'] + t['h'], .97 - f1['band'], .01), [f1, f2, t])
+            ok(L + 'a text gives the frame a band at the bottom, and the ticker sits above it', f1['bt'] == BT and f2['bt'] == BT and f1['band'] > .03 and near(f1['band'], f2['band'], .006) and near(f1['bb'], .09, .006) and near(t['y'] + t['h'], .91, .01) and f1['ty'] > .9, [f1, f2, t])
+            ok(L + 'the frame has round corners, a soft shadow and a gentle moving light by default, on both', f1['rad'] > .015 and near(f1['rad'], f2['rad'], .004) and f1['shd'] and f2['shd'] and f1['anim'] == 'wxSheen' and f2['anim'] == 'wxSheen', [f1, f2])
+            await rng(pg, 'frame', 'round', 0); await pg.click('#wxp-frame [data-f=shadow] button >> nth=1'); await pg.click('#wxp-frame [data-f=anim] button >> nth=1'); await pg.wait_for_timeout(300); f3 = await pg.evaluate(fr + "(true)")
+            ok(L + 'each of the three can be turned off', f3['rad'] == 0 and not f3['shd'] and f3['anim'] == 'none', f3)
+            await pg.click('#wxp-frame [data-f=top] button >> nth=1'); await pg.click('#wxp-frame [data-f=align] button >> nth=2'); await pg.wait_for_timeout(900); f4 = await pg.evaluate(fr + "(true)"); t4 = await m(pg, 'ticker', True)
+            ok(L + 'the text can go to the top and to a side; the picture window and the ticker follow', f4['ty'] < .1 and f4['tj'] == 'flex-end' and near(f4['bw'], .09, .006) and near(f4['bb'], .03, .006) and near(t4['y'] + t4['h'], .97, .01), [f4, t4])
+            lab = await pg.evaluate("(()=>{const n=$('#nowNm').getBoundingClientRect(),l=document.querySelector('#pvNow .lbl').getBoundingClientRect(),w=document.querySelector('#pvNow .wx-frame .fs').getBoundingClientRect(),tk=document.querySelector('#pvNow .wx-ticker').getBoundingClientRect();return {nm:n.height>0&&n.bottom<=tk.top+1&&n.left>=w.left-1&&n.right<=w.right+1,lbl:l.top>=w.top-1&&l.left>=w.left-1}})()")
+            ok(L + 'the operator\'s own labels on PROGRAM sit inside the frame and above the ticker, never on top of them', lab['nm'] and lab['lbl'], lab)
+            await pg.click('#wxp-frame [data-f=top] button >> nth=0'); await pg.click('#wxp-frame [data-f=align] button >> nth=1'); await pg.wait_for_timeout(700); f1 = await pg.evaluate(fr + "(false)")
             # ---------- speaker name ----------
             await opn(pg, 'lower'); NM = 'דנה לוי' if he else 'Dana Levi'; RL = 'מנהלת מוצר' if he else 'Head of Product'
             await setf(pg, 'lower', 'name', NM, 'Enter'); await setf(pg, 'lower', 'role', RL, 'Enter'); await show(pg, 'lower')
@@ -131,6 +146,9 @@ async def main():
             ok(L + 'the wheel over it changes its size, and the slider follows', a4['h'] > h0 * 1.02 and await pg.evaluate("+document.querySelector('#wxp-lower [data-f=size]').value===Math.round(WX.lower.size*100)"), [h0, a4])
             await rng(pg, 'lower', 'size', 12); await pg.wait_for_timeout(300); a5 = await m(pg, 'lower'); o5 = await m(pg, 'lower', True)
             ok(L + 'at its biggest it is still whole inside the picture', a5['inside'] and o5['inside'], [a5, o5])
+            await rng(pg, 'lower', 'size', 6); await setf(pg, 'lower', 'name', NM + ' ' + 'אבגדה וזחטי ' * 9, 'Enter'); await pg.wait_for_timeout(400); a6 = await m(pg, 'lower')
+            await setf(pg, 'lower', 'name', NM, 'Enter'); await pg.wait_for_timeout(400); a7 = await m(pg, 'lower')
+            ok(L + 'a very long name is fitted into the picture, and the next name is back at the size that was chosen', a6['inside'] and a6['h'] < a7['h'] * .8 and await pg.evaluate("WX.lower.size===.06&&+document.querySelector('#wxp-lower [data-f=size]').value===6"), [a6, a7])
             await pg.evaluate("wgpTop($('#wxp-lower'))"); await pg.click('#wxp-lower .wxShow'); await pg.wait_for_timeout(900)
             ok(L + 'Hide takes it off both screens; the panel stays', not (await m(pg, 'lower'))['on'] and not (await m(pg, 'lower', True))['on'] and await pg.evaluate("!$('#wxp-lower').hidden"))
             await pg.evaluate("wgpTop($('#wxp-lower'))"); await pg.click('#wxp-lower .wxShow'); await pg.wait_for_timeout(900)
@@ -147,17 +165,17 @@ async def main():
             ok(L + 'size and opacity follow the sliders', a2['h'] > a['h'] * 1.6 and await pg.evaluate("getComputedStyle(outWin.document.querySelector('.wx-logo img')).opacity==='0.4'") and a2['inside'], a2)
             await rng(pg, 'logo', 'op', 100); await rng(pg, 'logo', 'size', 14)
             # ---------- QR ----------
-            await opn(pg, 'qr'); URL = 'https://cuey.live/he/?from=qr'
+            await opn(pg, 'qr'); URL = 'https://cuey.live/he/?שאלה=כן&from=qr'
             await setf(pg, 'qr', 'url', URL, 'Enter'); await setf(pg, 'qr', 'cap', 'סרקו אותי' if he else 'Scan me', 'Enter'); await show(pg, 'qr')
             a = await m(pg, 'qr'); o = await m(pg, 'qr', True)
-            ok(L + 'the QR code is on both screens with its caption, whole inside the picture', a['on'] and o['on'] and near(a['cx'], o['cx']) and near(a['h'], o['h'], .008) and a['inside'] and o['inside'] and ('סרקו' if he else 'Scan') in o['txt'], [a, o])
+            ok(L + 'the QR code (a link with Hebrew in it) is on both screens with its caption, whole inside the picture', a['on'] and o['on'] and near(a['cx'], o['cx']) and near(a['h'], o['h'], .008) and a['inside'] and o['inside'] and ('סרקו' if he else 'Scan') in o['txt'], [a, o])
             shot = os.path.join(os.environ.get('TMPDIR', '/tmp'), 'cuey_qr_%s.png' % lang); await out.screenshot(path=shot)
             try:
                 import cv2; dec = cv2.QRCodeDetector().detectAndDecode(cv2.imread(shot))[0]
             except Exception as e: dec = 'ERR ' + str(e)
             ok(L + 'a phone reads the link from the event screen', dec == URL, dec)
-            await pg.evaluate("(()=>{const e=document.querySelector('#wxp-qr [data-f=url]');e.value='https://x.y/'+'a'.repeat(4000);e.dispatchEvent(new Event('change'))})()"); await pg.wait_for_timeout(500)
-            ok(L + 'a link too long for a code takes it off the screen without an error', not (await m(pg, 'qr'))['on'] and not errs, errs[:2])
+            await pg.evaluate("wgpTop($('#wxp-qr'))"); await pg.fill('#wxp-qr [data-f=url]', 'https://x.y/' + 'a' * 600); await pg.press('#wxp-qr [data-f=url]', 'Enter'); await pg.wait_for_timeout(800)
+            ok(L + 'a link too long to be read takes the code off the screen and the panel says why, at once', not (await m(pg, 'qr'))['on'] and not errs and await pg.evaluate("$('#wxp-qr .wpst').classList.contains('need')&&$('#wxp-qr .wpst').textContent.includes('400')"), errs[:2])
             await setf(pg, 'qr', 'url', URL, 'Enter'); await pg.wait_for_timeout(700)
             ok(L + 'and a good link brings it back', (await m(pg, 'qr'))['on'])
             # ---------- another screen shape ----------
@@ -165,12 +183,15 @@ async def main():
             a = await m(pg, 'qr'); o = await m(pg, 'qr', True); la = await m(pg, 'lower'); lo = await m(pg, 'lower', True); t = await m(pg, 'ticker', True)
             ok(L + 'on a 4:3 event screen the widgets keep their place in the picture', near(o['box'][1], .75, .01) and near(a['cx'], o['cx']) and near(a['cy'], o['cy']) and near(la['cx'], lo['cx']) and near(la['h'], lo['h'], .008) and o['inside'] and near(t['w'], 1 - 2 * .03 * 9 / 16, .01), [a, o, t])
             await out.set_viewport_size({'width': 1280, 'height': 720}); await pg.wait_for_timeout(600)
+            cov = await pg.evaluate("(()=>{document.querySelectorAll('.wxp:not(.min) .wxMin').forEach(b=>b.click());const hit=(r,e)=>{const b=e.getBoundingClientRect();return !(r.right<=b.left||r.left>=b.right||r.bottom<=b.top||r.top>=b.bottom)},q=[...document.querySelectorAll('.wxp')].filter(p=>!p.hidden).map(p=>p.getBoundingClientRect());return {n:q.length,go:q.some(r=>hit(r,$('#go').parentElement)),cue:q.some(r=>[...$('#list').children].some(e=>hit(r,e))),pv:q.some(r=>hit(r,$('#pvNow'))||hit(r,$('#pvNext'))),over:q.some((r,i)=>q.some((o,j)=>j>i&&!(r.right<=o.left||r.left>=o.right||r.bottom<=o.top||r.top>=o.bottom))),h:Math.max(...q.map(r=>r.height))}})()")
+            ok(L + 'five panels made small sit side by side: none on a cue, on GO, on a preview or on another panel', cov['n'] == 5 and not (cov['go'] or cov['cue'] or cov['pv'] or cov['over']) and cov['h'] < 130, cov)
+            await pg.evaluate("document.querySelectorAll('.wxp.min .wxMin').forEach(b=>b.click())")
             # ---------- all together, with the timer ----------
             await pg.evaluate("wtOpen();wtShow()"); await pg.wait_for_timeout(500)
             on = [(await m(pg, k, True))['on'] for k in ('ticker', 'lower', 'logo', 'qr', 'frame')]
             ok(L + 'all five and the timer can be on the screen together', all(on) and await pg.evaluate("outWin.getComputedStyle(outWin.document.getElementById('wdgTimer')).display!=='none'"), on)
             # ---------- shared screen picture / export ----------
-            await pg.evaluate("WX.qr.x=.85;WX.qr.y=.4;WX.lower.x=.3;WX.lower.y=.5;wxPaint()"); await pg.wait_for_timeout(200)
+            await pg.evaluate("WX.frame.anim=false;WX.qr.x=.85;WX.qr.y=.4;WX.lower.x=.3;WX.lower.y=.5;wxPaint()"); await pg.wait_for_timeout(200)
             px = {n: await pg.evaluate(PIX + "(%f,%f)" % xy) for n, xy in {'frame': (.5, .008), 'tick': (.02, .9), 'qrw': (.85 - .28 * 9 / 16 / 2 - .005, .4), 'mid': (.5, .2)}.items()}
             qd = await pg.evaluate("(()=>{const c=document.createElement('canvas');c.width=1280;c.height=720;const g=c.getContext('2d');drawFrame(g,1280,720);const d=g.getImageData(Math.round(.85*1280-90),Math.round(.4*720-90),180,180).data;let k=0,w=0;for(let i=0;i<d.length;i+=4){if(d[i]<40&&d[i+1]<40&&d[i+2]<40)k++;else if(d[i]>215&&d[i+1]>215&&d[i+2]>215)w++}return [k,w]})()")
             ok(L + 'the shared-screen picture has the frame, the ticker and the QR code too', px['frame'] == [255, 0, 170] and px['tick'][0] < 30 and px['tick'][2] < 30 and px['qrw'] == [255, 255, 255] and qd[0] > 3000 and qd[1] > 3000, [px, qd])
@@ -187,11 +208,15 @@ async def main():
             t = await m(pg, 'ticker', True); ok(L + 'and the ticker is a full bar at the bottom again', near(t['w'], 1) and near(t['y'] + t['h'], 1), t)
             # the panel is dragged by its top and remembers its place
             p0 = await pg.evaluate("(()=>{const r=$('#wxp-qr').getBoundingClientRect(),h=$('#wxp-qr .wpn').getBoundingClientRect();return [r.left,r.top,h.left+4,h.top+4]})()")
-            await pg.evaluate("wgpTop($('#wxp-qr'))"); await pg.mouse.move(p0[2], p0[3]); await pg.mouse.down(); await pg.mouse.move(p0[2] + 60, p0[3] + 40, steps=5); await pg.mouse.up(); await pg.wait_for_timeout(200)
+            await pg.evaluate("wgpTop($('#wxp-qr'))"); await pg.mouse.move(p0[2], p0[3]); await pg.mouse.down(); await pg.mouse.move(p0[2] - 60, p0[3] + 40, steps=5); await pg.mouse.up(); await pg.wait_for_timeout(200)
             p1 = await pg.evaluate("(()=>{const r=$('#wxp-qr').getBoundingClientRect();return [r.left,r.top]})()")
             await close(pg, 'qr'); await opn(pg, 'qr'); p2 = await pg.evaluate("(()=>{const r=$('#wxp-qr').getBoundingClientRect();return [r.left,r.top]})()")
-            ok(L + 'a panel is dragged by its top bar and opens again where it was left', abs(p1[0] - p0[0] - 60) < 4 and abs(p1[1] - p0[1] - 40) < 4 and abs(p2[0] - p1[0]) < 4 and abs(p2[1] - p1[1]) < 4, [p0, p1, p2])
+            ok(L + 'a panel is dragged by its top bar and opens again where it was left', abs(p1[0] - p0[0] + 60) < 4 and abs(p1[1] - p0[1] - 40) < 4 and abs(p2[0] - p1[0]) < 4 and abs(p2[1] - p1[1]) < 4, [p0, p1, p2])
             ok(L + 'opened again the QR panel still has the link', await pg.evaluate("document.querySelector('#wxp-qr [data-f=url]').value") == URL)
+            # ---------- Clear ----------
+            await pg.evaluate("WX.ticker.on=true;WX.frame.on=true;wxPaint()")
+            await pg.click('#clearAll'); await pg.wait_for_timeout(300); await pg.click('.uiq button[data-v=yes]'); await pg.wait_for_timeout(900)
+            ok(L + 'Clear leaves nothing on the screens and no text of the last show in the widgets', await pg.evaluate("items.length===0&&!wxAny()&&WX.ticker.text===''&&WX.qr.url===''&&!WX.logo.src") and not (await m(pg, 'ticker', True))['on'] and not (await m(pg, 'frame', True))['on'])
             # ---------- opening shows ----------
             for k in ('ticker', 'lower', 'logo', 'qr'): await pg.evaluate("WX[%s].on=true" % json.dumps(k))
             await pg.evaluate("(j=>{loadShowFromText(j)})(%s)" % json.dumps(js)); await pg.wait_for_timeout(800); await pg.evaluate("if(!$('#pickDlg').hidden)$('#pkSkip').click()"); await pg.wait_for_timeout(600)
