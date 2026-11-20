@@ -2842,8 +2842,8 @@ function flash(msg){const el=$('#cnt');el.textContent=msg;el.style.color='var(--
    A widget is a layer over PROGRAM that does not belong to any cue: it stays while cues change, until the operator removes it.
    The first one is the timer. It is drawn as real DOM in two places — the PROGRAM preview (where it can be dragged and resized)
    and the event-screen window — and painted into the shared-screen picture. It is never part of an exported video. */
-const WDG_CSS=`.wdg{position:absolute;z-index:3;pointer-events:none;transform:translate(-50%,-50%);display:none;line-height:1;user-select:none;-webkit-user-select:none}
-.wdg.on{display:block}
+const WDG_CSS=`.wdg{position:absolute;z-index:3;pointer-events:none;transform:translate(-50%,-50%);visibility:hidden;opacity:0;transition:opacity .8s ease,visibility 0s .8s;line-height:1;user-select:none;-webkit-user-select:none}
+.wdg.on{visibility:visible;opacity:1;transition:opacity .8s ease,visibility 0s}.wdg.cut{transition:none}
 .wdg .wt{display:inline-flex;align-items:center;font-family:ui-monospace,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace;font-weight:800;color:#fff;padding:.2em .4em .24em;border-radius:.22em;white-space:nowrap;font-variant-numeric:tabular-nums;position:relative;overflow:hidden;direction:ltr;text-shadow:0 .03em .12em rgba(0,0,0,.55)}
 .wdg.bg .wt{box-shadow:0 .08em .34em rgba(0,0,0,.45)}
 .wdg:not(.bg) .wt{text-shadow:0 0 .07em #000,0 0 .14em #000,0 .04em .22em rgba(0,0,0,.9)}
@@ -2881,7 +2881,7 @@ function wdgFit(){const el=document.querySelector('#pvNow #wdgTimer'),host=$('#p
   const nx=Math.min(1-fw,Math.max(fw,wdgT.x)),ny=Math.min(1-fh,Math.max(fh,wdgT.y));if(Math.abs(nx-wdgT.x)>.0005||Math.abs(ny-wdgT.y)>.0005){wdgT.x=nx;wdgT.y=ny;ch=true}return ch}
 function wdgPaint(again){const st=wtState(),show=wdgT.on&&!blackOn&&!exporting;
   for(const [doc,host,drag] of wdgHosts()){const el=wdgMount(doc,host,drag);if(!el)continue;
-    el.classList.toggle('on',show);if(!show)continue;
+    el.classList.toggle('cut',blackOn||exporting);el.classList.toggle('on',show);if(!show)continue;
     const B=wdgBox(host);el.style.left=(B.x+wdgT.x*B.w)+'px';el.style.top=(B.y+wdgT.y*B.h)+'px';el.style.fontSize=Math.max(6,wdgT.size*B.h)+'px';
     const dark=wdgT.bgOn&&wdgLight(wdgT.bg);el.classList.toggle('dk',dark);
     el.classList.toggle('bg',wdgT.bgOn);el.classList.toggle('up',wdgT.mode==='up');el.classList.toggle('warn',st.cls==='warn');el.classList.toggle('over',st.cls==='over');el.classList.toggle('zero',!!wdgT.zeroAt&&performance.now()-wdgT.zeroAt<2000);
@@ -2964,8 +2964,8 @@ setTimeout(()=>{wdgWire();wdgPaint()},0);
    painted into the shared-screen picture, never into an exported video. Each has a small floating panel of its own. */
 const WX_CSS=`#wxLayer{position:absolute;z-index:3;pointer-events:none;overflow:hidden;line-height:1.15;user-select:none;-webkit-user-select:none;font-family:system-ui,-apple-system,'Segoe UI',Arial,Helvetica,sans-serif;direction:ltr;text-align:left}
 #wxLayer.off{display:none}
-#wxLayer>*{position:absolute;opacity:0;visibility:hidden;transition:opacity .45s ease,transform .6s cubic-bezier(.19,1,.22,1),visibility 0s .6s}
-#wxLayer>.on{opacity:1;visibility:visible;transition:opacity .45s ease,transform .6s cubic-bezier(.19,1,.22,1),visibility 0s}
+#wxLayer>*{position:absolute;opacity:0;visibility:hidden;transition:opacity .8s ease,transform .8s cubic-bezier(.19,1,.22,1),visibility 0s .8s}
+#wxLayer>.on{opacity:1;visibility:visible;transition:opacity .8s ease,transform .8s cubic-bezier(.19,1,.22,1),visibility 0s}
 .wx-frame{left:0;top:0;right:0;bottom:0;transform:scale(1.035)}.wx-frame.on{transform:none}
 .wx-frame .ff{position:absolute;left:0;top:0;right:0;bottom:0;background:var(--c,#C8FF00);overflow:hidden}
 .wx-frame .sh{position:absolute;top:-20%;bottom:-20%;left:0;width:20%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.34),transparent);transform:translateX(-160%) skewX(-18deg);display:none}
@@ -2975,19 +2975,19 @@ const WX_CSS=`#wxLayer{position:absolute;z-index:3;pointer-events:none;overflow:
 .wx-frame .fb{position:absolute;font-size:3.8em;line-height:1;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;unicode-bidi:plaintext}
 .wx-frame .fb.left{justify-content:flex-start}.wx-frame .fb.right{justify-content:flex-end}
 .wx-frame.dk .fb{color:#0A0A0C}.wx-frame .fb:empty{display:none}
-.wx-ticker{left:var(--fi,0px);right:var(--fi,0px);bottom:calc(var(--fi,0px) + var(--fb,0px));height:1.9em;display:flex;align-items:center;overflow:hidden;font-weight:700;color:#fff;transform:translateY(100%)}
-.wx-ticker.top{bottom:auto;top:calc(var(--fi,0px) + var(--ft,0px));transform:translateY(-100%)}.wx-ticker.on{transform:none}.wx-ticker.dk{color:#0A0A0C}
+.wx-ticker{left:var(--fi,0px);right:var(--fi,0px);bottom:calc(var(--fi,0px) + var(--fb,0px));height:1.9em;display:flex;align-items:center;overflow:hidden;font-weight:700;color:#fff;transform:translateY(35%)}
+.wx-ticker.top{bottom:auto;top:calc(var(--fi,0px) + var(--ft,0px));transform:translateY(-35%)}.wx-ticker.on{transform:none}.wx-ticker.dk{color:#0A0A0C}
 .wx-ticker .tkm{display:inline-flex;flex:none;white-space:nowrap;will-change:transform;animation:wxTick var(--d,20s) linear infinite}
 .wx-ticker .tkm span{flex:none;white-space:pre;unicode-bidi:plaintext}
 .wx-ticker.rtl .tkm{animation-name:wxTickR}
 @keyframes wxTick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @keyframes wxTickR{from{transform:translateX(-50%)}to{transform:translateX(0)}}
-.wx-lower{display:flex;align-items:stretch;white-space:nowrap;transform:translate(-50%,-50%) translateX(-2.5em)}
+.wx-lower{display:flex;align-items:stretch;white-space:nowrap;transform:translate(-50%,-50%) translateX(-1em)}
 .wx-lower.on{transform:translate(-50%,-50%)}
 .wx-lower .lb{flex:none;width:.26em;background:var(--c,#C8FF00)}
 .wx-lower .lt{background:var(--bg,rgba(10,10,12,.9));color:#fff;padding:.4em .85em .44em .65em;display:flex;flex-direction:column;gap:.12em;box-shadow:0 .1em .5em rgba(0,0,0,.4)}
 .wx-lower .ln{font-family:var(--ff,inherit);font-weight:var(--fw,800);unicode-bidi:plaintext}.wx-lower .lr{font-family:var(--fr,inherit);font-weight:var(--frw,500);font-size:.62em;color:#d8d8de;unicode-bidi:plaintext}.wx-lower.dk .lt{color:#0A0A0C}.wx-lower.dk .lr{color:#3a3a42}.wx-lower .lr:empty{display:none}
-.wx-lower.rtl{flex-direction:row-reverse;transform:translate(-50%,-50%) translateX(2.5em)}.wx-lower.rtl.on{transform:translate(-50%,-50%)}.wx-lower.rtl .lt{padding:.4em .65em .44em .85em;text-align:right}
+.wx-lower.rtl{flex-direction:row-reverse;transform:translate(-50%,-50%) translateX(1em)}.wx-lower.rtl.on{transform:translate(-50%,-50%)}.wx-lower.rtl .lt{padding:.4em .65em .44em .85em;text-align:right}
 .wx-logo{transform:translate(-50%,-50%) scale(.92)}.wx-logo.on{transform:translate(-50%,-50%)}
 .wx-logo img{display:block;height:1em;width:auto;max-width:none}
 .wx-qr{transform:translate(-50%,-50%) scale(.92);background:#fff;padding:.07em .07em .06em;border-radius:.05em;display:flex;flex-direction:column;align-items:center;box-shadow:0 .03em .16em rgba(0,0,0,.45)}
@@ -3142,6 +3142,7 @@ function wxPanelPaint(k){const p=document.getElementById('wxp-'+k);if(!p||p.hidd
   p.querySelectorAll('.wxClr').forEach(b=>b.hidden=!w[b.dataset.f]);
   p.querySelectorAll('.wxr').forEach(el=>{if(document.activeElement!==el&&+el.value!==Math.round(w[el.dataset.f]*100)){el.value=Math.round(w[el.dataset.f]*100);try{fillRange(el)}catch(e){}}})}
 function wxOpen(k){$('#wgDlg').hidden=true;let p=document.getElementById('wxp-'+k);if(p&&!p.hidden){wxSync(k);return}
+  document.querySelectorAll('.wxp:not(.min)').forEach(o=>{if(!o.hidden&&o.id!=='wxp-'+k){const b=o.querySelector('.wxMin');if(b)b.click()}});
   p=wxPanel(k);if(WX[k].used&&wxReady(k)){p.classList.add('min');p.querySelector('.wxMin').textContent='+'}WX[k].used=true;p.hidden=false;wgpTop(p);wxSync(k);wxPaint();let pos=null;try{pos=JSON.parse(localStorage.getItem('cuey.wxPanel.'+k)||'null')}catch(e){}
   if(pos&&isFinite(pos.x)&&isFinite(pos.y)){p._drag=1;wgpPlace(p,pos.x,pos.y);if(wgpOnGo(p))wgpAuto(p)}else wgpAuto(p);track('widget-open-'+k)}
 /* the logo: any picture file; kept inside the show at a size that is enough for a corner of the screen */

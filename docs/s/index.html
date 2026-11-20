@@ -28,6 +28,7 @@ html,body{margin:0;height:100%;background:#000;color:#fff;font-family:Poppins,sy
 body:hover #st{opacity:1}
 #fs{position:fixed;bottom:16px;right:16px;padding:10px 14px;border-radius:10px;border:1px solid #333;background:#111;color:#ddd;font:14px Poppins,system-ui;cursor:pointer;opacity:.9}
 </style>
+<style>#snd.ask{left:50%!important;bottom:7%!important;transform:translateX(-50%);padding:16px 26px!important;font-size:20px!important;font-weight:700!important;background:#C8FF00!important;color:#0A0A0C!important;border-color:#C8FF00!important;opacity:1!important;box-shadow:0 8px 30px rgba(0,0,0,.5)}</style>
 </head>
 <body>
 <div class="ly" id="a"></div><div class="ly" id="b"></div>
@@ -83,15 +84,17 @@ async function onOffer(m){
   if(pc){try{pc.close()}catch(e){}}
   clearTimeout(offerT);offerT=setTimeout(()=>{if(!rtcLive()){try{pc&&pc.close()}catch(e){}rtcOn=false;hello()}},12000);
   pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
-  pc.ontrack=e=>{rtc.srcObject=e.streams[0];rtc.style.display='block';rtcOn=true;snd.textContent=rtc.muted?S.off:S.on;sndShow();document.getElementById('wait').classList.add('off');rtc.play().catch(()=>{})};
+  pc.ontrack=e=>{rtc.srcObject=e.streams[0];rtc.style.display='block';rtcOn=true;document.getElementById('wait').classList.add('off');
+    /* sound first: the browser allows it when this window was already touched (the code typed, Fullscreen pressed) or when it lets this site play sound. Only if it refuses does the picture start silent, with the button asking for one tap. */
+    const ui=()=>{snd.textContent=rtc.muted?S.off:S.on;sndShow();webSync()};rtc.muted=false;const pl=rtc.play();if(pl&&pl.then)pl.then(ui).catch(()=>{rtc.muted=true;rtc.play().catch(()=>{});ui()});else ui()};
   const me=pc;pc.onconnectionstatechange=()=>{if(pc!==me)return;const c=me.connectionState;setSt(c==='connected'?'ok':'warn',c);if(['failed','disconnected','closed'].includes(c)){rtcOn=false;rtc.style.display='none';snd.style.display='none';document.getElementById('wait').classList.remove('off');msg.textContent=S.lost;document.getElementById('tip').textContent=S.tip;setTimeout(hello,1500)}};
   await pc.setRemoteDescription({type:'offer',sdp:m.sdp});const ans=await pc.createAnswer();await pc.setLocalDescription(ans);await waitIce(pc);
   post({t:'answer',id:myId,sdp:pc.localDescription.sdp});
 }
 snd.onclick=()=>{rtc.muted=!rtc.muted;snd.textContent=rtc.muted?S.off:S.on;webSync();sndShow()};
 /* the sound button never sits over the live picture for long: it shows when the picture starts while sound is off (fades after 6 s), hides once sound is on, and a tap anywhere turns sound on */
-let sndT=0;function sndShow(){if(!rtcOn){snd.style.display='none';return}clearTimeout(sndT);snd.style.opacity='.9';snd.style.display='block';sndT=setTimeout(()=>{if(rtc.muted)snd.style.opacity='.35';else snd.style.display='none'},rtc.muted?6000:2500)}
-document.addEventListener('pointerdown',e=>{if(e.target!==snd&&rtcOn&&rtc.muted)snd.click()});
+let sndT=0;function sndShow(){if(!rtcOn){snd.style.display='none';return}clearTimeout(sndT);snd.style.opacity='.9';snd.style.display='block';if(rtc.muted){snd.classList.add('ask');return}snd.classList.remove('ask');sndT=setTimeout(()=>{snd.style.display='none'},2500)} // while there is no sound the button stays, large and clear, until it is tapped
+document.addEventListener('pointerdown',e=>{if(e.target!==snd&&rtcOn&&rtc.muted)snd.click()});document.addEventListener('keydown',()=>{if(rtcOn&&rtc.muted)snd.click()});
 /* ---- online videos (YouTube / Vimeo): the Cuey app can't send their picture, so this page plays the same video, in time ---- */
 const webBox=document.getElementById('web');let web=null,yt=null,ytReady=false,vmF=null,ytApi=null;
 function loadYtApi(){if(ytApi)return ytApi;ytApi=new Promise(r=>{window.onYouTubeIframeAPIReady=r;const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s)});return ytApi}

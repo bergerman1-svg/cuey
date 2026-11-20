@@ -63,6 +63,9 @@ async def main():
             ok(L + 'typing in a widget field (spaces too) never moves the show', await pg.evaluate("cur") == cur0)
             TXT = 'ברוכים הבאים לכנס · ההרצאה הבאה בשעה 11:30' if he else 'Welcome to the conference · next talk at 11:30'
             await setf(pg, 'ticker', 'text', TXT); await show(pg, 'ticker')
+            await pg.click('#wxp-ticker .wxShow'); await pg.wait_for_timeout(950); await pg.click('#wxp-ticker .wxShow'); await pg.wait_for_timeout(260)
+            fo = await pg.evaluate("[+getComputedStyle(document.querySelector('#pvNow .wx-ticker')).opacity,+outWin.getComputedStyle(outWin.document.querySelector('.wx-ticker')).opacity]"); await pg.wait_for_timeout(800)
+            ok(L + 'it goes off and comes on in a fade, not a cut, on both screens', all(.05 < v < .97 for v in fo), fo)
             a = await m(pg, 'ticker'); o = await m(pg, 'ticker', True)
             ok(L + 'the ticker is on PROGRAM and on the event screen', a['on'] and o['on'] and TXT in a['txt'] and TXT in o['txt'], [a, o])
             ok(L + 'a bar across the bottom of the picture, the same share of it on both', near(a['x'], 0) and near(a['w'], 1) and near(a['y'] + a['h'], 1) and near(a['h'], o['h'], .006) and near(o['y'] + o['h'], 1) and .08 < a['h'] < .18, [a, o])
@@ -229,10 +232,10 @@ async def main():
             t = await m(pg, 'ticker', True); ok(L + 'and the ticker is a full bar at the bottom again', near(t['w'], 1) and near(t['y'] + t['h'], 1), t)
             # the panel is dragged by its top and remembers its place
             p0 = await pg.evaluate("(()=>{const r=$('#wxp-qr').getBoundingClientRect(),h=$('#wxp-qr .wpn').getBoundingClientRect();return [r.left,r.top,h.left+4,h.top+4]})()")
-            await pg.evaluate("wgpTop($('#wxp-qr'))"); await pg.mouse.move(p0[2], p0[3]); await pg.mouse.down(); await pg.mouse.move(p0[2] - 60, p0[3] + 40, steps=5); await pg.mouse.up(); await pg.wait_for_timeout(200)
+            await pg.evaluate("wgpTop($('#wxp-qr'))"); await pg.mouse.move(p0[2], p0[3]); await pg.mouse.down(); await pg.mouse.move(p0[2] - 60, p0[3] - 40, steps=5); await pg.mouse.up(); await pg.wait_for_timeout(200)
             p1 = await pg.evaluate("(()=>{const r=$('#wxp-qr').getBoundingClientRect();return [r.left,r.top]})()")
             await close(pg, 'qr'); await opn(pg, 'qr'); p2 = await pg.evaluate("(()=>{const r=$('#wxp-qr').getBoundingClientRect();return [r.left,r.top]})()")
-            ok(L + 'a panel is dragged by its top bar and opens again where it was left', abs(p1[0] - p0[0] + 60) < 4 and abs(p1[1] - p0[1] - 40) < 4 and abs(p2[0] - p1[0]) < 4 and abs(p2[1] - p1[1]) < 4, [p0, p1, p2])
+            ok(L + 'a panel is dragged by its top bar and opens again where it was left', abs(p1[0] - p0[0] + 60) < 4 and abs(p1[1] - p0[1] + 40) < 4 and abs(p2[0] - p1[0]) < 4 and abs(p2[1] - p1[1]) < 4, [p0, p1, p2])
             ok(L + 'opened again the QR panel still has the link', await pg.evaluate("document.querySelector('#wxp-qr [data-f=url]').value") == URL)
             # ---------- Clear ----------
             await pg.evaluate("WX.ticker.on=true;WX.frame.on=true;wxPaint()")
