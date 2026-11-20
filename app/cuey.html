@@ -524,7 +524,7 @@ body.taking #list .item:not(.cur){cursor:copy}body.taking #list .item:not(.cur):
 .wxp .wxPick{height:32px;font-size:12.5px}.wxp .wxClr{height:26px;font-size:11.5px;color:var(--mut)}.wxp .seg button{padding:5px 8px;font-size:11px}.wxp .wxh{color:var(--dim);font-size:10.5px;line-height:1.35}
 /* the operator's own labels on PROGRAM (name strip, PROGRAM tag, badge) move inside a frame and above a ticker, so they never sit on top of each other */
 #pvNow .nm{margin-bottom:var(--wxB,0px);margin-left:var(--wxS,0px);margin-right:var(--wxS,0px);transition:margin .35s}#pvNow .lbl,#pvNow .sstag,#pvNow #pvHeld{margin-top:var(--wxT,0px);margin-inline:var(--wxS,0px);transition:margin .35s}#pvNow #pvBadge{margin-bottom:var(--wxB,0px);margin-right:var(--wxS,0px);transition:margin .35s}
-#pvNow #wxLayer{z-index:3}#pvNow #wxLayer>.on[data-k=lower],#pvNow #wxLayer>.on[data-k=logo],#pvNow #wxLayer>.on[data-k=qr]{pointer-events:auto;cursor:grab;touch-action:none}#pvNow #wxLayer>.drag{cursor:grabbing}
+#pvNow #wxLayer,#pvNow #wxEdge{z-index:3}#pvNow #wxLayer>.on[data-k=lower],#pvNow #wxLayer>.on[data-k=logo],#pvNow #wxLayer>.on[data-k=qr]{pointer-events:auto;cursor:grab;touch-action:none}#pvNow #wxLayer>.drag{cursor:grabbing}
 #pvNow #wxLayer>.on[data-k=lower]:hover,#pvNow #wxLayer>.on[data-k=logo]:hover,#pvNow #wxLayer>.on[data-k=qr]:hover,#pvNow #wxLayer>.drag{outline:2px dashed rgba(255,255,255,.75);outline-offset:3px}
 #wgDlg .wgs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0 6px}
 #wgDlg .wgc{display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center;padding:16px 10px 14px;border-radius:12px;border:2px solid var(--line2);background:#141419;cursor:pointer;position:relative;color:var(--txt)}
@@ -2962,10 +2962,10 @@ setTimeout(()=>{wdgWire();wdgPaint()},0);
    They live in one layer that covers exactly the 16:9 picture, in PROGRAM and on the event screen. Inside the layer
    1em = 1% of the picture's height, so every size is the same share of the picture on every screen. They are also
    painted into the shared-screen picture, never into an exported video. Each has a small floating panel of its own. */
-const WX_CSS=`#wxLayer{position:absolute;z-index:3;pointer-events:none;overflow:hidden;line-height:1.15;user-select:none;-webkit-user-select:none;font-family:system-ui,-apple-system,'Segoe UI',Arial,Helvetica,sans-serif;direction:ltr;text-align:left}
-#wxLayer.off{display:none}
-#wxLayer>*{position:absolute;opacity:0;visibility:hidden;transition:opacity .8s ease,transform .8s cubic-bezier(.19,1,.22,1),visibility 0s .8s}
-#wxLayer>.on{opacity:1;visibility:visible;transition:opacity .8s ease,transform .8s cubic-bezier(.19,1,.22,1),visibility 0s}
+const WX_CSS=`#wxLayer,#wxEdge{position:absolute;z-index:3;pointer-events:none;overflow:hidden;line-height:1.15;user-select:none;-webkit-user-select:none;font-family:system-ui,-apple-system,'Segoe UI',Arial,Helvetica,sans-serif;direction:ltr;text-align:left}
+#wxLayer.off,#wxEdge.off{display:none}
+#wxLayer>*,#wxEdge>*{position:absolute;opacity:0;visibility:hidden;transition:opacity .8s ease,transform .8s cubic-bezier(.19,1,.22,1),visibility 0s .8s}
+#wxLayer>.on,#wxEdge>.on{opacity:1;visibility:visible;transition:opacity .8s ease,transform .8s cubic-bezier(.19,1,.22,1),visibility 0s}
 .wx-frame{left:0;top:0;right:0;bottom:0;transform:scale(1.035)}.wx-frame.on{transform:none}
 .wx-frame .ff{position:absolute;left:0;top:0;right:0;bottom:0;background:var(--c,#C8FF00);overflow:hidden}
 .wx-frame .sh{position:absolute;top:-20%;bottom:-20%;left:0;width:20%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.34),transparent);transform:translateX(-160%) skewX(-18deg);display:none}
@@ -3017,30 +3017,33 @@ const wxAny=()=>WX_KEYS.some(k=>WX[k].on);
 try{qrcode.stringToBytes=t=>[...new TextEncoder().encode(t)]}catch(e){} // links and Wi-Fi names with Hebrew (or any non-English letters) are written into the code as UTF-8, the way phones read them
 let wxQrC={u:null,q:null};
 function wxQr(){const u=WX.qr.url.trim();if(wxQrC.u===u)return wxQrC.q;let q=null;if(u&&u.length<=400){try{q=qrcode(0,'M');q.addData(u);q.make()}catch(e){q=null}}wxQrC={u,q};return q} // a link too long for a code gives none
-function wxFrameGeo(){const w=WX.frame,b=w.thick*100,bh=w.text.trim()?6:0,W=1600/9,x=b,y=b+(w.top?bh:0),ww=W-2*b,hh=100-2*b-bh;return {b,bh,x,y,w:ww,h:hh,r:Math.min(w.round*100,ww/2,hh/2),W}}
+function wxFrameGeo(W){W=W||1600/9;const w=WX.frame,b=w.thick*100,bh=w.text.trim()?6:0,x=b,y=b+(w.top?bh:0),ww=W-2*b,hh=100-2*b-bh;return {b,bh,x,y,w:ww,h:hh,r:Math.min(w.round*100,ww/2,hh/2),W}}
 function wxMount(doc,host){if(!doc||!host)return null;let L=doc.getElementById('wxLayer');if(L)return L;
   if(!doc.getElementById('wxCss')){const st=doc.createElement('style');st.id='wxCss';st.textContent=WX_CSS;doc.head.appendChild(st);
     if(doc!==document){const lk=doc.createElement('link');lk.rel='stylesheet';lk.href='https://fonts.googleapis.com/css2?family=Rubik:wght@500;800&family=Secular+One&family=Frank+Ruhl+Libre:wght@500;700&family=Heebo:wght@500;800&display=swap';doc.head.appendChild(lk)}} // the event screen gets the same letters as PROGRAM (with no internet both fall back to the computer's own)
-  L=doc.createElement('div');L.id='wxLayer';L.innerHTML='<div class="wx-ticker" data-k="ticker"><div class="tkm"></div></div><div class="wx-frame" data-k="frame"><div class="ff"><i class="sh"></i></div><div class="fs"></div><div class="fb"></div></div><div class="wx-lower" data-k="lower"><i class="lb"></i><div class="lt"><div class="ln"></div><div class="lr"></div></div></div><div class="wx-logo" data-k="logo"><img alt=""></div><div class="wx-qr" data-k="qr"><div class="qs"></div><div class="qc"></div></div>';host.appendChild(L);return L}
+  const E=doc.createElement('div');E.id='wxEdge';E.innerHTML='<div class="wx-ticker" data-k="ticker"><div class="tkm"></div></div><div class="wx-frame" data-k="frame"><div class="ff"><i class="sh"></i></div><div class="fs"></div><div class="fb"></div></div>';host.appendChild(E);
+  L=doc.createElement('div');L.id='wxLayer';L._edge=E;L.innerHTML='<div class="wx-lower" data-k="lower"><i class="lb"></i><div class="lt"><div class="ln"></div><div class="lr"></div></div></div><div class="wx-logo" data-k="logo"><img alt=""></div><div class="wx-qr" data-k="qr"><div class="qs"></div><div class="qc"></div></div>';host.appendChild(L);return L}
 let wxTk={sig:'',n:1,d:20};
 function wxPaint(again){const off=blackOn||exporting;let fit=false;
   for(const [doc,host,main] of wdgHosts()){const L=wxMount(doc,host);if(!L)continue;const B=wdgBox(host),fs=B.h/100;
     L.style.left=B.x+'px';L.style.top=B.y+'px';L.style.width=B.w+'px';L.style.height=B.h+'px';L.style.fontSize=fs+'px';L.classList.toggle('off',off);
+    /* the frame and the ticker sit on the edges of what the audience sees: a cue set to fill the screen is framed to the real edges of the screen, whatever its shape (a 16:10 laptop, a 4:3 projector); a cue that is fitted keeps the 16:9 picture, as on PROGRAM. The name, logo and code always keep their place in the 16:9 picture. */
+    const E=L._edge||doc.getElementById('wxEdge'),ci=items[cur],full=!!(ci&&FIT[ci.scale]&&FIT[ci.scale]!=='contain'),HW=full?(host.clientWidth||B.w):B.w,HH=full?(host.clientHeight||B.h):B.h,fe=HH/100;E.style.left=(full?0:B.x)+'px';E.style.top=(full?0:B.y)+'px';E.style.width=HW+'px';E.style.height=HH+'px';E.style.fontSize=fe+'px';E.classList.toggle('off',off);
     const q=s=>L.querySelector(s);
     { // brand frame: the colour covers everything but a window (rounded if asked) that the picture shows through; the ticker runs inside that window
-      const w=WX.frame,el=q('.wx-frame'),g=wxFrameGeo(),sig=[w.col,w.thick,w.round,w.shadow,w.anim,w.text,w.top,w.align,Math.round(fs*100)].join('|');
+      const w=WX.frame,el=E.querySelector('.wx-frame'),g=wxFrameGeo(HW/fe),sig=[w.col,w.thick,w.round,w.shadow,w.anim,w.text,w.top,w.align,Math.round(fe*100),Math.round(HW)].join('|');
       if(el.dataset.v!==sig){el.dataset.v=sig;el.style.setProperty('--c',w.col);el.classList.toggle('dk',wdgLight(w.col));el.classList.toggle('shd',!!w.shadow);el.classList.toggle('anim',!!w.anim);
-        const P=v=>(v*fs).toFixed(2),x=g.x,y=g.y,X=g.x+g.w,Y=g.y+g.h,r=g.r;
+        const P=v=>(v*fe).toFixed(2),x=g.x,y=g.y,X=g.x+g.w,Y=g.y+g.h,r=g.r;
         el.querySelector('.ff').style.clipPath='path(evenodd,"M0 0H'+P(g.W)+'V'+P(100)+'H0Z M'+P(x+r)+' '+P(y)+'H'+P(X-r)+'A'+P(r)+' '+P(r)+' 0 0 1 '+P(X)+' '+P(y+r)+'V'+P(Y-r)+'A'+P(r)+' '+P(r)+' 0 0 1 '+P(X-r)+' '+P(Y)+'H'+P(x+r)+'A'+P(r)+' '+P(r)+' 0 0 1 '+P(x)+' '+P(Y-r)+'V'+P(y+r)+'A'+P(r)+' '+P(r)+' 0 0 1 '+P(x+r)+' '+P(y)+'Z")';
         const sdw=el.querySelector('.fs');sdw.style.left=x+'em';sdw.style.top=y+'em';sdw.style.width=g.w+'em';sdw.style.height=g.h+'em';sdw.style.borderRadius=r+'em';
         const fb=el.querySelector('.fb');fb.textContent=w.text.trim();fb.className='fb '+w.align;fb.style.left=fb.style.right=((g.b+Math.max(1.2,r*.6))/3.8)+'em';fb.style.height=((g.b+g.bh)/3.8)+'em';fb.style.top=w.top?'0':'auto';fb.style.bottom=w.top?'auto':'0'}
-      el.classList.toggle('on',w.on);L.style.setProperty('--fi',(w.on?g.b*fs:0)+'px');L.style.setProperty('--fb',(w.on&&!w.top?g.bh*fs:0)+'px');L.style.setProperty('--ft',(w.on&&w.top?g.bh*fs:0)+'px')}
+      el.classList.toggle('on',w.on);E.style.setProperty('--fi',(w.on?g.b*fe:0)+'px');E.style.setProperty('--fb',(w.on&&!w.top?g.bh*fe:0)+'px');E.style.setProperty('--ft',(w.on&&w.top?g.bh*fe:0)+'px')}
     { // ticker: the text is repeated until one half is wider than the picture, and the two halves follow each other without a seam
-      const w=WX.ticker,el=q('.wx-ticker'),sig=[w.text,w.speed,w.size,w.bg,w.top].join('|'),tx=w.text.replace(/\s+/g,' ').trim();
+      const w=WX.ticker,el=E.querySelector('.wx-ticker'),sig=[w.text,w.speed,w.size,w.bg,w.top].join('|'),tx=w.text.replace(/\s+/g,' ').trim();
       if(main&&wxTk.sig!==sig){wxTk={sig,n:1,d:20};el.dataset.v=''}
       if(el.dataset.v!==sig+'|'+wxTk.n){const rtl=wxRtl(tx);el.style.fontSize=(w.size*100)+'em';el.style.background=w.bg;el.classList.toggle('dk',wdgLight(w.bg));el.classList.toggle('top',!!w.top);el.classList.toggle('rtl',rtl);
         const m=el.querySelector('.tkm'),half='<span>'+wxEsc(tx)+'   •   </span>';m.innerHTML=half.repeat(wxTk.n*2);
-        let seen=!main||!tx;if(main&&tx){const u=m.firstChild.getBoundingClientRect().width;if(u>0&&fs>0){seen=true;const n=Math.max(1,Math.ceil(B.w/u)+1);if(n!==wxTk.n){wxTk.n=n;m.innerHTML=half.repeat(n*2)}wxTk.d=Math.max(2,(u*n/fs)/WX_SPEED[(w.speed||2)-1])}}
+        let seen=!main||!tx;if(main&&tx){const u=m.firstChild.getBoundingClientRect().width;if(u>0&&fe>0){seen=true;const n=Math.max(1,Math.ceil(Math.max(HW,2.4*HH)/u)+1);if(n!==wxTk.n){wxTk.n=n;m.innerHTML=half.repeat(n*2)}wxTk.d=Math.max(2,(u*n/fe)/WX_SPEED[(w.speed||2)-1])}}
         m.style.setProperty('--d',wxTk.d.toFixed(2)+'s');el.dataset.v=seen?sig+'|'+wxTk.n:''}
       el.classList.toggle('on',w.on&&!!tx)}
     { // speaker name
@@ -3052,7 +3055,7 @@ function wxPaint(again){const off=blackOn||exporting;let fit=false;
     { // QR code
       const w=WX.qr,el=q('.wx-qr'),qq=w.img?null:wxQr(),sig=w.url.trim()+'|'+w.cap+'|'+w.img.length+w.img.slice(-24);if(main&&el.dataset.z!==sig+w.size)w._fit=1;el.dataset.z=sig+w.size;if(el.dataset.v!==sig){el.dataset.v=sig;const qs=el.querySelector('.qs');if(w.img){qs.innerHTML='<img alt="">';qs.firstChild.src=w.img}else qs.innerHTML=qq?qq.createSvgTag({cellSize:4,margin:0,scalable:true}):'';el.querySelector('.qc').textContent=w.cap.trim()}
       el.style.fontSize=(w.size*(w._fit||1)*100)+'em';el.style.left=(w.x*100)+'%';el.style.top=(w.y*100)+'%';el.classList.toggle('on',w.on&&!!(qq||w.img))}
-    if(main){const f=WX.frame,g=wxFrameGeo(),tk=WX.ticker,th=tk.on&&tk.text.trim()?1.9*tk.size*100*fs:0,fo=f.on&&!off;host.style.setProperty('--wxS',(fo?g.b*fs:0)+'px');host.style.setProperty('--wxB',(off?0:(fo?(g.b+(f.top?0:g.bh))*fs:0)+(tk.top?0:th))+'px');host.style.setProperty('--wxT',(off?0:(fo?(g.b+(f.top?g.bh:0))*fs:0)+(tk.top?th:0))+'px')}
+    if(main){const f=WX.frame,g=wxFrameGeo(HW/fe),tk=WX.ticker,th=tk.on&&tk.text.trim()?1.9*tk.size*100*fe:0,fo=f.on&&!off;host.style.setProperty('--wxS',(fo?g.b*fe:0)+'px');host.style.setProperty('--wxB',(off?0:(fo?(g.b+(f.top?0:g.bh))*fe:0)+(tk.top?0:th))+'px');host.style.setProperty('--wxT',(off?0:(fo?(g.b+(f.top?g.bh:0))*fe:0)+(tk.top?th:0))+'px')}
     if(main&&!off&&!again)for(const k in WX_DRAG)if(WX[k].on&&wxFit(L,k))fit=true}
   for(const k of WX_KEYS)wxPanelPaint(k);
   if(fit)wxPaint(true)}

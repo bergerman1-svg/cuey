@@ -9,7 +9,7 @@ res = []
 def ok(n, c, extra=''):
     res.append(bool(c)); print(('PASS ' if c else 'FAIL ') + n + (('  -> ' + str(extra)[:340]) if extra and not c else ''))
 # one widget measured against the 16:9 picture of a window (w = main window or the event screen)
-M = """((k,o)=>{try{const W=o?outWin:window,d=W.document,L=d.getElementById('wxLayer');if(!L)return null;const e=L.querySelector('[data-k='+k+']'),r=e.getBoundingClientRect(),b=L.getBoundingClientRect(),cs=W.getComputedStyle(e);
+M = """((k,o)=>{try{const W=o?outWin:window,d=W.document,e=d.querySelector('#wxEdge>[data-k='+k+'],#wxLayer>[data-k='+k+']');if(!e)return null;const L=e.parentElement,r=e.getBoundingClientRect(),b=L.getBoundingClientRect(),cs=W.getComputedStyle(e);
   return {on:cs.visibility==='visible'&&+cs.opacity>.9&&W.getComputedStyle(L).display!=='none',cls:e.className,x:(r.left-b.left)/b.width,y:(r.top-b.top)/b.height,w:r.width/b.width,h:r.height/b.height,cx:(r.left+r.width/2-b.left)/b.width,cy:(r.top+r.height/2-b.top)/b.height,
     inside:r.left>=b.left-1&&r.right<=b.right+1&&r.top>=b.top-1&&r.bottom<=b.bottom+1,bg:cs.backgroundColor,col:cs.color,txt:e.textContent,pe:cs.pointerEvents,box:[b.width/W.innerWidth,b.height/W.innerHeight]}}catch(x){return 'ERR '+x}})"""
 async def m(pg, k, out=False):
@@ -69,14 +69,14 @@ async def main():
             a = await m(pg, 'ticker'); o = await m(pg, 'ticker', True)
             ok(L + 'the ticker is on PROGRAM and on the event screen', a['on'] and o['on'] and TXT in a['txt'] and TXT in o['txt'], [a, o])
             ok(L + 'a bar across the bottom of the picture, the same share of it on both', near(a['x'], 0) and near(a['w'], 1) and near(a['y'] + a['h'], 1) and near(a['h'], o['h'], .006) and near(o['y'] + o['h'], 1) and .08 < a['h'] < .18, [a, o])
-            mv = "(o=>{const W=o?outWin:window,e=W.document.querySelector('#wxLayer .tkm');return [new W.DOMMatrix(W.getComputedStyle(e).transform).m41,e.getBoundingClientRect().width/2,W.document.getElementById('wxLayer').getBoundingClientRect().width,e.children.length]})"
+            mv = "(o=>{const W=o?outWin:window,e=W.document.querySelector('#wxEdge .tkm');return [new W.DOMMatrix(W.getComputedStyle(e).transform).m41,e.getBoundingClientRect().width/2,W.document.getElementById('wxEdge').getBoundingClientRect().width,e.children.length]})"
             t1 = await pg.evaluate(mv + "(false)"); t1o = await pg.evaluate(mv + "(true)"); await pg.wait_for_timeout(700); t2 = await pg.evaluate(mv + "(false)"); t2o = await pg.evaluate(mv + "(true)")
             ok(L + 'the text runs, on both screens', abs(t2[0] - t1[0]) > 3 and abs(t2o[0] - t1o[0]) > 3, [t1, t2, t1o, t2o])
             ok(L + 'and never leaves a gap: one half of the strip is wider than the picture', t1[1] >= t1[2] and t1o[1] >= t1o[2] * .98 and t1[3] % 2 == 0, [t1, t1o])
             ok(L + 'Hebrew runs the Hebrew way (to the right), English to the left', (t2[0] > t1[0]) == he and ('rtl' in a['cls']) == he, [t1, t2, a['cls']])
-            sp = await pg.evaluate("(()=>{const e=document.querySelector('#wxLayer .tkm'),L=$('#wxLayer');return parseFloat(getComputedStyle(e).animationDuration)})()")
+            sp = await pg.evaluate("(()=>{const e=document.querySelector('#wxEdge .tkm'),L=$('#wxEdge');return parseFloat(getComputedStyle(e).animationDuration)})()")
             await pg.evaluate("wgpTop($('#wxp-ticker'))"); await pg.click('#wxp-ticker [data-f=speed] button >> nth=2'); await pg.wait_for_timeout(300)
-            sp2 = await pg.evaluate("parseFloat(getComputedStyle(document.querySelector('#wxLayer .tkm')).animationDuration)")
+            sp2 = await pg.evaluate("parseFloat(getComputedStyle(document.querySelector('#wxEdge .tkm')).animationDuration)")
             ok(L + 'Fast is faster', sp2 < sp * .75, [sp, sp2])
             await pg.evaluate("wgpTop($('#wxp-ticker'))"); await pg.click('#wxp-ticker [data-f=top] button >> nth=1'); await pg.wait_for_timeout(900)
             a = await m(pg, 'ticker'); o = await m(pg, 'ticker', True)
@@ -109,7 +109,7 @@ async def main():
             ok(L + 'and they are back after BLACK', (await m(pg, 'ticker'))['on'] and (await m(pg, 'ticker', True))['on'])
             # ---------- brand frame ----------
             await opn(pg, 'frame'); await col(pg, 'frame', 'col', '#ff00aa'); await rng(pg, 'frame', 'thick', 3); await show(pg, 'frame')
-            fr = "(o=>{const W=o?outWin:window,L=W.document.getElementById('wxLayer'),e=L.querySelector('.wx-frame'),b=L.getBoundingClientRect(),w=e.querySelector('.fs').getBoundingClientRect(),fb=e.querySelector('.fb'),t=fb.getBoundingClientRect();return {bw:(w.top-b.top)/b.height,bl:(w.left-b.left)/b.width,bb:(b.bottom-w.bottom)/b.height,bc:W.getComputedStyle(e.querySelector('.ff')).backgroundColor,band:t.height/b.height,bt:fb.textContent,ty:(t.top+t.height/2-b.top)/b.height,tj:W.getComputedStyle(fb).justifyContent,rad:parseFloat(W.getComputedStyle(e.querySelector('.fs')).borderRadius)/b.height,shd:W.getComputedStyle(e.querySelector('.fs')).boxShadow!=='none',anim:W.getComputedStyle(e.querySelector('.sh')).animationName}})"
+            fr = "(o=>{const W=o?outWin:window,L=W.document.getElementById('wxEdge'),e=L.querySelector('.wx-frame'),b=L.getBoundingClientRect(),w=e.querySelector('.fs').getBoundingClientRect(),fb=e.querySelector('.fb'),t=fb.getBoundingClientRect();return {bw:(w.top-b.top)/b.height,bl:(w.left-b.left)/b.width,bb:(b.bottom-w.bottom)/b.height,bc:W.getComputedStyle(e.querySelector('.ff')).backgroundColor,band:t.height/b.height,bt:fb.textContent,ty:(t.top+t.height/2-b.top)/b.height,tj:W.getComputedStyle(fb).justifyContent,rad:parseFloat(W.getComputedStyle(e.querySelector('.fs')).borderRadius)/b.height,shd:W.getComputedStyle(e.querySelector('.fs')).boxShadow!=='none',anim:W.getComputedStyle(e.querySelector('.sh')).animationName}})"
             f1 = await pg.evaluate(fr + "(false)"); f2 = await pg.evaluate(fr + "(true)"); a = await m(pg, 'frame'); o = await m(pg, 'frame', True)
             ok(L + 'the frame goes round the whole picture in the colour and thickness chosen, on both', a['on'] and o['on'] and near(a['w'], 1) and near(a['h'], 1) and near(f1['bw'], .03, .004) and near(f2['bw'], .03, .004) and near(f1['bl'], .03 * 9 / 16, .004) and near(f1['bb'], .03, .004) and f1['bc'].replace(' ', '') == 'rgb(255,0,170)' and f1['band'] == 0, [f1, f2, a])
             t = await m(pg, 'ticker'); to = await m(pg, 'ticker', True)
@@ -203,9 +203,12 @@ async def main():
                 await pg.evaluate("WX.qr.x=.86;WX.qr.y=.5;wxPaint()")
             else: print('SKIP ' + L + 'own QR picture needs OpenCV')
             # ---------- another screen shape ----------
-            await out.set_viewport_size({'width': 1024, 'height': 768}); await pg.wait_for_timeout(900)
-            a = await m(pg, 'qr'); o = await m(pg, 'qr', True); la = await m(pg, 'lower'); lo = await m(pg, 'lower', True); t = await m(pg, 'ticker', True)
-            ok(L + 'on a 4:3 event screen the widgets keep their place in the picture', near(o['box'][1], .75, .01) and near(a['cx'], o['cx']) and near(a['cy'], o['cy']) and near(la['cx'], lo['cx']) and near(la['h'], lo['h'], .008) and o['inside'] and near(t['w'], 1 - 2 * .03 * 9 / 16, .01), [a, o, t])
+            await pg.evaluate("items[cur].scale='fill';pvStage.fit('fill');outStage.fit('fill')"); await out.set_viewport_size({'width': 1024, 'height': 768}); await pg.wait_for_timeout(900)
+            a = await m(pg, 'qr'); o = await m(pg, 'qr', True); la = await m(pg, 'lower'); lo = await m(pg, 'lower', True); t = await m(pg, 'ticker', True); f43 = await pg.evaluate(fr + "(true)")
+            ok(L + 'on a 4:3 event screen the widgets keep their place in the picture', near(o['box'][1], .75, .01) and near(a['cx'], o['cx']) and near(a['cy'], o['cy']) and near(la['cx'], lo['cx']) and near(la['h'], lo['h'], .008) and o['inside'], [a, o, la, lo])
+            ok(L + 'a cue that fills the screen: the frame and the ticker go to the edges of the real screen, whatever its shape', near(t['w'], 1 - 2 * .03 * 3 / 4, .01) and near(t['box'][0], 1, .005) and near(t['box'][1], 1, .005) and near(f43['bw'], .03, .004) and near(f43['bl'], .03 * 3 / 4, .004) and near(f43['bb'], .09, .006), [t, f43])
+            await pg.evaluate("items[cur].scale='fit';pvStage.fit('fit');outStage.fit('fit')"); await pg.wait_for_timeout(900); t2 = await m(pg, 'ticker', True)
+            ok(L + 'a cue that is fitted: they keep to the 16:9 picture, as on PROGRAM', near(t2['box'][1], .75, .01) and near(t2['box'][0], 1, .005), t2)
             await out.set_viewport_size({'width': 1280, 'height': 720}); await pg.wait_for_timeout(600)
             cov = await pg.evaluate("(()=>{document.querySelectorAll('.wxp:not(.min) .wxMin').forEach(b=>b.click());const hit=(r,e)=>{const b=e.getBoundingClientRect();return !(r.right<=b.left||r.left>=b.right||r.bottom<=b.top||r.top>=b.bottom)},q=[...document.querySelectorAll('.wxp')].filter(p=>!p.hidden).map(p=>p.getBoundingClientRect());return {n:q.length,go:q.some(r=>hit(r,$('#go').parentElement)),cue:q.some(r=>[...$('#list').children].some(e=>hit(r,e))),pv:q.some(r=>hit(r,$('#pvNow'))||hit(r,$('#pvNext'))),over:q.some((r,i)=>q.some((o,j)=>j>i&&!(r.right<=o.left||r.left>=o.right||r.bottom<=o.top||r.top>=o.bottom))),h:Math.max(...q.map(r=>r.height))}})()")
             ok(L + 'five panels made small sit side by side: none on a cue, on GO, on a preview or on another panel', cov['n'] == 5 and not (cov['go'] or cov['cue'] or cov['pv'] or cov['over']) and cov['h'] < 130, cov)
