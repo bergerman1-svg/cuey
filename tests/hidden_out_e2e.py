@@ -35,9 +35,9 @@ async def main():
         # in sight again and awake: PROGRAM lines up with it as before
         await pg.evaluate("delete outWin.document.hidden;outStage.media.play()"); await pg.wait_for_timeout(2600); c = await pg.evaluate(S)
         ok('in view again: PROGRAM lines up with the event screen', abs(c['p'] - c['o']) < .5, c)
-        # a stalled event screen that IS in view is still the truth PROGRAM follows
+        # a stalled picture on an event screen that IS in view is started again and lined up with the sound
         await pg.evaluate("outStage.media.pause()"); k1 = (await pg.evaluate(S))['k']; await pg.wait_for_timeout(2600); d = await pg.evaluate(S)
-        ok('an event screen in view that stops is still followed by PROGRAM', d['k'] > k1 and abs(d['p'] - d['o']) < 1.2, [k1, d])
+        ok('an event screen in view whose picture stops is started again, in step with the sound', d['k'] > k1 and abs(d['p'] - d['o']) < 1.2, [k1, d])
         ok('no page errors', not errs, errs[:3])
         await b.close()
     print(f"{sum(res)}/{len(res)} passed")

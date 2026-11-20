@@ -172,7 +172,7 @@ async def main():
                 await E(pg, f"(()=>{{const x=items.splice({kj},1)[0];items.push(x);render()}})()")
 
                 await E(pg, f'show({vi})'); await pg.wait_for_timeout(1200)
-                ok(L+'single sound: preview muted, output not', await E(pg, "[...document.querySelectorAll('#nowStage video')].every(v=>v.muted)&&outStage.media&&!outStage.media.muted"))
+                ok(L+'single sound: heard in the control window, the event screen silent', await E(pg, "[...document.querySelectorAll('#nowStage video')].every(v=>!v.muted)&&outStage.media&&outStage.media.muted"))
                 await E(pg, 'ensureGraph()'); await add(pg, ['tone.wav']); ai = await E(pg, "items.findIndex(i=>i.type==='audio')")
                 await E(pg, f'show({ai})'); await pg.wait_for_timeout(800)
                 ok(L+'audio cue audible with Output open', await E(pg, "!slideAudio.paused&&slideLocal&&slideLocal.gain.value===1"))
