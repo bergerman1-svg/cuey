@@ -113,12 +113,12 @@ async def main():
             ok(L + 'the ticker moves inside the frame', near(t['y'] + t['h'], .97, .008) and near(t['x'], .03 * 9 / 16, .006) and near(to['y'] + to['h'], .97, .008), [t, to])
             BT = 'כנס המוצר 2026' if he else 'Product Summit 2026'
             await setf(pg, 'frame', 'text', BT, 'Enter'); await pg.wait_for_timeout(700); f1 = await pg.evaluate(fr + "(false)"); f2 = await pg.evaluate(fr + "(true)"); t = await m(pg, 'ticker')
-            ok(L + 'a text gives the frame a band at the bottom, and the ticker sits above it', f1['bt'] == BT and f2['bt'] == BT and f1['band'] > .03 and near(f1['band'], f2['band'], .006) and near(f1['bb'], .09, .006) and near(t['y'] + t['h'], .91, .01) and f1['ty'] > .9, [f1, f2, t])
+            ok(L + 'a text gives the frame a band at the bottom, and the ticker sits above it', f1['bt'] == BT and f2['bt'] == BT and f1['band'] > .03 and near(f1['band'], f2['band'], .006) and near(f1['bb'], .09, .006) and near(t['y'] + t['h'], .91, .01) and near(f1['ty'], .955, .006) and near(f2['ty'], .955, .006), [f1, f2, t])
             ok(L + 'the frame has round corners, a soft shadow and a gentle moving light by default, on both', f1['rad'] > .015 and near(f1['rad'], f2['rad'], .004) and f1['shd'] and f2['shd'] and f1['anim'] == 'wxSheen' and f2['anim'] == 'wxSheen', [f1, f2])
             await rng(pg, 'frame', 'round', 0); await pg.click('#wxp-frame [data-f=shadow] button >> nth=1'); await pg.click('#wxp-frame [data-f=anim] button >> nth=1'); await pg.wait_for_timeout(300); f3 = await pg.evaluate(fr + "(true)")
             ok(L + 'each of the three can be turned off', f3['rad'] == 0 and not f3['shd'] and f3['anim'] == 'none', f3)
             await pg.click('#wxp-frame [data-f=top] button >> nth=1'); await pg.click('#wxp-frame [data-f=align] button >> nth=2'); await pg.wait_for_timeout(900); f4 = await pg.evaluate(fr + "(true)"); t4 = await m(pg, 'ticker', True)
-            ok(L + 'the text can go to the top and to a side; the picture window and the ticker follow', f4['ty'] < .1 and f4['tj'] == 'flex-end' and near(f4['bw'], .09, .006) and near(f4['bb'], .03, .006) and near(t4['y'] + t4['h'], .97, .01), [f4, t4])
+            ok(L + 'the text can go to the top and to a side; the picture window and the ticker follow', near(f4['ty'], .045, .006) and f4['tj'] == 'flex-end' and near(f4['bw'], .09, .006) and near(f4['bb'], .03, .006) and near(t4['y'] + t4['h'], .97, .01), [f4, t4])
             lab = await pg.evaluate("(()=>{const n=$('#nowNm').getBoundingClientRect(),l=document.querySelector('#pvNow .lbl').getBoundingClientRect(),w=document.querySelector('#pvNow .wx-frame .fs').getBoundingClientRect(),tk=document.querySelector('#pvNow .wx-ticker').getBoundingClientRect();return {nm:n.height>0&&n.bottom<=tk.top+1&&n.left>=w.left-1&&n.right<=w.right+1,lbl:l.top>=w.top-1&&l.left>=w.left-1}})()")
             ok(L + 'the operator\'s own labels on PROGRAM sit inside the frame and above the ticker, never on top of them', lab['nm'] and lab['lbl'], lab)
             await pg.click('#wxp-frame [data-f=top] button >> nth=0'); await pg.click('#wxp-frame [data-f=align] button >> nth=1'); await pg.wait_for_timeout(700); f1 = await pg.evaluate(fr + "(false)")
@@ -128,6 +128,10 @@ async def main():
             a = await m(pg, 'lower'); o = await m(pg, 'lower', True)
             ok(L + 'the speaker name is on both screens, name and title', a['on'] and o['on'] and NM in a['txt'] and RL in o['txt'], [a, o])
             ok(L + 'at the same place and size of the picture on both, whole inside it', near(a['cx'], o['cx']) and near(a['cy'], o['cy']) and near(a['h'], o['h'], .008) and a['inside'] and o['inside'], [a, o])
+            lf = "(o=>{const W=o?outWin:window,e=W.document.querySelector('#wxLayer .wx-lower'),cs=W.getComputedStyle(e.querySelector('.ln'));return {ff:cs.fontFamily,fw:cs.fontWeight,bg:W.getComputedStyle(e.querySelector('.lt')).backgroundColor.replace(/ /g,''),c:cs.color.replace(/ /g,'')}})"
+            l1 = await pg.evaluate(lf + "(true)"); await pg.click('#wxp-lower [data-f=font] button >> nth=2'); await col(pg, 'lower', 'bg', '#ffffff'); l2 = await pg.evaluate(lf + "(true)"); l2p = await pg.evaluate(lf + "(false)")
+            ok(L + 'the name has its own letters (three to choose from) and its background colour can be changed; light gets dark letters — on both screens', 'Rubik' in l1['ff'] and l1['bg'].startswith('rgba(10,10,12') and 'Frank' in l2['ff'] and l2['bg'].startswith('rgba(255,255,255') and l2['c'] == 'rgb(10,10,12)' and l2p == l2, [l1, l2, l2p])
+            await pg.click('#wxp-lower [data-f=font] button >> nth=0'); await col(pg, 'lower', 'bg', '#0a0a0c')
             ok(L + 'the colour bar is on the side the language starts from', ('rtl' in a['cls']) == he, a['cls'])
             ok(L + 'on the event screen nothing can be grabbed', o['pe'] == 'none' and a['pe'] == 'auto', [a['pe'], o['pe']])
             bx = await pg.evaluate("(()=>{const r=document.querySelector('#pvNow .wx-lower').getBoundingClientRect();return [r.left+r.width/2,r.top+r.height/2]})()")
@@ -179,6 +183,22 @@ async def main():
             ok(L + 'a link too long to be read takes the code off the screen and the panel says why, at once', not (await m(pg, 'qr'))['on'] and not errs and await pg.evaluate("$('#wxp-qr .wpst').classList.contains('need')&&$('#wxp-qr .wpst').textContent.includes('400')"), errs[:2])
             await setf(pg, 'qr', 'url', URL, 'Enter'); await pg.wait_for_timeout(700)
             ok(L + 'and a good link brings it back', (await m(pg, 'qr'))['on'])
+            # a picture of a code the operator already has
+            qp = os.path.join(os.environ.get('TMPDIR', '/tmp'), 'cuey_qr_own.png')
+            try:
+                import cv2, numpy as np; code = cv2.QRCodeEncoder_create().encode('https://example.org/my-own-code'); cv2.imwrite(qp, cv2.resize(code, (420, 420), interpolation=cv2.INTER_NEAREST)); own = True
+            except Exception as e: own = False
+            if own:
+                await pg.evaluate("wgpTop($('#wxp-qr'))"); await pg.set_input_files('#wxp-qr .wxFile', qp); await pg.wait_for_timeout(900); await out.screenshot(path=shot)
+                dec2 = cv2.QRCodeDetector().detectAndDecode(cv2.imread(shot))[0]; o = await m(pg, 'qr', True)
+                ok(L + 'a picture of a code I already have goes on the screen instead, and a phone reads that code', dec2 == 'https://example.org/my-own-code' and o['on'] and o['inside'] and await pg.evaluate("!$('#wxp-qr .wxClr').hidden"), [dec2, o])
+                qpx = await pg.evaluate("(()=>{WX.qr.x=.5;WX.qr.y=.5;const c=document.createElement('canvas');c.width=1280;c.height=720;const g=c.getContext('2d');drawFrame(g,1280,720);const d=g.getImageData(560,280,160,160).data;let k=0;for(let i=0;i<d.length;i+=4)if(d[i]<60)k++;return k})()")
+                ok(L + 'it is in the shared-screen picture too', qpx > 2000, qpx)
+                ok(L + 'the picture is saved with the show', (await pg.evaluate("showData().widgets.qr.img")).startswith('data:image/png'))
+                await pg.click('#wxp-qr .wxClr'); await pg.wait_for_timeout(900); await out.screenshot(path=shot); dec3 = cv2.QRCodeDetector().detectAndDecode(cv2.imread(shot))[0]
+                ok(L + 'removing the picture brings back the code made from the link', dec3 == URL and await pg.evaluate("$('#wxp-qr .wxClr').hidden&&!WX.qr.img"), dec3)
+                await pg.evaluate("WX.qr.x=.86;WX.qr.y=.5;wxPaint()")
+            else: print('SKIP ' + L + 'own QR picture needs OpenCV')
             # ---------- another screen shape ----------
             await out.set_viewport_size({'width': 1024, 'height': 768}); await pg.wait_for_timeout(900)
             a = await m(pg, 'qr'); o = await m(pg, 'qr', True); la = await m(pg, 'lower'); lo = await m(pg, 'lower', True); t = await m(pg, 'ticker', True)

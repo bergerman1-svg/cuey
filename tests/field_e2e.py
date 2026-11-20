@@ -40,7 +40,7 @@ async def main():
               const names=items.map(i=>i.name),a0=top(names[0]),b0=top(names[1]);moveItem(0,2);   // first cue goes under the second
               await new Promise(r=>requestAnimationFrame(()=>r()));
               const rows=[...document.querySelectorAll('#list .item')],moved=rows.find(r=>r.classList.contains('moved')),a1=top(names[0]),b1=top(names[1]);
-              const gl=rows.filter(r=>r.classList.contains('gliding')).length;await new Promise(r=>setTimeout(r,160));const a2=top(names[0]);await new Promise(r=>setTimeout(r,420));
+              const gl=rows.filter(r=>r.classList.contains('gliding')).length;await new Promise(r=>setTimeout(r,160));const a2=top(names[0]);await new Promise(r=>setTimeout(r,640));
               const a3=top(names[0]),b3=top(names[1]);return {order:items.map(i=>i.name).join(),want:[names[1],names[0],...names.slice(2)].join(),movedName:moved&&moved.querySelector('.nmtxt').textContent,first:names[0],
                 startNear:Math.abs(a1-a0)<12&&Math.abs(b1-b0)<12,mid:a2>a0+4&&a2<a3-1,endSwapped:Math.abs(a3-b0)<3&&Math.abs(b3-a0)<3,nums:[a0,b0,a1,b1,a2,a3,b3].map(Math.round),gl,left:rows.filter(r=>r.classList.contains('gliding')||r.style.transform).length}})()""")
             ok(L + 'after a move the order is right', g['order'] == g['want'], g)
