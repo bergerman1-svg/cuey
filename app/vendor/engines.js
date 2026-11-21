@@ -378,9 +378,12 @@ async function compose(canvas,F,A){
     if(pnl){const pr=E.io3(K.k(t,T0-.3,T0+1.1));pnl.material.uniforms.prog.value=pr;pnl.material.uniforms.zoom.value=1.12-.06*E.io3(K.k(t,0,I))+.02*Math.sin(ph)*amp;pnl.position.y=.08*Math.sin(ph)*amp}
     if(prop){const cyc=(((t-I)/A.loop)%1+1)%1,on=E.o3(K.k(t,.8,2.4));
       if(PR==='airplane'){const dir=prop.rotation.y?-1:1,x=dir*(-17+34*cyc),tp=blk.y+blk.h/2,bt=blk.y-blk.h/2,up=vh/2-tp,dn=bt+vh/2,ys=up>dn?tp+up*.5:bt-dn*.5;prop.position.set(x,ys*(camZ+9)/camZ+.4*Math.sin(cyc*Math.PI),-9);prop.rotation.z=.04*Math.sin(ph);prop.rotation.x=.12;prop.visible=on>.01}
-      else if(PR==='trophy'){/* stays inside the frame: beside the words on the roomier side, else under them, else hidden */const rL=(blk.x-blk.w/2)+vw/2,rR=vw/2-(blk.x+blk.w/2),side=rR>=rL?1:-1,room=Math.max(rL,rR),ty=(title?title.position.y:0)-1.4;let sc=1.25,x,y=ty;
-        if(room>=3.2){x=blk.x+side*(blk.w/2+Math.min(2.4,room/2));sc=Math.min(1.25,room/3.6)}else{const below=(blk.y-blk.h/2)+vh/2,above=vh/2-(blk.y+blk.h/2);if(below>=3){x=blk.x;y=blk.y-blk.h/2-1.5;sc=Math.min(1,below/4)}else if(above>=3){x=blk.x;y=blk.y+blk.h/2+1.4;sc=Math.min(1,above/4)}else{x=0;sc=0}}
-        x=K.cl(x,-vw/2+1.6,vw/2-1.6);prop.position.set(x,y,-1);prop.rotation.y=ph;prop.visible=sc>0;prop.scale.setScalar(Math.max(.001,sc*on))}
+      else if(PR==='trophy'){/* stays inside the frame (cup ≈1.8 tall, 1.3 wide at scale 1): beside the words on the roomier side, else under or above them, else hidden */
+        const rL=(blk.x-blk.w/2)+vw/2,rR=vw/2-(blk.x+blk.w/2),side=rR>=rL?1:-1,room=Math.max(rL,rR),below=(blk.y-blk.h/2)+vh/2,above=vh/2-(blk.y+blk.h/2);let sc=0,x=0,y=0;
+        if(room>=2){sc=Math.min(1.25,(room-.4)/1.4);x=blk.x+side*(blk.w/2+room/2);y=(title?title.position.y:0)-.9*sc}
+        else if(below>=1.6){sc=Math.min(1,(below-.4)/1.9);x=blk.x;y=blk.y-blk.h/2-.25-1.8*sc}
+        else if(above>=1.6){sc=Math.min(1,(above-.4)/1.9);x=blk.x;y=blk.y+blk.h/2+.25}
+        x=K.cl(x,-vw/2+.8*sc,vw/2-.8*sc);prop.position.set(x,y,-1);prop.rotation.y=ph;prop.visible=sc>0;prop.scale.setScalar(Math.max(.001,sc*on))}
       else{prop.children.forEach(b=>{const u=b.userData,y=((cyc*u.sp+u.ph/6)%1)*22-13;b.position.set(u.x+Math.sin(ph+u.ph)*.5,y,-5-u.sp);b.rotation.z=.12*Math.sin(ph*2+u.ph)});prop.visible=on>.01}}
     if(vtx){const pos=vtx.geometry.attributes.position.array,al=vtx.geometry.attributes.al.array,on=E.o3(K.k(t,.3,2.5)),cy=title?title.position.y:blk.y;for(let i=0;i<vN;i++){const q=vq[i],a=q[1]+ph+q[0]*.55;pos[i*3]=blk.x+Math.cos(a)*q[0]*1.35;pos[i*3+1]=cy+Math.sin(a)*q[0]*.8;pos[i*3+2]=-7+q[2];al[i]=on*(.25+.6*Math.max(0,Math.sin(ph*q[3]+q[4])))*Math.min(1,q[0]/3)}vtx.geometry.attributes.position.needsUpdate=true;vtx.geometry.attributes.al.needsUpdate=true}
     let fl=0;if(conf){conf.burst(t-POP,[blk.x,title?title.position.y:0,-1],1);conf.visible=t<I;const o=new THREE.Object3D(),cyc=(t-I)/A.loop;
