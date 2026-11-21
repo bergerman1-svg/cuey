@@ -228,7 +228,10 @@ async function compose(canvas,F,A){
   const tf=(s,o)=>K.typeFX(s,{font:o.font||FT[0],weight:o.weight||FT[1],...o});
   const FILL={gold:['#fff1c4','#c08a2b'],silver:['#ffffff','#98a2ae'],accent:[hex(F.accent,'#ffffff'),hex(F.accent,'#ffffff')]}[lk.fill]||null;
   const BGK={aurora:0,silk:1,nebula:2,liquid:3,brand:4}[lk.bg];let bgM=null;const BRC=new THREE.Color(hex(F.accent2,'#ff5a1f')),INK=BGK===4&&(.2126*BRC.r+.7152*BRC.g+.0722*BRC.b)>.28;
-  if(BGK!=null){const c0=BGK===4?BRC.clone():new THREE.Color('#03050c').lerp(new THREE.Color(ac2),.1);bgM=new THREE.Mesh(new THREE.PlaneGeometry(2,2),new THREE.ShaderMaterial({uniforms:{ph:{value:0},fade:{value:0},spd:{value:SPD},sat:{value:BGK===4?1:SAT},mode:{value:BGK},asp:{value:16/9},c0:{value:c0},c1:{value:new THREE.Color(ac)},c2:{value:new THREE.Color(ac2)}},depthTest:false,depthWrite:false,toneMapped:false,
+  const bgC=(()=>{const a=new THREE.Color(ac),b=new THREE.Color(ac2);if(BGK==null||BGK===4)return [a,b];const ha={},hb={};a.getHSL(ha);b.getHSL(hb);
+    const warm=h=>h.s>.25&&h.h>.03&&h.h<.2,cool=h=>h.s>.15&&h.h>.5&&h.h<.92,tw=(h)=>new THREE.Color().setHSL((h.h+.05)%1,Math.min(1,h.s),Math.min(.72,h.l+.16));
+    if(warm(ha)&&cool(hb))return [tw(hb),b];if(warm(hb)&&cool(ha))return [a,tw(ha)];return [a,b]})();
+  if(BGK!=null){const c0=BGK===4?BRC.clone():new THREE.Color('#03050c').lerp(bgC[1],.1);bgM=new THREE.Mesh(new THREE.PlaneGeometry(2,2),new THREE.ShaderMaterial({uniforms:{ph:{value:0},fade:{value:0},spd:{value:SPD},sat:{value:BGK===4?1:SAT},mode:{value:BGK},asp:{value:16/9},c0:{value:c0},c1:{value:bgC[0]},c2:{value:bgC[1]}},depthTest:false,depthWrite:false,toneMapped:false,
     vertexShader:'varying vec2 v;void main(){v=uv;gl_Position=vec4(position.xy,.999,1.);}',fragmentShader:BGFS}));bgM.frustumCulled=false;bgM.renderOrder=-999;S.add(bgM)}
   const OV=bgM?K.cl(+lk.overlay||0,0,.6):0;if(OV){fg.renderOrder=-998;fg.material.transparent=true;fg.material.blending=THREE.AdditiveBlending;fg.material.depthTest=false}
   const titleC=INK?'#0d0d10':FILL?FILL[0]:calm?'#f4efe4':'#ffffff',TAG=!!lk.tag&&!!F.kicker;
@@ -325,11 +328,12 @@ async function compose(canvas,F,A){
   /* timeline (calm slides breathe slower) */
   const sp=calm?1.35:1,T0=.9*sp,kickT=T0,titleT=T0+(kick?.45*sp:0),nT=(title&&title.n)||1,stS=Math.min(.06,1.2/nT),tEnd=SCR?titleT+.35+stS*(nT-1)+.45:CNT?titleT+2.2:titleT+RC.dur+RC.st*Math.max(0,nT-1),ruleT=tEnd-.2,subT=tEnd+.05,logoT=T0-.1;
   const POP=titleT+.25;let dark=K.cl(+lk.dark||.45,0,.9);const zoom0=1.04+.1*e;
+  const eL=Math.max(e,.45);/* loop motion floor: users called near-still loops "stuck" */
   const inner=t=>{const ph=TAU*(t-I)/A.loop,amp=K.k(t,I-2.2,I-.2),f=fg.u;if(!laid){const Tdec=T0-.15,L0=A.bg&&!bgM?readFrame(A.bg):null;if(L0){if(!acc)acc=L0.map(()=>0);L0.forEach((v,i)=>acc[i]+=v);accN++}
       if(t>=Tdec||lk.layout!=='auto'){panT=t;lay(accN?subject(acc.map(v=>v/accN)):null)}}fg.feed(A);if(bgM){const u=bgM.material.uniforms;u.ph.value=ph;u.fade.value=K.ez.calmIn(K.k(t,0,1.8*sp));}
     /* up from black, push in (settles before the hold) */
-    f.dark.value=OV?1-OV*K.ez.calmIn(K.k(t,0,1.8*sp)):dark+(1-dark)*(1-K.ez.calmIn(K.k(t,0,1.8*sp)));const rf=pan?E.io3(K.k(t,panT,panT+1.6)):0,zr=1+(zoomR-1)*rf;f.zoom.value=(zoom0-(zoom0-1.02)*E.io3(K.k(t,0,I-.3))+.006*e*Math.sin(ph)*amp)*zr;f.pan.value.set(pan*rf,0);
-    if(lk.camera!=='still'){C.position.set(.22*e*Math.sin(ph)*amp,.1*e*Math.cos(ph)*amp-.1*e*amp,camZ+(lk.camera==='push'?.9*(1-E.io3(K.k(t,0,I-.3))):0));C.lookAt(blk.x*.04,0,0)}
+    f.dark.value=OV?1-OV*K.ez.calmIn(K.k(t,0,1.8*sp)):dark+(1-dark)*(1-K.ez.calmIn(K.k(t,0,1.8*sp)));const rf=pan?E.io3(K.k(t,panT,panT+1.6)):0,zr=1+(zoomR-1)*rf;f.zoom.value=(zoom0-(zoom0-1.02)*E.io3(K.k(t,0,I-.3))+.012*eL*Math.sin(ph)*amp)*zr;f.pan.value.set(pan*rf,0);
+    if(lk.camera!=='still'){C.position.set(.22*eL*Math.sin(ph)*amp,.1*eL*Math.cos(ph)*amp-.1*eL*amp,camZ+(lk.camera==='push'?.9*(1-E.io3(K.k(t,0,I-.3))):0));C.lookAt(blk.x*.04,0,0)}
     if(logo){logo.u.rev.value=E.io3(K.k(t,logoT,logoT+1.4*sp));logo.u.glow.value=0;if(logo.plate)logo.plate.material.opacity=.94*E.o3(K.k(t,logoT,logoT+.9*sp))}
     if(kick)kick.at(t,kickT,'soft'===lk.reveal||calm?rec('veil'):rec('maskLines'));
     if(title&&SCR){title.parts.forEach((m,j)=>{const i=m.userData.i,lock=titleT+.35+i*stS,U=m.material.uniforms,g=ghosts[j];U.mode.value=1;const on=t>=titleT&&t<lock;U.p.value=t>=lock?1:0;
@@ -374,7 +378,9 @@ async function compose(canvas,F,A){
     if(pnl){const pr=E.io3(K.k(t,T0-.3,T0+1.1));pnl.material.uniforms.prog.value=pr;pnl.material.uniforms.zoom.value=1.12-.06*E.io3(K.k(t,0,I))+.02*Math.sin(ph)*amp;pnl.position.y=.08*Math.sin(ph)*amp}
     if(prop){const cyc=(((t-I)/A.loop)%1+1)%1,on=E.o3(K.k(t,.8,2.4));
       if(PR==='airplane'){const dir=prop.rotation.y?-1:1,x=dir*(-17+34*cyc),tp=blk.y+blk.h/2,bt=blk.y-blk.h/2,up=vh/2-tp,dn=bt+vh/2,ys=up>dn?tp+up*.5:bt-dn*.5;prop.position.set(x,ys*(camZ+9)/camZ+.4*Math.sin(cyc*Math.PI),-9);prop.rotation.z=.04*Math.sin(ph);prop.rotation.x=.12;prop.visible=on>.01}
-      else if(PR==='trophy'){const side=blk.x>0?-1:1;prop.position.set(blk.x+side*(blk.w/2+2.4),(title?title.position.y:0)-1.4,-1);prop.rotation.y=ph;prop.scale.setScalar(1.25*on)}
+      else if(PR==='trophy'){/* stays inside the frame: beside the words on the roomier side, else under them, else hidden */const rL=(blk.x-blk.w/2)+vw/2,rR=vw/2-(blk.x+blk.w/2),side=rR>=rL?1:-1,room=Math.max(rL,rR),ty=(title?title.position.y:0)-1.4;let sc=1.25,x,y=ty;
+        if(room>=3.2){x=blk.x+side*(blk.w/2+Math.min(2.4,room/2));sc=Math.min(1.25,room/3.6)}else{const below=(blk.y-blk.h/2)+vh/2;if(below>=3){x=blk.x;y=blk.y-blk.h/2-1.5;sc=Math.min(1,below/4)}else{x=0;sc=0}}
+        x=K.cl(x,-vw/2+1.6,vw/2-1.6);prop.position.set(x,y,-1);prop.rotation.y=ph;prop.visible=sc>0;prop.scale.setScalar(Math.max(.001,sc*on))}
       else{prop.children.forEach(b=>{const u=b.userData,y=((cyc*u.sp+u.ph/6)%1)*22-13;b.position.set(u.x+Math.sin(ph+u.ph)*.5,y,-5-u.sp);b.rotation.z=.12*Math.sin(ph*2+u.ph)});prop.visible=on>.01}}
     if(vtx){const pos=vtx.geometry.attributes.position.array,al=vtx.geometry.attributes.al.array,on=E.o3(K.k(t,.3,2.5)),cy=title?title.position.y:blk.y;for(let i=0;i<vN;i++){const q=vq[i],a=q[1]+ph+q[0]*.55;pos[i*3]=blk.x+Math.cos(a)*q[0]*1.35;pos[i*3+1]=cy+Math.sin(a)*q[0]*.8;pos[i*3+2]=-7+q[2];al[i]=on*(.25+.6*Math.max(0,Math.sin(ph*q[3]+q[4])))*Math.min(1,q[0]/3)}vtx.geometry.attributes.position.needsUpdate=true;vtx.geometry.attributes.al.needsUpdate=true}
     let fl=0;if(conf){conf.burst(t-POP,[blk.x,title?title.position.y:0,-1],1);conf.visible=t<I;const o=new THREE.Object3D(),cyc=(t-I)/A.loop;
