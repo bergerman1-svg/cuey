@@ -54,6 +54,14 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm }
       - run: npm ci
+      # electron-builder 25.1.8 unlocks its temporary keychain with the certificate's password instead of the keychain's own
+      # (fixed upstream in 26): the Mac build stops at "SecKeychainUnlock: passphrase not correct". One-line patch, checked.
+      - name: Patch electron-builder keychain password
+        shell: bash
+        run: |
+          f=node_modules/app-builder-lib/out/codeSign/macCodeSign.js
+          sed -i.bak 's/const keychainPassword = /const keychainPassword = global.__cueyKp = /; s/"-s", "-k", password, keychainFile/"-s", "-k", global.__cueyKp, keychainFile/' "$f"
+          grep -q 'global.__cueyKp = ' "$f" && grep -q '"-k", global.__cueyKp, keychainFile' "$f"
       # Signing: unsigned (as today) until the certificate secrets exist. Then nothing else changes here.
       #   Mac   → MAC_CERT_P12 (Developer ID Application, base64 .p12) + MAC_CERT_PASSWORD + APPLE_ID + APPLE_APP_SPECIFIC_PASSWORD + APPLE_TEAM_ID
       #           = signed + notarized: no "unidentified developer" warning.
