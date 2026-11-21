@@ -291,7 +291,7 @@ async function compose(canvas,F,A){
   const fxs=String(lk.fx||'').split(/[,+ ]+/).filter(f=>f&&f!=='none');if(BGK===4&&!fxs.length)fxs.push('bokeh');const fields=fxs.map((f,i)=>field(S,f,{n:Math.round(260+400*e),ac,ac2,e,seed:7+i})).filter(Boolean);
   let prop=null;const PR=lk.prop;if(PR&&PR!=='none'){S.add(new THREE.AmbientLight('#ffffff',1.1));const dl2=new THREE.DirectionalLight('#ffffff',2);dl2.position.set(4,6,8);S.add(dl2);
     if(PR==='airplane'){prop=K.airplane({body:'#f3f5fa',accent:hex(F.accent2,'#1f4aa8')});prop.scale.setScalar(.4);if(K.he(F.title||''))prop.rotation.y=Math.PI;S.add(prop)}
-    else if(PR==='trophy'){prop=K.trophy({color:hex(F.accent,'#ffcf5a'),s:1.25});S.add(prop)}
+    else if(PR==='trophy'){const tc=new THREE.Color(hex(F.accent,'#ffcf5a')),th={};tc.getHSL(th);prop=K.trophy({color:th.s<.2?'#ffcf5a':'#'+tc.getHexString(),s:1.25});/* no environment map here: full metal renders black */prop.traverse(o=>{if(o.isMesh&&o.material.metalness>.5){o.material.metalness=.45;o.material.roughness=.32}});S.add(prop)}
     else if(PR==='balloons'){prop=new THREE.Group();const cs=[ac,ac2,'#ff5c8a','#ffd166','#4cc9f0'];for(let i=0;i<7;i++){const b=K.balloon({color:cs[i%cs.length],r:.85});b.userData={x:(i/6-.5)*22+(i%2?1:-1)*.8,ph:i*.9,sp:1+(i%3)};prop.add(b)}S.add(prop)}}
   let vtx=null,vq=null,vN=0;if(fxs.includes('vortex')){vN=2200;vtx=K.points(vN,{size:2,color:ac});const R=K.rng(55);vq=[];for(let i=0;i<vN;i++){vq.push([1.5+Math.pow(R(),.7)*13,Math.floor(R()*3)*TAU/3+(R()-.5)*.5,(R()-.5)*2,1+Math.floor(R()*3),R()*TAU]);vtx.geometry.attributes.sz.array[i]=.4+R()*1.2}S.add(vtx)}
   const cols=[ac,ac2,'#ffffff','#ff5c8a','#ffd166'];let conf=null,rain=null,rp=null,fw=null;
@@ -381,7 +381,7 @@ async function compose(canvas,F,A){
       else if(PR==='trophy'){/* stays inside the frame (cup ≈1.8 tall, 1.3 wide at scale 1): beside the words on the roomier side, else under or above them, else hidden */
         const rL=(blk.x-blk.w/2)+vw/2,rR=vw/2-(blk.x+blk.w/2),side=rR>=rL?1:-1,room=Math.max(rL,rR),below=(blk.y-blk.h/2)+vh/2,above=vh/2-(blk.y+blk.h/2);let sc=0,x=0,y=0;
         if(room>=2){sc=Math.min(1.25,(room-.4)/1.4);x=blk.x+side*(blk.w/2+room/2);y=(title?title.position.y:0)-.9*sc}
-        else if(below>=1.6){sc=Math.min(1,(below-.4)/1.9);x=blk.x;y=blk.y-blk.h/2-.25-1.8*sc}
+        else if(below>=1.6){sc=Math.min(1,(below-.4)/1.9);x=blk.x;y=blk.y-blk.h/2-.45-1.8*sc}
         else if(above>=1.6){sc=Math.min(1,(above-.4)/1.9);x=blk.x;y=blk.y+blk.h/2+.25}
         x=K.cl(x,-vw/2+.8*sc,vw/2-.8*sc);prop.position.set(x,y,-1);prop.rotation.y=ph;prop.visible=sc>0;prop.scale.setScalar(Math.max(.001,sc*on))}
       else{prop.children.forEach(b=>{const u=b.userData,y=((cyc*u.sp+u.ph/6)%1)*22-13;b.position.set(u.x+Math.sin(ph+u.ph)*.5,y,-5-u.sp);b.rotation.z=.12*Math.sin(ph*2+u.ph)});prop.visible=on>.01}}
