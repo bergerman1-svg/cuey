@@ -463,6 +463,8 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 
 /* GO bar */
 .bar{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:stretch;height:104px;flex:none}
+/* the smallest desktop window (1100 wide): the row used to run off the right edge and MASTER could not be reached (seen on Avi's Mac, 24.11) — the side buttons take what they need and GO takes the rest */
+@media(max-width:1280px){.bar{grid-template-columns:auto minmax(0,1fr) auto;gap:8px}.bar .gobtn{min-width:0;font-size:34px}.bar .side{gap:8px}.bar .side button{white-space:nowrap;padding:0 12px;font-size:14px}.bar .side .mvol{width:50px}}
 .gobtn{font-family:var(--disp);font-weight:800;font-size:42px;letter-spacing:.5px;background:linear-gradient(180deg,#D6FF2E,#B8F000);color:#0A0A0C;border:none;border-radius:16px;min-width:280px;box-shadow:0 0 0 1px #9CC700 inset,0 10px 40px -10px var(--go-glow),0 1px 0 #fff4 inset;transition:transform .06s,filter .12s}
 .gobtn:hover{filter:brightness(1.05)}
 .gobtn:active{transform:scale(.985);filter:brightness(.95)}
