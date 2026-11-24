@@ -236,7 +236,7 @@ async function compose(canvas,F,A){
   const OV=bgM?K.cl(+lk.overlay||0,0,.6):0;if(OV){fg.renderOrder=-998;fg.material.transparent=true;fg.material.blending=THREE.AdditiveBlending;fg.material.depthTest=false}
   const titleC=INK?'#0d0d10':FILL?FILL[0]:calm?'#f4efe4':'#ffffff',TAG=!!lk.tag&&!!F.kicker;
   const acL=(()=>{const c=new THREE.Color(ac);return .2126*c.r+.7152*c.g+.0722*c.b})(),kc=acL<.35?'#'+new THREE.Color(ac).lerp(new THREE.Color('#ffffff'),.5).getHexString():ac;
-  const kick=F.kicker?tf(F.kicker,{px:120,h:.84,font:kf[0],weight:Math.min(700,kf[1]),color:INK&&!TAG?'#0d0d10':TAG?'#0b0b10':kc,shadow:TAG||INK?null:'rgba(0,0,0,.6)',ls:K.he(F.kicker)?0:120*.22,emissive:.95,unit:'line'}):null;
+  const kick=F.kicker?tf(F.kicker,{px:120,h:.84,font:kf[0],weight:Math.min(700,kf[1]),color:INK&&!TAG?'#0d0d10':TAG?(acL<.3?'#ffffff':'#0b0b10'):kc,shadow:TAG||INK?null:'rgba(0,0,0,.6)',ls:K.he(F.kicker)?0:120*.22,emissive:.95,unit:'line'}):null;
   const title=F.title?tf(F.title,{px:260,h:(lk.reveal==='count'?3.9:2.45+.9*e),color:titleC,color2:INK?titleC:FILL?FILL[1]:calm?'#e6dfd0':titleC,glow:null,shadow:INK?null:shadow,ls:K.he(F.title)?0:-260*.015,emissive:calm?.9:.86,unit:unitOf(RC0)}):null;
   const RC=WAVE&&RC0.unit!=='char'?{...RC0,unit:'char',st:Math.min(.05,(RC0.st*Math.max(1,String(F.title||'').split(/\s+/).length))/Math.max(1,(title&&title.n)||1)+.012)}:RC0;
   /* scramble / counter: ghost glyphs from a pool rendered in the same face and size, swapped per frame */
@@ -252,7 +252,7 @@ async function compose(canvas,F,A){
   if(logo&&!INK){let dk=false;try{const w=64,h=Math.max(4,Math.round(64*A.logo.height/A.logo.width)),c=new OffscreenCanvas(w,h),x=c.getContext('2d');x.drawImage(A.logo,0,0,w,h);const d=x.getImageData(0,0,w,h).data;let sm=0,nn=0;for(let i=0;i<d.length;i+=4){if(d[i+3]<128)continue;sm+=(.2126*d[i]+.7152*d[i+1]+.0722*d[i+2])/255;nn++}dk=nn>w*h*.04&&nn<w*h*.97&&sm/nn<.3}catch(e){}
     if(dk){const cv=new OffscreenCanvas(256,128),x=cv.getContext('2d');x.fillStyle='#ffffff';x.beginPath();x.roundRect(4,4,248,120,28);x.fill();const pm=new THREE.Mesh(new THREE.PlaneGeometry(logo.width+logo.height*.7,logo.height*1.5),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv),transparent:true,opacity:0,depthWrite:false,toneMapped:false}));pm.position.z=-.02;pm.renderOrder=17;logo.add(pm);logo.plate=pm;logo.mesh.renderOrder=18;logo.height*=1.5;logo.width+=logo.height*.47;logo.mesh.material.depthTest=false}}
   const ruleM=lk.rule&&lk.ornament!=='stars'?new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:ac,transparent:true,opacity:0,depthWrite:false,toneMapped:false})):null;
-  const orn=lk.ornament==='stars'?tf('★ ★ ★ ★ ★',{px:90,h:.56,font:'Heebo',weight:400,color:ac,shadow:null,emissive:.95,unit:'line'}):null;
+  const orn=lk.ornament==='stars'?tf('★',{px:90,h:.56,font:'Heebo',weight:400,color:ac,shadow:null,emissive:.95,unit:'line'}):null;
   const tagM=TAG?new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:ac,transparent:true,opacity:0,depthWrite:false,toneMapped:false})):null;if(tagM)tagM.renderOrder=19;
   if(title&&INK)title.u.edge.value.set('#0d0d10');else if(title&&!FILL)title.u.edge.value.set(calm?'#8a8478':e>.6?hex(F.accent2,'#ffffff'):'#ffffff');
   const B=new THREE.Group();S.add(B);[logo,kick,title,orn,sub,ruleM,tagM].filter(Boolean).forEach(g=>B.add(g));
@@ -267,8 +267,8 @@ async function compose(canvas,F,A){
   let arcG=null;if(MOT==='arc'){const d=new THREE.Mesh(new THREE.BufferGeometry(),mb(PAL[0]));d.renderOrder=-4;mot.add(d);mm.push(d)}
   /* concept elements: up to 3 small illustrations of the event's own idea (a globe, a doughnut, a dreidel…), drawn in the slide's two colours
      (or in full colour for parties / kids) and floating quietly around the words — the design carries the concept, not only the text */
-  const ICG=[];{let gl=[];try{gl=[...new Intl.Segmenter().segment(String(lk.icons||''))].map(q=>q.segment).filter(q=>/\p{Extended_Pictographic}/u.test(q)).slice(0,3)}catch(e){}
-    if(gl.length){const cA=new THREE.Color(ac),cB=new THREE.Color(ac2),lo=cB.clone().multiplyScalar(.3),hi=cA.clone().lerp(new THREE.Color('#ffffff'),.7),full=lk.iconStyle==='color';
+  const ICG=[];{let gl=[];try{gl=[...new Intl.Segmenter().segment(String(lk.icons||''))].map(q=>q.segment).filter(q=>/\p{Extended_Pictographic}/u.test(q)).slice(0,1)}catch(e){}
+    if(gl.length){const inkC=new THREE.Color(INK?'#0d0d10':'#ffffff'),cA=BGK===4?inkC.clone().lerp(BRC,.18):new THREE.Color(ac),cB=new THREE.Color(ac2),lo=BGK===4?inkC.clone():cB.clone().multiplyScalar(.3),hi=BGK===4?inkC.clone().lerp(BRC,.5):cA.clone().lerp(new THREE.Color('#ffffff'),.7),full=lk.iconStyle==='color';
       const tex=gl.map(g=>{const cv=new OffscreenCanvas(256,256),x=cv.getContext('2d',{willReadFrequently:true});x.font='188px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(g,128,140);
         const im=x.getImageData(0,0,256,256),d=im.data;let ink=0;for(let i=0;i<d.length;i+=4){if(d[i+3]>40)ink++;if(full)continue;const l=(.2126*d[i]+.7152*d[i+1]+.0722*d[i+2])/255,c=l<.5?lo.clone().lerp(cA,l*2):cA.clone().lerp(hi,l*2-1);d[i]=c.r*255;d[i+1]=c.g*255;d[i+2]=c.b*255}
         if(ink<800)return null;if(!full)x.putImageData(im,0,0);const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;return t}).filter(Boolean);
@@ -304,6 +304,10 @@ async function compose(canvas,F,A){
       else{/* subject in the middle: reframe it to one third (eased camera move) and put the words on the other side */const to=HEB||fr.cx>=.5?.32:.68;pan=K.cl(fr.cx-.5-(to-.5)/zoomR,-.5+.5/zoomR+.01,.5-.5/zoomR-.01);L=to<.5?'right':'left';const sh=(to-fr.cx);fr={...fr,L:fr.L.map((v,i)=>{const x=i%32,sx=Math.round(x-sh*31);return sx>=0&&sx<32?fr.L[(i-x)+sx]:0})}}}
     const side=L==='left'||L==='right',maxW=side?vw*.46:vw*.84,items=[logo,kick,title,orn,sub].filter(Boolean);
     items.forEach(g=>{const s0=g.userData.s0||(g.userData.s0=1);const w=g.width/s0,mw=g===logo?Math.min(maxW,vw*Math.min(.62,.3*LS)):maxW;const s=w>mw?mw/w:1;g.scale.setScalar(s);g.userData.s0=s;g.width=w*s;g.height=(g.height/s0)*s});
+    /* without a logo the title is the hero: a short title grows towards half the frame; with a logo, the logo is never wider than the title it signs (unless the user asked for a bigger logo) */
+    {const rs=(g,k)=>{const q=g.userData.s0*k;g.scale.setScalar(q);g.userData.s0=q;g.width*=k;g.height*=k};
+      if(title&&!logo){const k=Math.min(calm?1.25:1.5,Math.min(maxW,vw*.5)/title.width,(vh*.4)/title.height);if(k>1.03)rs(title,k)}
+      if(title&&logo&&(lk.logoSize==null||+lk.logoSize<=1)&&logo.width>title.width)rs(logo,Math.max(.6,title.width/logo.width))}
     const gap=g=>g===logo?.55:g===kick?(TAG?.5:.34):g===title?(ruleM&&!orn?.62:.4):g===orn?.36:0,tot=items.reduce((a,g)=>a+g.height+gap(g),0)+(ruleM?.0:0);
     const he=K.he(F.title||F.kicker||''),align=side||L==='top'||L==='bottom'?(L==='left'?(he?'right':'left'):L==='right'?(he?'right':'left'):'center'):'center';
     const bw=Math.max(...items.map(g=>g.width));const m=vw*.05;
