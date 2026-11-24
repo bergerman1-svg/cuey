@@ -165,14 +165,18 @@ const PICK_SYSTEM = `You are the art director of Cuey's AI Builder. You see stil
 3. It looks premium and cinematic: shallow depth of field, bokeh, beautiful light, rich but not garish colour, no watermark-like text, no posed stock-photo faces staring at the camera. Real people doing the event's own activity (children playing or learning at a kids / education event, a band on stage at a music evening, runners at a race) are RIGHT when the event is about them.
 4. Medium-dark is better than bright.
 5. The main thing you SEE must belong to this event. A boat, a random street, strangers, an unrelated object or place are wrong even when the frame is beautiful — unless the request asked for it. When no candidate shows a fitting subject, choose the most neutral one (soft bokeh, light, abstract texture) and set fits false.
-6. Follow the LESSONS LEARNED below when they talk about footage.
+6. Search 1 is the picture the director asked for first; the later searches are fallbacks. When a candidate from search 1 fits, prefer it over a prettier one from a later search.
+7. When the concept names real people or a real place (children, students, a choir, runners, medics, a school hall, a festive table), a computer-generated, x-ray / anatomy, cartoon or abstract clip (silk, waves of light, particles) is NOT that subject, and neither is a different crowd or place (a nightclub for a school ceremony, an empty stadium for a kids' league, teenagers for small children). Such a clip can only be the neutral fallback with fits false.
+8. Follow the LESSONS LEARNED below when they talk about footage.
 Call pick once.`;
 
 // search Pixabay for candidates and let the model look at them (vision) — returns the chosen hit or null
 async function pickFootage(key: string, qs: string[], o: any, T0: number) {
   const pk = env("PIXABAY_KEY"); if (!pk) return null;
-  const seen = new Set(), cands: any[] = [];
+  const seen = new Set(), cands: any[] = [], spare: any[] = [];
+  let qi = 0;
   for (const q of qs.slice(0, 3)) {
+    const want = qi++ === 0 ? 5 : 2; // the first search is what the director really asked for: it brings most of the candidates
     try {
       const p = new URLSearchParams({ key: pk, q: String(q).toLowerCase().slice(0, 90), safesearch: "true", per_page: "20" });
       const r = await fetch("https://pixabay.com/api/videos/?" + p.toString()); if (!r.ok) continue;
@@ -180,20 +184,28 @@ async function pickFootage(key: string, qs: string[], o: any, T0: number) {
       for (const h of (d.hits || [])) {
         const v = h.videos || {}, w = v.medium?.width || 0, ht = v.medium?.height || 0, thumb = v.medium?.thumbnail || v.small?.thumbnail;
         if (!thumb || w < ht || (h.duration && h.duration < 8) || seen.has(h.id)) continue;
-        seen.add(h.id); cands.push({ id: h.id, q, thumb, full: w >= 1280 ? v.medium.url : (v.large?.url || v.medium?.url), dur: h.duration, w, h: ht });
-        if (++k >= 3) break;
+        seen.add(h.id); const c = { id: h.id, q, thumb, full: w >= 1280 ? v.medium.url : (v.large?.url || v.medium?.url), dur: h.duration, w, h: ht };
+        if (k++ < want) cands.push(c); else if (spare.length < 8) spare.push(c);
       }
     } catch { /* */ }
   }
   if (cands.length < 2) return cands[0] || null;
-  const content: any[] = [];
-  cands.forEach((c, i) => { content.push({ type: "text", text: `Candidate ${i + 1} (search "${c.q}", ${c.dur || "?"} s):` }); content.push({ type: "image", source: { type: "url", url: c.thumb } }); });
   const title = (o.fields || []).find((f: any) => f.k === "title")?.value || "";
-  content.push({ type: "text", text: `Concept: ${o.concept}\nMood: ${o.mood}. Title on screen: "${title}". Layout: ${o.look?.layout}.\nCall pick now.` });
-  const r = await run(key, ["claude-sonnet-5-5", "claude-opus-5-5"], PICK_SYSTEM, PICK_TOOL, content, { max_tokens: 1500, thinking: { type: "between_tools" }, output_config: { effort: "low" } }, (i) => Number.isInteger(i.index), T0);
-  const i = r.out ? Math.max(1, Math.min(cands.length, r.out.index)) - 1 : 0;
-  console.log("pick", cands.length, "cands ->", i + 1, r.out?.why || "", JSON.stringify(r.usage || {}));
-  return { ...cands[i], why: r.out?.why || "", n: cands.length, fits: r.out ? r.out.fits !== false : true };
+  const ask = async (list: any[]) => {
+    const content: any[] = [];
+    list.forEach((c, i) => { content.push({ type: "text", text: `Candidate ${i + 1} (search ${qs.indexOf(c.q) + 1}: "${c.q}", ${c.dur || "?"} s):` }); content.push({ type: "image", source: { type: "url", url: c.thumb } }); });
+    content.push({ type: "text", text: `Concept: ${o.concept}\nMood: ${o.mood}. Title on screen: "${title}". Layout: ${o.look?.layout}.\nCall pick now.` });
+    const r = await run(key, ["claude-sonnet-5-5", "claude-opus-5-5"], PICK_SYSTEM, PICK_TOOL, content, { max_tokens: 1500, thinking: { type: "between_tools" }, output_config: { effort: "low" } }, (i) => Number.isInteger(i.index), T0);
+    const i = r.out ? Math.max(1, Math.min(list.length, r.out.index)) - 1 : 0;
+    console.log("pick", list.length, "cands ->", i + 1, "fits", r.out?.fits, r.out?.why || "", JSON.stringify(r.usage || {}));
+    return { ...list[i], why: r.out?.why || "", n: list.length, fits: r.out ? r.out.fits !== false : true };
+  };
+  let best = await ask(cands);
+  // nothing showed the subject: one more look at the next results before settling for a neutral clip (only while there is time)
+  if (best.fits === false && spare.length >= 2 && Date.now() - T0 < 45000) {
+    try { const b2 = await ask(spare); if (b2.fits !== false) best = { ...b2, n: cands.length + spare.length }; } catch (e) { console.error("pick2", String(e)); }
+  }
+  return best;
 }
 
 // finishing pass: looks at 3 rendered frames of the slide and the design, scores it, and proposes the smallest fix
@@ -299,6 +311,8 @@ async function critic(key: string, db: any, uid: string, body: any, prompt: stri
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
+  // a fingerprint of the prompts and tool schemas, to check that a deploy carries exactly the text that is in git
+  if (req.method === "GET" && new URL(req.url).searchParams.get("sig")) { const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode([DIRECT_SYSTEM, JSON.stringify(DIRECT_TOOL), JSON.stringify(REVISE_TOOL), REVISE_ASK({ a: 1 }, "x"), JSON.stringify(PICK_TOOL), PICK_SYSTEM, JSON.stringify(CRITIC_TOOL), CRITIC_SYSTEM].join("\u0001"))); return json({ sig: [...new Uint8Array(h)].map((x) => x.toString(16).padStart(2, "0")).join("") }); }
   if (req.method !== "POST") return json({ error: "method" }, 405);
   const key = env("ANTHROPIC_API_KEY").trim();
   if (!key) return json({ error: "not configured" }, 503);
