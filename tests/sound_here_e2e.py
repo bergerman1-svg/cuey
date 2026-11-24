@@ -57,6 +57,29 @@ async def main():
         # closing the event screen changes nothing for the sound
         await out.close(); await pg.wait_for_timeout(900); z = await pg.evaluate(S)
         ok('closing the event screen: the sound goes on here', z['pm'] is False and not z['pp'] and z['p'] != h2['p'], z)
+        # blind round 24.11: opening the event screen in the middle of a cue never restarts what is heard
+        await pg.evaluate("pvStage.media.__same=1")
+        async with ctx.expect_page() as np:
+            await pg.click('#openOut')
+        out = await np.value; await pg.bring_to_front(); await pg.wait_for_timeout(2000)
+        r = await pg.evaluate("({same:pvStage.media.__same===1,pp:pvStage.media.paused,pm:pvStage.media.muted,o:!!(outStage&&outStage.media&&outStage.media.tagName==='VIDEO'),om:outStage.media.muted,d:Math.abs(outStage.media.currentTime-pvStage.media.currentTime)})")
+        dd = min(r['d'], abs(dur - r['d']))
+        ok('opening the event screen mid-cue: the video that is heard is not restarted or replaced', r['same'] and not r['pp'] and r['pm'] is False, r)
+        ok('the new event screen shows the picture, silent, in step with the sound', r['o'] and r['om'] is True and dd <= .15, [r, dd])
+        # a click on the timeline knob that moves nothing must not leave the show paused
+        bx = await pg.locator('#seek').bounding_box(); v = await pg.evaluate("+$('#seek').value/1000")
+        await pg.mouse.move(bx['x'] + 8 + (bx['width'] - 16) * v, bx['y'] + bx['height'] / 2); await pg.mouse.down(); await pg.wait_for_timeout(120); await pg.mouse.up(); await pg.wait_for_timeout(700)
+        k = await pg.evaluate(S)
+        ok('a click on the timeline knob: the show goes on playing', not k['pp'] and not k['op'], k)
+        # an audio cue: opening the event screen does not start the music again
+        await out.close(); await pg.wait_for_timeout(700)
+        await pg.set_input_files('#fileIn', [os.path.join(FIX, 'tone.wav')]); await pg.wait_for_timeout(1200)
+        await pg.click('#list .item >> nth=3'); await pg.wait_for_timeout(1500); a1 = await pg.evaluate("[slideAudio.currentTime,slideAudio.paused,slideAudio.duration]")
+        async with ctx.expect_page() as np:
+            await pg.click('#openOut')
+        out = await np.value; await pg.bring_to_front(); await pg.wait_for_timeout(800); a2 = await pg.evaluate("[slideAudio.currentTime,slideAudio.paused]")
+        ok('an audio cue: opening the event screen does not start the music again', (a1[2] < 3 or a2[0] > a1[0]) and not a2[1] and not a1[1], [a1, a2])
+        await out.close(); await pg.wait_for_timeout(500)
         ok('no page errors', not errs, errs[:3])
         await b.close()
     print(f"{sum(res)}/{len(res)} passed")

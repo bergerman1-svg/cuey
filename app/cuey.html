@@ -490,6 +490,7 @@ body.taking #list .item:not(.cur){cursor:copy}body.taking #list .item:not(.cur):
 /* ---- widgets: things that float over PROGRAM whatever cue is live (first one: the timer) ---- */
 /* the timer's control panel: small, floating, never in the way — it is used while the show runs */
 .wgp{position:fixed;z-index:60;width:248px;background:#17171d;border:2px solid var(--line2);border-radius:14px;box-shadow:0 18px 50px -12px rgba(0,0,0,.8);direction:ltr;user-select:none;-webkit-user-select:none}
+body.he .wgp :is(.wpn,button,label,span,div,input,textarea){unicode-bidi:plaintext}
 .wgp .wph{display:flex;align-items:center;gap:6px;padding:7px 8px 6px 12px;cursor:grab;border-bottom:1px solid var(--line);touch-action:none}
 .wgp.drag .wph{cursor:grabbing}
 .wgp .wpn{font:700 11px var(--mono);letter-spacing:.8px;color:var(--amb);text-transform:uppercase}
@@ -1605,6 +1606,7 @@ let scrubWasPlaying=false,scrubPending=null;
 $('#seek').addEventListener('pointerdown',()=>{const m=tlSource();if(!m||m.synthetic)return;seeking=true;scrubWasPlaying=!m.paused;if(scrubWasPlaying)playPause(false,true)});
 $('#seek').oninput=()=>{const m=tlSource();if(!m||!m.duration)return;seeking=true;const t=$('#seek').value/1000*m.duration;$('#tm').innerHTML='<b>'+fmt(t)+'</b> / '+fmt(m.duration);
   if(scrubPending===null){scrubPending=t;requestAnimationFrame(()=>{seekTo(scrubPending,true);scrubPending=null})}else scrubPending=t};
+['pointerup','pointercancel'].forEach(ev=>$('#seek').addEventListener(ev,()=>setTimeout(()=>{if(scrubWasPlaying){seeking=false;scrubWasPlaying=false;playPause(true)}},60)));
 $('#seek').onchange=()=>{const m=tlSource();if(m&&m.duration)seekTo($('#seek').value/1000*m.duration,true);seeking=false;if(scrubWasPlaying){playPause(true);scrubWasPlaying=false}};
 slideAudio.addEventListener('timeupdate',()=>tlUpdate()); // (a fresh player gets the same listener in slideTail) arrow: always the current tlUpdate (it is wrapped below to fill the seek bar)
 setInterval(()=>tlUpdate(),100);
@@ -3149,7 +3151,8 @@ function wxSync(k){const p=document.getElementById('wxp-'+k);if(!p)return;const 
 function wxPanelPaint(k){const p=document.getElementById('wxp-'+k);if(!p||p.hidden)return;const w=WX[k],live=w.on&&wxReady(k),sh=p.querySelector('.wxShow'),s=p.querySelector('.wpst');
   sh.textContent=t(w.on?'wt_hide':'wt_show');sh.classList.toggle('pri',!w.on);const msg=p._msg&&performance.now()<p._msg[1]?p._msg[0]:(w.on&&!wxReady(k))||(k==='qr'&&!w.img&&w.url.trim()&&!wxQr())?t('wx_need_'+k):p.querySelector('.wxf.wait')?t('wx_wait'):'';if(msg){s.classList.add('need');s.textContent=msg}else if(!s.classList.contains('need')||wxReady(k)){s.classList.remove('need');s.textContent=t(live?(blackOn?'wt_st_black':'wt_st_on'):'wt_st_off')}s.classList.toggle('live',live&&!blackOn&&!msg);
   p.querySelectorAll('.wxClr').forEach(b=>b.hidden=!w[b.dataset.f]);
-  p.querySelectorAll('.wxr').forEach(el=>{if(document.activeElement!==el&&+el.value!==Math.round(w[el.dataset.f]*100)){el.value=Math.round(w[el.dataset.f]*100);try{fillRange(el)}catch(e){}}})}
+  p.querySelectorAll('.wxr').forEach(el=>{if(document.activeElement!==el&&+el.value!==Math.round(w[el.dataset.f]*100)){el.value=Math.round(w[el.dataset.f]*100);try{fillRange(el)}catch(e){}}});
+  {const r=p.getBoundingClientRect();if(r.bottom>innerHeight-6&&r.height<innerHeight-12)p.style.top=Math.max(6,innerHeight-6-r.height)+'px'}} // the panel grew (a new button, a two-line note): it stays whole inside the window
 function wxOpen(k){$('#wgDlg').hidden=true;let p=document.getElementById('wxp-'+k);if(p&&!p.hidden){wxSync(k);return}
   document.querySelectorAll('.wxp:not(.min)').forEach(o=>{if(!o.hidden&&o.id!=='wxp-'+k){const b=o.querySelector('.wxMin');if(b)b.click()}});
   p=wxPanel(k);if(WX[k].used&&wxReady(k)){p.classList.add('min');p.querySelector('.wxMin').textContent='+'}WX[k].used=true;p.hidden=false;wgpTop(p);wxSync(k);wxPaint();let pos=null;try{pos=JSON.parse(localStorage.getItem('cuey.wxPanel.'+k)||'null')}catch(e){}
@@ -3313,8 +3316,17 @@ document.addEventListener('change',e=>{if(e.target&&e.target.type==='range')e.ta
   outStage=makeStage(outWin.document,outWin.document.getElementById('stage'),()=>true);
   setTimeout(applyBadge,300);setTimeout(()=>{try{wdgPaint()}catch(e){}},50);
   setStatus();
-  if(cur>=0)show(cur,true);
+  if(cur>=0&&!showOutOnly())show(cur,true);
 }
+// The event screen opens (or opens again) in the middle of a cue: only the picture there is started. What is heard here — the video, an audio cue, a slide's music — and its timers are not touched; the picture lines itself up with the sound.
+function showOutOnly(){const it=items[cur];if(!it||!outStage||exporting||it.bad||it.web||gated(it))return false;
+  if(it.type==='audio'){outWin.document.getElementById('msg').style.display='none';outStage.show({...it,type:'image',scale:'fit'},BLACK_PNG,true,null,null)}
+  else{if(it.type==='video'){const p=pvStage.media;if(frozen||armed||!p||p.tagName!=='VIDEO'||p.paused||p.ended)return false}
+    outWin.document.getElementById('msg').style.display='none';
+    if(!it.outUrl)it.outUrl=(it.text&&it.type!=='video')?it.url:outWin.URL.createObjectURL(it.file);
+    outStage.show(it,it.outUrl,true,()=>{},()=>{},false)}
+  applyAudioRouting();if(blackOn)outStage.black(true);try{wdgPaint();wxPaint()}catch(e){}
+  $('#pvHeld').hidden=true;return true}
 function setStatus(){const on=outWin&&!outWin.closed;$('#st').className='status';$('#st').hidden=!exporting;const ob=$('#openOut');ob.className='evs '+(on?'live':'off');$('#evsT').textContent=t(on?'outopen':'openout');ob.title=on?t('evs_q_t'):'';$('#closeOut').hidden=true;if(!on){$('#sndWarn').hidden=true;$('#fsWarn').hidden=true}$('#mClose').disabled=!on}
 function clearStages(){clearTimeout(holdTimer);holdTimer=null;holdInfo=null;pvStage.clear();if(outStage){outStage.clear()}stopSlideAudio();grpMusicStop(0);tlUpdate()}
 
