@@ -1,0 +1,40 @@
+name: Mac signing check
+# Builds the signed + notarized Mac installers and checks them. Publishes nothing. Run by hand.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: Patch electron-builder keychain password
+        run: |
+          f=node_modules/app-builder-lib/out/codeSign/macCodeSign.js
+          sed -i.bak 's/const keychainPassword = /const keychainPassword = global.__cueyKp = /; s/"-s", "-k", password, keychainFile/"-s", "-k", global.__cueyKp, keychainFile/' "$f"
+          grep -q 'global.__cueyKp = ' "$f" && grep -q '"-k", global.__cueyKp, keychainFile' "$f"
+      - name: Build (signed + notarized)
+        env:
+          CSC_LINK: ${{ secrets.MAC_CERT_P12 }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: npm run dist:mac -- --publish never -c.mac.notarize=true
+      - name: Check signature, notarization, Gatekeeper
+        run: |
+          for f in release/*.dmg; do
+            m=$(mktemp -d); hdiutil attach -nobrowse -readonly -mountpoint "$m" "$f" >/dev/null
+            echo "== $f"
+            codesign --verify --deep --strict --verbose=2 "$m/Cuey.app"
+            codesign -dv "$m/Cuey.app" 2>&1 | grep -E "Authority|TeamIdentifier|Runtime" || true
+            xcrun stapler validate "$m/Cuey.app"
+            spctl --assess --type execute -vv "$m/Cuey.app"
+            hdiutil detach "$m" >/dev/null
+          done
