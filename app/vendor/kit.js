@@ -181,30 +181,36 @@ K.recipes={maskLines:{unit:'line',dur:.8,st:.08,ez:'heroIn',mode:0},maskWords:{u
   track:{unit:'char',dur:2.2,st:0,ez:'heroIn',mode:1,track:.4},calm:{unit:'word',dur:.7,st:.07,ez:'calmIn',mode:0}};
 /* split type: one canvas, one plane per unit (grapheme / word / line) sharing global uniforms.
    G.at(t,start,recipe) animates; G.u = {op, shine, glow, edge, rev} shared; RTL text reveals in reading order (right to left). */
-K.typeFX=(str,{font=null,px=240,h=2,color='#ffffff',color2=null,glow=null,weight=900,ls=null,emissive=.85,unit='word',shadow=null}={})=>{
-  str=String(str||'');const he=K.he(str),fam=font||(he?'Heebo':'Poppins'),f=weight+' '+px+'px "'+fam+'"',sp=he?0:(ls==null?px*.01:ls);
+K.typeFX=(str,{font=null,px=240,h=2,color='#ffffff',color2=null,glow=null,weight=900,ls=null,emissive=.85,unit='word',shadow=null,lines=null}={})=>{
+  str=String(str||'');/* lines: the same words broken into rows (a long title on two lines); one row = exactly the old single-line path */const ROWS=lines&&lines.length>1?lines.map(String):[str],NR=ROWS.length;const he=K.he(str),fam=font||(he?'Heebo':'Poppins'),f=weight+' '+px+'px "'+fam+'"',sp=he?0:(ls==null?px*.01:ls);
   const cv=new OffscreenCanvas(8,8),x=cv.getContext('2d');const setf=()=>{x.font=f;if('letterSpacing'in x)x.letterSpacing=sp+'px';x.direction=he?'rtl':'ltr';x.textAlign='left';x.textBaseline='middle'};setf();
-  const W=Math.ceil(x.measureText(str).width),padX=Math.ceil(px*.35),padY=Math.ceil(px*.42);cv.width=Math.max(8,W+padX*2);cv.height=Math.ceil(px*1.25+padY*2);setf();
+  const RW=ROWS.map(r=>Math.ceil(x.measureText(r).width)),W=Math.max(...RW),ADV=px*1.1,padX=Math.ceil(px*.35),padY=Math.ceil(px*.42);cv.width=Math.max(8,W+padX*2);cv.height=Math.ceil(px*1.25+padY*2+ADV*(NR-1));setf();
+  const rowC=r=>NR===1?cv.height/2:px*.625+padY+r*ADV,rowX=r=>padX+(W-RW[r])/2,rowV=r=>[r===0?0:(rowC(r-1)+rowC(r))/2,r===NR-1?cv.height:(rowC(r)+rowC(r+1))/2];
   const g=x.createLinearGradient(0,padY,0,cv.height-padY);g.addColorStop(0,color);g.addColorStop(1,color2||color);x.fillStyle=g;
   if(shadow){x.shadowColor=shadow;x.shadowBlur=px*.12;x.shadowOffsetY=px*.03}else if(glow){x.shadowColor=glow;x.shadowBlur=px*.22}
-  const x0=padX,cy=cv.height/2+px*.04;if(he){x.textAlign='right';x.fillText(str,x0+W,cy)}else x.fillText(str,x0,cy);
+  const x0=padX;ROWS.forEach((rs,r)=>{const cy=rowC(r)+px*.04,xr=rowX(r);if(he){x.textAlign='right';x.fillText(rs,xr+RW[r],cy)}else{x.textAlign='left';x.fillText(rs,xr,cy)}});
   const seg=typeof Intl!=='undefined'&&Intl.Segmenter?[...new Intl.Segmenter(he?'he':'en',{granularity:'grapheme'}).segment(str)].map(s=>s.segment):Array.from(str);
-  let units=[];if(unit==='line')units=[str];else if(unit==='word'){units=str.split(/(?<=\s)/)}else units=seg;
-  const mw=s=>{setf();return x.measureText(s).width};let acc='';const rngs=units.map(u=>{const a=mw(acc);acc+=u;const b=mw(acc);return he?[x0+W-b,x0+W-a]:[x0+a,x0+b]});
-  const sorted=rngs.map((r,i)=>[r,i]).sort((p,q)=>p[0][0]-q[0][0]);const cut=new Array(rngs.length);sorted.forEach(([r,i],j)=>{const L=j===0?0:(sorted[j-1][0][1]+r[0])/2,R=j===sorted.length-1?cv.width:(r[1]+sorted[j+1][0][0])/2;cut[i]=[L,R]});
+  const segOf=q=>typeof Intl!=='undefined'&&Intl.Segmenter?[...new Intl.Segmenter(he?'he':'en',{granularity:'grapheme'}).segment(q)].map(s=>s.segment):Array.from(q);
+  const mw=s=>{setf();return x.measureText(s).width};const rngs=[],cut=[],rowOf=[];
+  ROWS.forEach((rs,r)=>{const units=unit==='line'?[rs]:unit==='word'?rs.split(/(?<=\s)/):(NR===1?seg:segOf(rs)),xr=rowX(r),Wr=RW[r];let acc='';const rg=units.map(u=>{const a=mw(acc);acc+=u;const b=mw(acc);return he?[xr+Wr-b,xr+Wr-a]:[xr+a,xr+b]}),b0=rngs.length;
+    const sorted=rg.map((q,i)=>[q,i]).sort((p,q)=>p[0][0]-q[0][0]);sorted.forEach(([q,i],j)=>{const L=j===0?0:(sorted[j-1][0][1]+q[0])/2,R=j===sorted.length-1?cv.width:(q[1]+sorted[j+1][0][0])/2;cut[b0+i]=[L,R]});rg.forEach(q=>{rngs.push(q);rowOf.push(r)})});
   const tex=new THREE.CanvasTexture(cv);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=8;tex.generateMipmaps=true;tex.minFilter=THREE.LinearMipmapLinearFilter;
   const S={map:{value:tex},op:{value:1},shine:{value:-1},glow:{value:0},edge:{value:new THREE.Color(glow||'#ffffff')},dir:{value:he?-1:1},em:{value:emissive},rev:{value:1},soft:{value:.06},rise:{value:2*px*(he?.95:.78)/cv.height+.03},b0:{value:.5-px*(he?.95:.78)/cv.height},b1:{value:.5+px*(he?.95:.78)/cv.height}};
   const sc=h/(px*1.25),G=new THREE.Group(),parts=[];
-  cut.forEach(([L,R],i)=>{const u={...S,p:{value:1},mode:{value:0},bl:{value:0}};const w=(R-L)*sc,ht=cv.height*sc,geo=new THREE.PlaneGeometry(w,ht),uv=geo.attributes.uv;
-    for(let k=0;k<uv.count;k++)uv.setX(k,(uv.getX(k)?R:L)/cv.width);
+  const KB=px*(he?.95:.78)/cv.height;
+  cut.forEach(([L,R],i)=>{const r=rowOf[i],[ya,yb]=rowV(r),v1=1-ya/cv.height,v0=1-yb/cv.height,vc=1-rowC(r)/cv.height;const u={...S,p:{value:1},mode:{value:0},bl:{value:0},r0:{value:NR===1?-1:v0},r1:{value:NR===1?2:v1}};if(NR>1){u.b0={value:vc-KB};u.b1={value:vc+KB}}
+    const w=(R-L)*sc,ht=(yb-ya)*sc,geo=new THREE.PlaneGeometry(w,ht),uv=geo.attributes.uv;
+    for(let k=0;k<uv.count;k++){uv.setX(k,(uv.getX(k)?R:L)/cv.width);if(NR>1)uv.setY(k,uv.getY(k)?v1:v0)}
     const m=new THREE.Mesh(geo,new THREE.ShaderMaterial({uniforms:u,transparent:true,depthWrite:false,toneMapped:false,
       vertexShader:'varying vec2 v;void main(){v=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-      fragmentShader:`uniform sampler2D map;uniform float op,shine,glow,dir,em,rev,soft,rise,p,mode,bl,b0,b1;uniform vec3 edge;varying vec2 v;
-      void main(){vec2 q=v;float a=1.;if(mode<.5){q.y+=(1.-p)*rise;float inb=smoothstep(b0-.008,b0+.008,v.y)*(1.-smoothstep(b1-.008,b1+.008,v.y));a=mix(inb,1.,step(.999,p));}else{a=p;}vec4 c=texture2D(map,q,mode>1.5&&mode<2.5?bl:0.);
+      fragmentShader:`uniform sampler2D map;uniform float op,shine,glow,dir,em,rev,soft,rise,p,mode,bl,b0,b1,r0,r1;uniform vec3 edge;varying vec2 v;
+      void main(){vec2 q=v;float a=1.;if(mode<.5){q.y+=(1.-p)*rise;float inb=smoothstep(b0-.008,b0+.008,v.y)*(1.-smoothstep(b1-.008,b1+.008,v.y));a=mix(inb,1.,step(.999,p));}else{a=p;}vec4 c=texture2D(map,q,mode>1.5&&mode<2.5?bl:0.)*step(r0,q.y)*step(q.y,r1);
       float px=dir>0.?v.x:1.-v.x;float r=smoothstep(rev,rev-soft,px);float e=exp(-pow((px-rev)/.02,2.))*step(.0001,rev)*step(rev,.9999);
       float s=exp(-pow((px+(v.y-.5)*.3-shine)/.05,2.));vec3 col=c.rgb*em+edge*(s*.9*c.a+glow*c.a+e*2.);gl_FragColor=vec4(col,(c.a*r+e*.8*c.a)*a*op);}`}));
-    m.position.x=((L+R)/2-cv.width/2)*sc;m.userData={i,x0:m.position.x,gc:((rngs[i][0]+rngs[i][1])/2-cv.width/2)*sc};m.renderOrder=20;G.add(m);parts.push(m)});
-  G.u=S;G.parts=parts;G.width=W*sc;G.height=h;G.he=he;G.n=parts.length;G.mesh=parts[0];
+    m.position.x=((L+R)/2-cv.width/2)*sc;const y0=NR===1?0:(cv.height/2-(ya+yb)/2)*sc;m.position.y=y0;m.userData={i,x0:m.position.x,gc:((rngs[i][0]+rngs[i][1])/2-cv.width/2)*sc,y0,row:r};m.userData.xb=m.userData.x0;m.userData.gb=m.userData.gc;m.renderOrder=20;G.add(m);parts.push(m)});
+  G.u=S;G.parts=parts;G.width=W*sc;G.height=h+(NR-1)*ADV*sc;G.lineH=h;G.rows=NR;G.he=he;G.n=parts.length;G.mesh=parts[0];
+  /* rows of different lengths line up on the side the block is aligned to */
+  G.align=a=>{if(NR>1)parts.forEach(m=>{const d=(W-RW[m.userData.row])/2*sc*(a==='left'?-1:a==='right'?1:0);m.userData.x0=m.userData.xb+d;m.userData.gc=m.userData.gb+d;m.position.x=m.userData.x0})};
   G.set=v=>parts.forEach(m=>{m.material.uniforms.p.value=v;m.scale.setScalar(1);m.position.x=m.userData.x0});
   /* animate the reveal: returns overall progress 0..1 */
   G.at=(t,start,rec='maskWords')=>{const R=typeof rec==='string'?K.recipes[rec]||K.recipes.maskWords:rec,ez=K.ez[R.ez]||K.ez.heroIn,n=parts.length;let all=1;

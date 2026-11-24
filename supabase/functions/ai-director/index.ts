@@ -42,7 +42,7 @@ LOOK — the design, built from Cuey's blocks:
 - overlay: 0–0.5 — only with a code bg: real footage (your footage queries, e.g. clouds, bokeh, light) is layered over the drawn background at this strength for depth and realism (0.25–0.35 is usually right; 0 = none).
 - prop: none | airplane (a white airliner crossing the sky on the loop — airlines, travel, tourism) | trophy (a slowly turning gold trophy beside the title — awards) | balloons (balloons drifting up — birthdays, kids). One story element at most, only when it tells the brand/occasion story; it never covers the words.
 - motif: none | dots | stripes | rings | arc | bars | sparkle (the logo's star/sparkle shape scattered across the slide, gently breathing — use it when the logo has a star, spark or twinkle) — the LEADING graphic element built from the logo's colours and shapes (see Brand language). With no logo it uses your accents.
-- panel: none | window | circle | strip — real footage shown INSIDE a framed shape beside the words (rounded window, circle, slanted strip) over a drawn background: great for conferences, brands, travel, people-and-place events. The words go to the reading side, the panel to the other.
+- panel: none | window | circle | strip — real footage shown INSIDE a framed shape beside the words (rounded window, circle, slanted strip) over a drawn background: great for conferences, brands, travel, people-and-place events. The words go to the reading side, the panel to the other. Vary the shape from slide to slide: not every brand slide is a window.
 - camera: push (slow push-in) | drift | still.
 - intro: none (default) | countdown (a big 3-2-1 in a glowing ring before the slide — the whole hall counts together; openings, launches, New Year, sports, the moment a show starts) | curtain (a stage curtain opens to reveal the slide — ceremonies, galas, award nights, premieres, a grand opening; in the brand colour when bg:brand). ONLY when the user ASKS for it (a countdown, 3-2-1, a curtain, a reveal, a big opening moment). Otherwise always none — an opening effect on every slide is a cliché and gives the tool away; the slide's own reveal is the opening.
 - icons: "" (default) or 1–3 emoji that ARE the event's own concept as small illustrations floating around the words (e.g. a "round the world" dance show → "🌍✈️💃"; Purim → "🎭🍩"; Hanukkah → "🕎🍩"; a wine evening → "🍷🍇"; a road-safety day → "🚦🚲"). Use them whenever the user names a theme, a concept or concrete objects — the DESIGN must carry the concept, not only the text. Leave "" for memorial, formal ceremonies and pure corporate slides with no theme. Pick objects, never faces/smileys or flags. With icons, drop one other effect (fx or motif) so the slide stays clean.
@@ -374,7 +374,13 @@ Deno.serve(async (req) => {
   if (UP === "background") { L.bg = "footage"; L.overlay = 0; L.panel = "none"; L.grade = "natural"; }
   if (UP === "product" || UP === "person") { if (!["window", "circle"].includes(L.panel)) L.panel = "window"; if (!L.bg || L.bg === "footage") L.bg = "liquid"; L.overlay = 0; }
   const ownPic = UP === "background" || UP === "product" || UP === "person";
-  if (L.bg === "brand" && (!L.panel || L.panel === "none") && (!L.prop || L.prop === "none") && !ownPic && (o.footage || []).length) L.panel = "window";
+  // logo slides on a brand field used to come out as the same template every time (brand + window, five nights running): the shape now turns with the slide's own title, and a slide that already has a motif may stay a clean poster
+  if (L.bg === "brand" && (!L.panel || L.panel === "none" || L.panel === "window") && (!L.prop || L.prop === "none") && !ownPic && (o.footage || []).length && !(revise && prev?.look?.bg === "brand")) {
+    const tt = String((o.fields || []).find((f: any) => f.k === "title")?.value || o.title || ""); let hv = 7; for (const ch of tt) hv = (hv * 31 + (ch.codePointAt(0) || 0)) % 9973;
+    const shapes = ["window", "circle", "strip"]; const pickS = shapes[hv % shapes.length];
+    L.panel = (L.motif && L.motif !== "none" && (!L.panel || L.panel === "none") && hv % 3 === 0) ? "none" : pickS;
+  }
+  if (L.panel === "split") L.panel = "window"; // the split frame is built in the engine but switched off (Avi 24.11: not sure it suits event screens)
   // opening effects only on request: the curtain on 5 of 12 test slides made the builder easy to spot
   if (L.intro && L.intro !== "none" && !/count ?down|3.?2.?1|curtain|reveal|grand opening|premiere|ספיר|וילון|מסך נפתח|מסך עולה|פרגוד|חשיפ|בכורה|פתיחה גדולה|הפתיחה הגדולה/i.test(prompt + " " + ask)) L.intro = "none";
   if (ownPic) delete o.pick;

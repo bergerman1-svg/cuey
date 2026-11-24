@@ -205,8 +205,8 @@ function logoPalette(bm){try{const w=96,h=Math.max(8,Math.round(96*bm.height/bm.
   const tot=Object.values(bins).reduce((s,b)=>s+b.n,0);return Object.values(bins).filter(b=>b.n>tot*.06).sort((a,b)=>b.n-a.n).slice(0,4).map(b=>'#'+[b.r,b.g,b.b].map(v=>Math.round(v/b.n*255).toString(16).padStart(2,'0')).join(''))}catch(e){return []}}
 const PANELFS=`uniform sampler2D a,b;uniform float m,has,pa,shape,prog,zoom,op;uniform vec3 edge;varying vec2 v;
 float rb(vec2 p,vec2 s,float r){vec2 q=abs(p)-s+r;return length(max(q,0.))+min(max(q.x,q.y),0.)-r;}
-void main(){vec2 p=v-.5;float sd;if(shape<.5){sd=rb(p*vec2(pa,1.),vec2(pa*.5,.5),.06);}else if(shape<1.5){sd=length(p)-.5;}else{vec2 q=vec2(p.x+(p.y)*.28/pa,p.y);sd=rb(q*vec2(pa,1.),vec2(pa*.5-.1,.5),.02);}
- float in1=1.-smoothstep(-.004,.004,sd);float bd=(1.-smoothstep(.0,.008,abs(sd+.006)))*in1;
+void main(){vec2 p=v-.5;float sd;if(shape>2.5){sd=max(abs(p.x),abs(p.y))-.5;}else if(shape<.5){sd=rb(p*vec2(pa,1.),vec2(pa*.5,.5),.06);}else if(shape<1.5){sd=length(p)-.5;}else{vec2 q=vec2(p.x+(p.y)*.28/pa,p.y);sd=rb(q*vec2(pa,1.),vec2(pa*.5-.1,.5),.02);}
+ float in1=1.-smoothstep(-.004,.004,sd);float bd=shape>2.5?0.:(1.-smoothstep(.0,.008,abs(sd+.006)))*in1;
  vec2 q=p;float r=pa/(16./9.);if(r<1.)q.x*=r;else q.y/=r;q=q/zoom+.5;vec2 tq=vec2(q.x,1.-q.y);
  vec3 c=texture2D(a,tq).rgb;if(m>0.)c=mix(c,texture2D(b,tq).rgb,m);if(has<.5)c=vec3(.05);c=c*.92+bd*edge*.9;float rv=smoothstep(-.02,.02,prog*1.04-v.y);gl_FragColor=vec4(c,in1*op*rv);}`;
 
@@ -214,7 +214,7 @@ async function compose(canvas,F,A){
   const lk={layout:'auto',font:'heebo',reveal:'maskWords',energy:.5,light:'none',fx:'dust',rule:false,camera:'push',dark:.45,blur:2,sat:1,tint:null,...(A.look||F.look||{})};
   /* fix-by-prompt dials: logo size, how fast the background lives, how much colour it carries */
   const LS=K.cl(lk.logoSize==null?1:+lk.logoSize||1,.6,2.4),SPD=K.cl(lk.speed==null?1:+lk.speed,.1,1.5),SAT=K.cl(lk.sat==null?1:+lk.sat,0,1.3);
-  const PANEL={window:0,circle:1,strip:2}[lk.panel];if(PANEL!=null){if(!lk.bg||lk.bg==='footage')lk.bg='liquid';lk.overlay=0;lk.layout=K.he(String(F.title||F.kicker||''))?'right':'left'}
+  if(lk.panel==='split'&&!lk.splitOn)lk.panel='window';/* split frame: built, switched off until it is judged on a real event screen (Avi 24.11) */const PANEL={window:0,circle:1,strip:2,split:3}[lk.panel];if(PANEL!=null){if(!lk.bg||lk.bg==='footage')lk.bg='liquid';lk.overlay=0;lk.layout=K.he(String(F.title||F.kicker||''))?'right':'left'}
   const XOFF={countdown:3.4,curtain:.8}[lk.intro]||0; /* opening moment before the slide (Avi 6.11, Canva gallery): the caller adds XOFF to the intro */
   const e=K.cl(+lk.energy||0,0,1),I=A.intro-XOFF,ac=hex(F.accent,'#e8d9b0'),ac2=hex(F.accent2,'#8a8f9c'),calm=e<.35;
   const FT=FONTS[lk.font]||FONTS.heebo,kf=calm?FT:(FT[0]==='Karantina'||FT[0]==='Amatic SC'?['Heebo',700]:FT);
@@ -237,7 +237,13 @@ async function compose(canvas,F,A){
   const titleC=INK?'#0d0d10':FILL?FILL[0]:calm?'#f4efe4':'#ffffff',TAG=!!lk.tag&&!!F.kicker;
   const acL=(()=>{const c=new THREE.Color(ac);return .2126*c.r+.7152*c.g+.0722*c.b})(),kc=acL<.35?'#'+new THREE.Color(ac).lerp(new THREE.Color('#ffffff'),.5).getHexString():ac;
   const kick=F.kicker?tf(F.kicker,{px:120,h:.84,font:kf[0],weight:Math.min(700,kf[1]),color:INK&&!TAG?'#0d0d10':TAG?(acL<.3?'#ffffff':'#0b0b10'):kc,shadow:TAG||INK?null:'rgba(0,0,0,.6)',ls:K.he(F.kicker)?0:120*.22,emissive:.95,unit:'line'}):null;
-  const title=F.title?tf(F.title,{px:260,h:(lk.reveal==='count'?3.9:2.45+.9*e),color:titleC,color2:INK?titleC:FILL?FILL[1]:calm?'#e6dfd0':titleC,glow:null,shadow:INK?null:shadow,ls:K.he(F.title)?0:-260*.015,emissive:calm?.9:.86,unit:unitOf(RC0)}):null;
+  /* a long title goes on two rows before it shrinks: a first, one-row build measures it; when it would have to shrink (more than the side column, or the frame when centred) the words are split where the two rows are most even */
+  const TL=(()=>{const t0=String(F.title||'').trim(),ws=t0.split(/\s+/);if(!F.title||ws.length<2||lk.reveal==='count')return null;
+    const one=tf(t0,{px:260,h:2.45+.9*e,unit:'line'}),w1=one.width;one.parts.forEach(m=>{m.geometry.dispose();m.material.uniforms.map.value.dispose();m.material.dispose()});
+    const lim=vw*(PANEL!=null||lk.layout==='left'||lk.layout==='right'?.46:lk.layout==='auto'?.6:.84);if(w1<=lim)return null;
+    let best=null;for(let i=1;i<ws.length;i++){const a=ws.slice(0,i).join(' '),b=ws.slice(i).join(' '),d=Math.max(a.length,b.length);if(!best||d<best.d)best={d,rows:[a,b]}}
+    return best&&Math.min(best.rows[0].length,best.rows[1].length)>=2?best.rows:null})();
+  const title=F.title?tf(TL?TL.join(' '):F.title,{lines:TL,px:260,h:(lk.reveal==='count'?3.9:2.45+.9*e),color:titleC,color2:INK?titleC:FILL?FILL[1]:calm?'#e6dfd0':titleC,glow:null,shadow:INK?null:shadow,ls:K.he(F.title)?0:-260*.015,emissive:calm?.9:.86,unit:unitOf(RC0)}):null;
   const RC=WAVE&&RC0.unit!=='char'?{...RC0,unit:'char',st:Math.min(.05,(RC0.st*Math.max(1,String(F.title||'').split(/\s+/).length))/Math.max(1,(title&&title.n)||1)+.012)}:RC0;
   /* scramble / counter: ghost glyphs from a pool rendered in the same face and size, swapped per frame */
   const tOpt={px:260,h:(CNT?3.9:2.45+.9*e),color:titleC,shadow:INK?null:shadow,emissive:calm?.9:.86,unit:'char'};
@@ -245,7 +251,7 @@ async function compose(canvas,F,A){
   const gOff=pm=>pm.userData.gc-pm.userData.x0,ghostOf=pg=>{const m0=pg.parts[0],mat=m0.material.clone();mat.uniforms.map.value=m0.material.uniforms.map.value;mat.uniforms.mode.value=1;mat.uniforms.p.value=1;const m=new THREE.Mesh(m0.geometry,mat);m.renderOrder=21;m.visible=false;return m};
   let pool=null,ghosts=null;const hsh=(a,b)=>{let x=Math.sin(a*127.1+b*311.7)*43758.5453;return x-Math.floor(x)};
   if(title&&(SCR||CNT)){pool=mkPool(CNT?'0123456789':(K.he(ST)?'אבגדהוזחטיכלמנסעפצקרשת':'ABCDEFGHJKLMNPRSTUVWXYZ0123456789#%&'));ghosts=title.parts.map(m=>{const g=ghostOf(pool);title.add(g);return g})}
-  const showG=(g,m,pm)=>{g.geometry=pm.geometry;g.position.x=m.userData.gc-gOff(pm)};
+  const showG=(g,m,pm)=>{g.geometry=pm.geometry;g.position.x=m.userData.gc-gOff(pm);g.position.y=m.userData.y0||0};
   const sub=F.sub?tf(F.sub,{px:130,h:.9,font:calm?FT[0]:'Heebo',weight:calm?Math.min(500,FT[1]):500,color:INK?'#16161a':'#ffffff',shadow:INK?null:'rgba(0,0,0,.7)',ls:K.he(F.sub)?0:130*.06,emissive:.86,unit:'line'}):null;
   const logo=A.logo?K.logoFX(A.logo,{h:(BGK===4?1.7:1.1)*LS,glow:INK?'#000000':ac}):null;
   /* a dark logo on a dark slide gets a soft light plate behind it, so it always reads */
@@ -302,13 +308,16 @@ async function compose(canvas,F,A){
   let laid=false,need=.5,blk={x:0,y:0,w:0,h:0},acc=null,accN=0,pan=0,panT=0;const zoomR=1.42;
   const lay=fr=>{laid=true;let L=lk.layout;const HEB=K.he(F.title||F.kicker||'');const mir=f=>({...f,cx:1-f.cx,L:f.L.map((v,i)=>{const x=i%32;return f.L[i-x+31-x]})});if(L==='auto'){if(!fr||fr.str<.003)L='center';else if(fr.cx>.6){if(HEB&&!pnl&&!OV){fg.u.flip.value=1;fr=mir(fr);L='right'}else L='left'}else if(fr.cx<.4)L='right';
       else{/* subject in the middle: reframe it to one third (eased camera move) and put the words on the other side */const to=HEB||fr.cx>=.5?.32:.68;pan=K.cl(fr.cx-.5-(to-.5)/zoomR,-.5+.5/zoomR+.01,.5-.5/zoomR-.01);L=to<.5?'right':'left';const sh=(to-fr.cx);fr={...fr,L:fr.L.map((v,i)=>{const x=i%32,sx=Math.round(x-sh*31);return sx>=0&&sx<32?fr.L[(i-x)+sx]:0})}}}
-    const side=L==='left'||L==='right',maxW=side?vw*.46:vw*.84,items=[logo,kick,title,orn,sub].filter(Boolean);
+    const side=L==='left'||L==='right',maxW=PANEL===3?vw*.39:side?vw*.46:vw*.84,items=[logo,kick,title,orn,sub].filter(Boolean);
     items.forEach(g=>{const s0=g.userData.s0||(g.userData.s0=1);const w=g.width/s0,mw=g===logo?Math.min(maxW,vw*Math.min(.62,.3*LS)):maxW;const s=w>mw?mw/w:1;g.scale.setScalar(s);g.userData.s0=s;g.width=w*s;g.height=(g.height/s0)*s});
     /* without a logo the title is the hero: a short title grows towards half the frame; with a logo, the logo is never wider than the title it signs (unless the user asked for a bigger logo) */
     {const rs=(g,k)=>{const q=g.userData.s0*k;g.scale.setScalar(q);g.userData.s0=q;g.width*=k;g.height*=k};
       if(title&&!logo){const k=Math.min(calm?1.25:1.5,Math.min(maxW,vw*.5)/title.width,(vh*.4)/title.height);if(k>1.03)rs(title,k)}
       if(title&&logo&&(lk.logoSize==null||+lk.logoSize<=1)&&logo.width>title.width)rs(logo,Math.max(.6,title.width/logo.width))}
-    const gap=g=>g===logo?.55:g===kick?(TAG?.5:.34):g===title?(ruleM&&!orn?.62:.4):g===orn?.36:0,tot=items.reduce((a,g)=>a+g.height+gap(g),0)+(ruleM?.0:0);
+    const gap=g=>g===logo?.55:g===kick?(TAG?.5:.34):g===title?(ruleM&&!orn?.62:.4):g===orn?.36:0,sumH=()=>items.reduce((a,g)=>a+g.height,0),sumG=items.reduce((a,g)=>a+gap(g),0);
+    /* the whole block always fits the height of the frame (a two-row title under a logo can be tall): everything shrinks together */
+    if(sumH()+sumG>vh*.86){const k=Math.max(.5,(vh*.86-sumG)/sumH());items.forEach(g=>{const q=g.userData.s0*k;g.scale.setScalar(q);g.userData.s0=q;g.width*=k;g.height*=k})}
+    const tot=sumH()+sumG;
     const he=K.he(F.title||F.kicker||''),align=side||L==='top'||L==='bottom'?(L==='left'?(he?'right':'left'):L==='right'?(he?'right':'left'):'center'):'center';
     const bw=Math.max(...items.map(g=>g.width));const m=vw*.05;
     const cx=L==='left'?-vw/2+m+bw/2:L==='right'?vw/2-m-bw/2:0;let top=L==='top'?vh/2-vh*.09:L==='bottom'?-vh/2+vh*.1+tot:tot/2+.15;
@@ -318,13 +327,14 @@ async function compose(canvas,F,A){
     const worst=tp=>fr?Math.max(...rows.map(([o,h,wt,w])=>wt*regionHi(fr,(cx-w/2)/vw+.5,(cx+w/2)/vw+.5,.5-(tp-o)/vh,.5-(tp-o-h)/vh))):null;
     if(fr&&lk.layout==='auto'&&L!=='top'&&L!=='bottom'&&rows.length){const lim=vh/2-vh*.06,c0=worst(top);let best=top,bl=c0;
       for(let tp=lim;tp-tot>=-lim;tp-=.2){const l=worst(tp)+Math.abs(tp-top)*.004;if(l<bl){bl=l;best=tp}}if(c0>.06&&bl<c0*.7)top=best}
+    if(title&&title.align)title.align(align);
     let y=top;items.forEach(g=>{g.position.y=y-g.height/2;g.position.x=align==='center'?cx:align==='right'?cx+bw/2-g.width/2:cx-bw/2+g.width/2;
       if(g===title&&ruleM){const rw=Math.min(2.6,bw*.3);ruleM.scale.set(rw,.035,1);ruleM.userData={w:rw,x:align==='center'?cx:align==='right'?cx+bw/2-rw/2:cx-bw/2+rw/2,dir:align==='right'?1:align==='left'?-1:0};ruleM.position.set(ruleM.userData.x,y-g.height-.3,0)}
       y-=g.height+gap(g)});
     if(tagM&&kick){tagM.scale.set(kick.width+.55,kick.height*1.05,1);tagM.position.set(kick.position.x,kick.position.y,-.05);tagM.userData={w:kick.width+.55,x:kick.position.x,dir:align==='right'?1:align==='left'?-1:0}}
     blk={x:cx,y:top-tot/2,w:bw,h:tot};scrim.scale.set(Math.min(vw*1.1,bw*1.5+4),tot*1.8+2.4,1);scrim.position.set(cx,blk.y,-1.5);
     if(halo)halo.position.set(cx,title?title.position.y:blk.y,-3);if(flare)flare.position.set(cx,title?title.position.y:0,.5);
-    if(pnl){const sh=PANEL,w=sh===1?vh*.62:sh===2?vw*.34:vw*.4,h=sh===1?vh*.62:sh===2?vh*.86:vh*.62,px=(L==='right'?-1:1)*(vw/2-vw*.05-w/2);pnl.scale.set(w,h,1);pnl.position.set(px,0,-.3);pnl.material.uniforms.pa.value=w/h;pnl.userData={x:px}}
+    if(pnl){const sh=PANEL,w=sh===3?vw*.75:sh===1?vh*.62:sh===2?vw*.34:vw*.4,h=sh===3?vh*1.4:sh===1?vh*.62:sh===2?vh*.86:vh*.62,px=(L==='right'?-1:1)*(sh===3?w/2:vw/2-vw*.05-w/2);/* split: the footage half starts at the middle of the frame and runs off the edge, so no camera move ever shows its end */pnl.scale.set(w,h,1);pnl.position.set(px,0,-.3);pnl.material.uniforms.pa.value=w/h;pnl.userData={x:px}}
     if(MOT==='arc'&&title){const he2=title.he,x0=blk.x-blk.w/2-.3,x1=blk.x+blk.w/2+.3,yb=sub?sub.position.y-sub.height*.5-.45:title.position.y-title.height*.62,pts=[];for(let i=0;i<=64;i++){const u=i/64,xx=x0+(x1-x0)*u;pts.push(new THREE.Vector3(xx,yb-.35*Math.sin(Math.PI*u)+.25*u*(he2?-1:1),0))}
       const crv=new THREE.CatmullRomCurve3(he2?pts.reverse():pts);mm[0].geometry=new THREE.TubeGeometry(crv,128,.045,8,false);mm[0].userData.cnt=mm[0].geometry.index.count}
     const u0=(cx-bw/2)/vw+.5,u1=(cx+bw/2)/vw+.5,v0=.5-(top)/vh,v1=.5-(top-tot)/vh,lum=fr?Math.max(region(fr,u0,u1,v0,v1),worst(top)||0):(typeof A.lum==='number'?A.lum:.3);
@@ -349,14 +359,14 @@ async function compose(canvas,F,A){
     else if(title){if(lk.reveal==='light'){const rv=E.io3(K.k(t,titleT,titleT+1.6));title.u.rev.value=rv;if(flare){flare.position.x=blk.x+(title.he?1:-1)*(title.width/2-title.width*rv);flare.material.opacity=rv>0&&rv<1?.9:0}}else{title.at(t,titleT,RC);
         if(SNAP)title.parts.forEach(m=>{const pr=K.cl((t-titleT-m.userData.i*RC.st)/RC.dur,0,1),q=1-K.ez.settle(pr);m.scale.set(Math.max(.001,1+.8*q),Math.max(.001,1-.45*q),1)});
         if(GL){const bursts=[titleT+.05,titleT+.32,titleT+.6,tEnd+.35];let b=0;bursts.forEach(t0=>{if(t>=t0&&t<t0+.12)b=1});const fr=Math.floor(t*30);
-          title.parts.forEach(m=>{const i=m.userData.i;m.position.x=m.userData.x0+(b?(hsh(i,fr)-.5)*.35*title.height:0);m.position.y=b&&hsh(i+3,fr)>.6?(hsh(i+5,fr)-.5)*.25*title.height:0});if(b){f.fcol.value.set(hsh(fr,1)>.5?'#ff2bd6':'#2bf2ff')}}}
+          title.parts.forEach(m=>{const i=m.userData.i;m.position.x=m.userData.x0+(b?(hsh(i,fr)-.5)*.35*title.lineH:0);m.position.y=(m.userData.y0||0)+(b&&hsh(i+3,fr)>.6?(hsh(i+5,fr)-.5)*.25*title.lineH:0)});if(b){f.fcol.value.set(hsh(fr,1)>.5?'#ff2bd6':'#2bf2ff')}}}
       title.u.glow.value=0;const sw=K.k(t,tEnd+.5,tEnd+1.4);title.u.shine.value=(lk.light==='sweep'||e>.55)&&sw>0&&sw<1?-.2+1.4*E.sine(sw):-1}
     if(ruleM){const r=E.io3(K.k(t,ruleT,ruleT+.9*sp)),u=ruleM.userData;ruleM.scale.x=Math.max(.001,u.w*r);ruleM.position.x=u.x+u.dir*(u.w-u.w*r)/2;ruleM.material.opacity=.9*r}
     if(sub)sub.at(t,subT,calm?rec('veil'):rec('maskLines'));
     if(tagM){const r=E.io3(K.k(t,kickT-.35,kickT+.25)),u=tagM.userData;tagM.scale.x=Math.max(.001,u.w*r);tagM.position.x=u.x+(u.dir||0)*(u.w-u.w*r)/2;tagM.material.opacity=.95*Math.min(1,r*3)}
     if(orn)orn.at(t,ruleT,'soft');
     if(title&&lk.shine!==false&&lk.fill!=='accent'&&!CNT){const dur=calm?2.2:1.2,sw2=K.k(((t-I)%A.loop+A.loop)%A.loop,A.loop*.35,A.loop*.35+dur);if(t>I&&sw2>0&&sw2<1)title.u.shine.value=-.2+1.4*E.sine(sw2)}
-    if(WAVE&&title){const A0=title.height*(.03+.05*e)*amp;title.parts.forEach(m=>{m.position.y=A0*Math.sin(ph*3-m.userData.i*.42)})}
+    if(WAVE&&title){const A0=title.lineH*(.03+.05*e)*amp;title.parts.forEach(m=>{m.position.y=(m.userData.y0||0)+A0*Math.sin(ph*3-m.userData.i*.42)})}
     B.scale.setScalar(1+(lk.hold==='none'||WAVE?0:.004+.008*e)*Math.sin(ph)*amp);B.position.y=.04*Math.sin(ph)*amp;
     scrim.material.opacity=need*E.o3(K.k(t,T0-.6,T0+1));
     if(rays){rays.children.forEach(m=>{m.rotation.z=m.userData.r0+Math.sin(ph+m.userData.ph)*.06;m.material.opacity=m.userData.o*(.75+.25*Math.sin(ph*2+m.userData.ph*2))*E.o3(K.k(t,.6,3))})}
@@ -379,7 +389,7 @@ async function compose(canvas,F,A){
       /* no room beside the words: better no illustration than one on top of a line */
       if(Math.abs(x-blk.x)<blk.w/2*1.12+U.s*.45&&Math.abs(y-blk.y)<blk.h/2+U.s*.4){m.visible=false;return}m.visible=true;const lt=E.o3(K.k(t,titleT+.5+i*.14,titleT+1.5+i*.14)),pop=1+.18*Math.sin(Math.PI*K.k(t,titleT+.5+i*.14,titleT+1.3+i*.14));
       m.position.set(x+.1*Math.sin(ph+U.p)*amp,y+.16*Math.cos(ph+U.p)*amp,-.6);m.rotation.z=U.r+.1*Math.sin(ph+U.p*2)*amp;m.scale.setScalar(Math.max(.001,U.s*lt*pop));m.material.opacity=U.o*lt});
-    if(pnl){const pr=E.io3(K.k(t,T0-.3,T0+1.1));pnl.material.uniforms.prog.value=pr;pnl.material.uniforms.zoom.value=1.12-.06*E.io3(K.k(t,0,I))+.02*Math.sin(ph)*amp;pnl.position.y=.08*Math.sin(ph)*amp}
+    if(pnl){const pr=E.io3(K.k(t,T0-.3,T0+1.1));pnl.material.uniforms.prog.value=pr;pnl.material.uniforms.zoom.value=1.12-.06*E.io3(K.k(t,0,I))+.02*Math.sin(ph)*amp;pnl.position.y=PANEL===3?0:.08*Math.sin(ph)*amp}
     if(prop){const cyc=(((t-I)/A.loop)%1+1)%1,on=E.o3(K.k(t,.8,2.4));
       if(PR==='airplane'){const dir=prop.rotation.y?-1:1,x=dir*(-17+34*cyc),tp=blk.y+blk.h/2,bt=blk.y-blk.h/2,up=vh/2-tp,dn=bt+vh/2,ys=up>dn?tp+up*.5:bt-dn*.5;prop.position.set(x,ys*(camZ+9)/camZ+.4*Math.sin(cyc*Math.PI),-9);prop.rotation.z=.04*Math.sin(ph);prop.rotation.x=.12;prop.visible=on>.01}
       else if(PR==='trophy'){/* stays inside the frame (cup ≈1.8 tall, 1.3 wide at scale 1): beside the words on the roomier side, else under or above them, else hidden */
