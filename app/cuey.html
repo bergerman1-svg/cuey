@@ -254,6 +254,8 @@ aside{border-inline-end:3px solid var(--line);display:flex;flex-direction:column
 #libDlg .msg{grid-column:1/-1;color:var(--mut);text-align:center;padding:40px 10px;font-size:14px}
 #libDlg .lfoot{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:12px;color:var(--mut)}#libDlg .lfoot a{color:var(--go)}
 #mkDlg .dbox{width:min(1180px,97vw);max-height:95vh;overflow:auto}
+/* a small ✕ in the corner of the two builder windows (Avi 25.11) */
+#mkDlg .dbox,#dirDlg .dbox{position:relative}.dlgx{position:absolute;top:12px;inset-inline-end:12px;width:30px;height:30px;padding:0;border-radius:50%;display:grid;place-items:center;font-size:14px;line-height:1;color:var(--mut);background:#ffffff0d;border:1px solid var(--line2);z-index:3}.dlgx:hover{color:var(--txt);background:#ffffff1c;border-color:var(--mut)}
 #mkDlg .mkw{display:grid;grid-template-columns:1fr 330px;gap:18px;align-items:start}
 @media(max-width:900px){#mkDlg .mkw{grid-template-columns:1fr}}
 #mkPv{position:relative;aspect-ratio:16/9;border-radius:10px;overflow:hidden;border:1px solid var(--line2);background:#000;touch-action:none;cursor:crosshair;direction:ltr}
@@ -823,6 +825,7 @@ requestAnimationFrame(fr);setTimeout(function(){done=1;s.remove()},4000)})()</sc
   <div class="dbtns"><button id="adX" data-t="cancel">Cancel</button></div>
 </div></div>
 <div id="mkDlg" class="dlg" hidden><div class="dbox">
+  <button type="button" class="dlgx" id="mkXc" aria-label="Close" title="Close (Esc)">✕</button>
   <h3 id="mkTitleH">Create cue</h3>
   <div class="mkw">
     <div class="mkpv" id="mkPv"><div class="mkbg" id="mkBg"></div><canvas id="mkTx" width="1920" height="1080"></canvas><i class="gx"></i><i class="gy"></i><div class="mksel" id="mkSelT" hidden><i></i><i></i><i></i><i></i></div><div class="mksel" id="mkSelL" hidden><i></i><i></i><i></i><i></i></div><span class="mkhint" data-t="mk_drag">Drag the text anywhere on the screen</span></div>
@@ -1484,7 +1487,7 @@ $('#mkLogoX').onclick=()=>{Object.assign(mk.T,{logo:'',logoName:''});mkLogoShow(
 $('#mkLogoPos').onclick=e=>{const b=e.target.closest('button');if(!b)return;mk.T.logoPos=b.dataset.l;delete mk.T.logoXY;mkLogoShow();mkDraw()};
 $('#mkLogoSize').addEventListener('input',e=>{mk.T.logoSize=(+e.target.value)/100;mkDraw()});
 $('#mkMusX').onclick=()=>{mk.audio=null;mk.keepAudio=false;mkMusShow()};
-$('#mkX').onclick=mkClose;$('#mkOk').onclick=mkCreate;
+$('#mkX').onclick=mkClose;$('#mkXc').onclick=mkClose;$('#mkOk').onclick=mkCreate;
 $('#mkDlg').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Escape'&&$('#libDlg').hidden&&$('#fmDlg').hidden)mkClose();if((e.metaKey||e.ctrlKey)&&e.key==='Enter')mkCreate()});
 { // drag the text block on the preview
   const pv=$('#mkPv'),fr=e=>{const r=pv.getBoundingClientRect();return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]};
@@ -3341,11 +3344,11 @@ function show(i,force){fadeReset();
   armed=it.type==='video'&&it.standby&&!it.bad&&!autoMode&&!it.grp;setGoLabel();
   if(it.web&&it.bad&&!['blocked','gone'].includes(it.web.err)){it.bad=false;delete it.web.err} // online hiccup: try again
   if(it.bad){pvStage.clear();outStage&&outStage.clear();stopSlideAudio();render();if(it.grp&&groups[it.grp]&&!exporting){clearTimeout(holdTimer);holdTimer=setTimeout(()=>{if(items[cur]===it)advance()},1500)}return}
-  const onEnded=()=>{if(items[cur]!==it)return;cueDone=true;if(autoMode||it.grp||it.onEnd==='next')advance();else if(it.onEnd==='black')setBlack(true)};
+  const onEnded=()=>{if(items[cur]!==it)return;cueDone=true;if(autoMode||it.grp||it.onEnd==='next')advance();else if(it.onEnd==='black')setBlack(true,true)};
   if(it.type==='audio'){clearTimeout(holdTimer);holdTimer=null;holdInfo=null;const blackIt={...it,type:'image',scale:'fit'};if(outStage){outWin.document.getElementById('msg').style.display='none';outStage.show(blackIt,BLACK_PNG,force,null,null)}pvStage.show(blackIt,BLACK_PNG,force,null,null);
     slideTail(sndFadeT(it));slideAudio.src=it.url;slideAudio.loop=!!it.loop&&!exporting&&!(it.in>0||it.out>0);slideAudio.volume=it.vol*vm();slideAudio.currentTime=it.in||0;slideAudio.onended=()=>{if(items[cur]===it&&!slideAudio.loop)onEnded()};
     slideAudio.ontimeupdate=()=>{if(items[cur]!==it||!(it.out>0)||slideAudio.paused)return;if(slideAudio.currentTime>=it.out){if(it.loop&&!exporting){slideAudio.currentTime=it.in||0}else{slideAudio.pause();onEnded()}}};slideAudio.play().catch(()=>{});
-    if(blackOn)setBlack(false);render();tlUpdate();return}
+    if(blackOn&&blackAuto)setBlack(false);render();tlUpdate();return}
   slideAudio.onended=null;
   const onTime=()=>{if(items[cur]===it)tlUpdate()};
   const held=gated(it)&&!!outStage; // a Studio cue on the free plan: PROGRAM shows it, the event screen keeps what it had
@@ -3360,7 +3363,7 @@ function show(i,force){fadeReset();
   }
   if(it.audio)startSlideAudio(it,armed,sndFadeT(it));else stopSlideAudio(sndFadeT(it));
   armHold(it);applyAudioRouting();
-  if(blackOn)setBlack(false);
+  if(blackOn&&blackAuto)setBlack(false); /* BLACK the operator pressed stays through GO, BACK and a click on a cue until the operator lifts it (Avi 25.11: 'black must stay until I release it'); only a black that a cue's own 'End: Black' put up gives way to the next cue */
   render();tlUpdate();
 }
 function armHold(it){clearTimeout(holdTimer);holdTimer=null;holdInfo=null;if(!still(it)||it.bad)return;if(!(autoMode||it.grp||it.onEnd==='next'))return;const ms=Math.max(500,(it.hold||5)*1000);holdInfo={start:performance.now(),dur:ms/1000};holdTimer=setTimeout(()=>{if(items[cur]===it)advance()},ms)}
@@ -3371,7 +3374,7 @@ function advance(fromGo){if(exportFinishing)return;
     if(haltGrp===it.grp)return;
     if(cur<b){show(cur+1);return}
     if(G.end==='loop'){show(a);return}
-    if(G.end==='black'){clearTimeout(holdTimer);holdTimer=null;holdInfo=null;setBlack(true);grpMusicStop(exporting?0:1.5);return}
+    if(G.end==='black'){clearTimeout(holdTimer);holdTimer=null;holdInfo=null;setBlack(true,true);grpMusicStop(exporting?0:1.5);return}
     {const n=leaveIdx(b+1<items.length?b+1:-1);if(n>=0)show(n)}return}
   const n=leaveIdx(cur+1<items.length?cur+1:-1);
   if(n>=0)show(n);else if(exporting){finishExport()}else if((autoMode||loopShow)&&items.length)show(0);else if(fromGo&&items.length===1&&replayable())show(cur,true)} // the only cue in the list finished: GO runs it again (Avi: only when it is the only cue)
@@ -3539,7 +3542,8 @@ function startGrpRename(h,g){
 }
 function setGoLabel(){$('#go').textContent=armed?t('play'):t('go');$('#go').style.background=armed?'var(--amb)':'';$('#go').style.color=armed?'#fff':''}
 function back(){const f=takeFromIdx();if(f>=0){show(f);return} /* BACK from a taken cue = back to the cue the show came from */ if(cur>0)show(cur-1);else render()}
-function setBlack(on){blackOn=on;setTimeout(()=>shWebTick(true),0);$('#blk').classList.toggle('on',on);pvStage.black(on);outStage&&outStage.black(on);try{wdgPaint();wxPaint()}catch(e){}}
+let blackAuto=false;
+function setBlack(on,auto){blackOn=on;blackAuto=!!(on&&auto);setTimeout(()=>shWebTick(true),0);$('#blk').classList.toggle('on',on);pvStage.black(on);outStage&&outStage.black(on);try{wdgPaint();wxPaint()}catch(e){}}
 function holdPause(p){if(!holdInfo)return;const it=items[cur];
   if(p){if(holdInfo.paused)return;clearTimeout(holdTimer);holdTimer=null;holdInfo.left=Math.max(0,holdInfo.dur*1000-(performance.now()-holdInfo.start));holdInfo.paused=true}
   else{if(!holdInfo.paused)return;holdInfo.paused=false;holdInfo.start=performance.now()-(holdInfo.dur*1000-holdInfo.left);holdTimer=setTimeout(()=>{if(items[cur]===it)advance()},Math.max(50,holdInfo.left))}}
@@ -3758,6 +3762,7 @@ setTimeout(()=>{if(!document.querySelector('dialog[open]'))cuTour(false)},docume
 #dirDlg .logo{display:flex;align-items:center;gap:10px}#dirDlg .logo img{height:34px;max-width:120px;object-fit:contain;background:#1a1a20;border-radius:6px;padding:3px}
 </style>
 <div id="dirDlg" class="dlg" hidden><div class="dbox">
+  <button type="button" class="dlgx" id="dirXc" aria-label="Close" title="Close (Esc)">✕</button>
   <h3><span id="dirH">AI Builder</span><span class="ai">PRO · BETA</span></h3>
   <div class="dsplit">
     <div>
@@ -3905,7 +3910,7 @@ async function useScene(s,fields){st.lastErr='';st.scene=s;if(s.engine){if(!st.f
 window.openDirector=function(it){st.edit=it||null;st.footFile=null;st.busy=false;st.ready=false;$('#dirAdd').disabled=true;$('#dirErr').textContent='';$('#dirErr2').textContent='';busy(false);texts();$('#dirDlg').hidden=false;
   const isc=it&&(it.pend&&it.pend.scene||it.scene);if(isc){st.logoFile=isc.logoFile||null;st.footFile=isc.footFile||null;st.prompt=isc.src&&isc.src.prompt||'';st.hist=[];st.used=isc.src&&isc.src.fixes||0;useScene(JSON.parse(JSON.stringify(isc.src)),isc.fields)}else{step(1);bootHost();magic(true)}}
 function close(){if(rate.n&&!rate.sent)rateSend('');post({sc:'stop'});footStop();$('#dirDlg').hidden=true;ifr.srcdoc='';st.hostOk=false}
-$('#dirDlg').addEventListener('click',e=>{if(e.target.id==='dirDlg'&&!st.busy)close()});
+$('#dirDlg').addEventListener('click',e=>{if(e.target.id==='dirDlg'&&!st.busy)close()});$('#dirXc').onclick=()=>{if(!st.busy)close()};
 $('#dirDlg').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Escape'&&!st.busy)close()});
 $('#dirMode').onclick=e=>{const b=e.target.closest('button');if(!b)return;st.mode=b.dataset.m;$('#dirMode').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))};
 $('#dirLogoBtn').onclick=()=>$('#dirLogo').click();
