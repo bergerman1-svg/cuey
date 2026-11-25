@@ -154,6 +154,7 @@ async def main():
             s = await pg.evaluate(PV)
             ok(L + 'the background can be turned off, and that does not restart a running timer', s['bg'] in ('rgba(0, 0, 0, 0)', 'transparent') and secs(s['txt']) >= 3 and await pg.evaluate("wdgT.run"), s)
             # --- the panel itself: drag, remember, make small ---
+            await pg.evaluate("wtPlace(430,430)")  # the panel now opens in the dock above PROGRAM: start the drag from a place with room in every direction
             p0 = await pg.evaluate(PN); hd = await pg.evaluate("(()=>{const r=$('#wtPanel .wpn').getBoundingClientRect();return [r.left+r.width/2,r.top+r.height/2]})()")
             await pg.mouse.move(hd[0], hd[1]); await pg.mouse.down(); await pg.mouse.move(hd[0] + 320, hd[1] - 140, steps=8); await pg.mouse.up(); await pg.wait_for_timeout(200)
             p1 = await pg.evaluate(PN)

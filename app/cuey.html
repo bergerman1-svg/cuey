@@ -414,7 +414,8 @@ body.he .ctxm{direction:rtl}
 
 /* program / next */
 section{display:flex;flex-direction:column;padding:18px 20px 14px;gap:14px;min-width:0;min-height:0;background:radial-gradient(1200px 600px at 60% -10%,#15151B 0%,var(--bg) 60%)}
-.prev{display:grid;grid-template-columns:3fr 2fr;gap:16px;flex:1;min-height:0;align-content:center;align-items:end}
+/* PROGRAM and NEXT sit a little lower: the strip above them is where the small widget panels dock (Avi 25.11). The strip gives way first when the window is short */
+.prev{display:grid;grid-template-columns:3fr 2fr;grid-template-rows:minmax(0,var(--dock,150px)) auto;gap:16px;row-gap:0;flex:1;min-height:0;align-content:center;align-items:end}.prev>.pv{grid-row:2}
 .pv{background:#000;border:3px solid var(--line2);border-radius:12px;position:relative;overflow:hidden;aspect-ratio:16/9;width:100%;margin:0 auto}
 .pv.now{border-color:#3A4A00;box-shadow:0 0 0 1px #1C2400,0 20px 60px -30px var(--go-glow)}
 .pv .lbl{position:absolute;top:10px;inset-inline-start:12px;font-family:var(--mono);font-size:10px;letter-spacing:1.6px;padding:3px 9px;border-radius:999px;background:#000c;z-index:4;backdrop-filter:blur(6px)}
@@ -2941,12 +2942,12 @@ function wtHit(x,y,w,h,all){const els=[$('#pvNow'),$('#pvNext'),$('#go').parentE
   return els.some(e=>{if(!e)return false;const r=e.getBoundingClientRect();return r.width>0&&!(x+w<=r.left-4||x>=r.right+4||y+h<=r.top-4||y>=r.bottom+4)})}
 function wtOnGo(){const r=$('#wtPanel').getBoundingClientRect(),g=$('#go').parentElement.getBoundingClientRect();return !(r.right<=g.left||r.left>=g.right||r.bottom<=g.top||r.top>=g.bottom)}
 function wtAuto(){const p=$('#wtPanel');const go=()=>{const w=p.offsetWidth||248,h=p.offsetHeight||240,a=$('#pvNow').getBoundingClientRect(),n=$('#pvNext').getBoundingClientRect(),l=$('#list').getBoundingClientRect(),g=$('#go').parentElement.getBoundingClientRect(),tl=document.querySelector('.tl').getBoundingClientRect(),R=innerWidth-w-8,lb=Math.max(l.top,...[...$('#list').children].map(e=>e.getBoundingClientRect().bottom))+8;
-    const c=[[R,n.top-h-8],[R,58],[n.right+8,n.top],[R,Math.max(a.bottom,n.bottom)+8],[a.left,Math.max(a.bottom,n.bottom)+8],[R,tl.top-h-8],[l.left+8,lb],[l.left+8,innerHeight-h-8]];
+    const pr=document.querySelector('.prev').getBoundingClientRect(),c=[];for(let i=0;i<6;i++)c.push([pr.left+i*(w+6),pr.top+2]);c.push([R,n.top-h-8],[R,58],[n.right+8,n.top],[R,Math.max(a.bottom,n.bottom)+8],[a.left,Math.max(a.bottom,n.bottom)+8],[R,tl.top-h-8],[l.left+8,lb],[l.left+8,innerHeight-h-8]);
     for(const all of [true,false])for(const [x,y] of c)if(x>=6&&y>=52&&x+w<=innerWidth-6&&y+h<=innerHeight-6&&!wtHit(x,y,w,h,all)){wtPlace(x,y);return true}return false};
   if(go())return;if(!p.classList.contains('min')){p.classList.add('min');$('#wpMin').textContent='+';if(go())return}
   const g=$('#go').parentElement.getBoundingClientRect();wtPlace(8,g.top-(p.offsetHeight||110)-8)}
-function wtOpen(){$('#wgDlg').hidden=true;const p=$('#wtPanel');wdgT.used=true;wtSync();if(p.hidden){p.hidden=false;wdgPaint();let pos=null;try{pos=JSON.parse(localStorage.getItem('cuey.wtPanel')||'null')}catch(e){}
-    if(pos&&isFinite(pos.x)&&isFinite(pos.y)){wtPlace(pos.x,pos.y);if(wtOnGo())wtAuto()}else wtAuto()} // first time (or when the remembered place now lies on GO in a smaller window): a free place is found
+function wtOpen(){$('#wgDlg').hidden=true;const p=$('#wtPanel');wdgT.used=true;wtSync();if(p.hidden){p.hidden=false;wdgPaint();let pos=null;try{pos=JSON.parse(localStorage.getItem('cuey.wtPanel2')||'null')}catch(e){}
+    if(pos&&isFinite(pos.x)&&isFinite(pos.y)){p._drag=1;wtPlace(pos.x,pos.y);if(wtOnGo())wtAuto()}else wtAuto()} // first time (or when the remembered place now lies on GO in a smaller window): a free place is found
   wdgPaint()}
 function wtClose(){$('#wtPanel').hidden=true;wtOff()}
 function wtTime(){const m=Math.max(0,parseInt($('#wtMin').value,10)||0),sc=Math.max(0,parseInt($('#wtSec').value,10)||0);let d=Math.min(35999,m*60+sc);if(d<1)return; /* 0:00 or nothing typed: the time stays as it was (the fields show it again when left) */ if(d!==wdgT.dur){wdgT.dur=d;wtReset()}}
@@ -2961,11 +2962,11 @@ $('#wtSize').oninput=()=>{wdgT.size=Math.min(.45,Math.max(.04,(+$('#wtSize').val
 $('#wbPlay').onclick=()=>{if(!wdgT.on)wtShow();wdgT.run?wtPause():wtStart()};$('#wbReset').onclick=wtReset;
 $('#wbM1').onclick=()=>wtNudge(-60);$('#wbP1').onclick=()=>wtNudge(60);
 $('#wbShow').onclick=()=>{if(wdgT.on){wdgT.on=false;wdgPaint();track('timer-hide')}else wtShow()}; // Hide keeps the time running — only the picture leaves the screen
-{let sure=0;const x=$('#wpX'),off=()=>{sure=0;x.classList.remove('sure');x.textContent='✕'};x.onclick=()=>{if(!sure&&(wdgT.on||wdgT.run||wtElapsed()>0)){sure=setTimeout(off,3000);x.classList.add('sure');x.textContent=t('wt_sure');return}clearTimeout(sure);off();wtClose()}}$('#wpMin').onclick=()=>{const p=$('#wtPanel');p.classList.toggle('min');$('#wpMin').textContent=p.classList.contains('min')?'+':'–';const r=p.getBoundingClientRect();wtPlace(r.left,r.top)};
+{let sure=0;const x=$('#wpX'),off=()=>{sure=0;x.classList.remove('sure');x.textContent='✕'};x.onclick=()=>{if(!sure&&(wdgT.on||wdgT.run||wtElapsed()>0)){sure=setTimeout(off,3000);x.classList.add('sure');x.textContent=t('wt_sure');return}clearTimeout(sure);off();wtClose()}}$('#wpMin').onclick=()=>{const p=$('#wtPanel'),m=p.classList.toggle('min');$('#wpMin').textContent=m?'+':'–';const r=p.getBoundingClientRect();if(m&&!p._drag)wtAuto();else wtPlace(r.left,r.top)}; // made small it goes to the dock above PROGRAM, unless the operator put it somewhere himself
 {const p=$('#wtPanel'),h=p.querySelector('.wph');let d=null;p.addEventListener('pointerdown',()=>wgpTop(p),true);
   h.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;const r=p.getBoundingClientRect();d={dx:e.clientX-r.left,dy:e.clientY-r.top};p.classList.add('drag');try{h.setPointerCapture(e.pointerId)}catch(x){}});
   h.addEventListener('pointermove',e=>{if(d)wtPlace(e.clientX-d.dx,e.clientY-d.dy)});
-  const end=()=>{if(!d)return;d=null;p.classList.remove('drag');const r=p.getBoundingClientRect();try{localStorage.setItem('cuey.wtPanel',JSON.stringify({x:Math.round(r.left),y:Math.round(r.top)}))}catch(e){}};h.addEventListener('pointerup',end);h.addEventListener('pointercancel',end);
+  const end=()=>{if(!d)return;d=null;p._drag=1;p.classList.remove('drag');const r=p.getBoundingClientRect();try{localStorage.setItem('cuey.wtPanel2',JSON.stringify({x:Math.round(r.left),y:Math.round(r.top)}))}catch(e){}};h.addEventListener('pointerup',end);h.addEventListener('pointercancel',end);
   addEventListener('resize',()=>{if(!p.hidden){const r=p.getBoundingClientRect();wtPlace(r.left,r.top);if(wtOnGo())wtAuto()}}); // a smaller window never leaves the panel lying on GO
   /* a time that was just typed counts the moment anything else in the panel is pressed — Start then starts the new time */
   p.addEventListener('pointerdown',e=>{const ae=document.activeElement;if((ae===$('#wtMin')||ae===$('#wtSec'))&&e.target!==$('#wtMin')&&e.target!==$('#wtSec')){wtTime();ae.blur();wtSync()}},true)}
@@ -3111,7 +3112,7 @@ function wgpHit(p,x,y,w,h,all){const els=[$('#pvNow'),$('#pvNext'),$('#go').pare
   return els.some(e=>{if(!e)return false;const r=e.getBoundingClientRect();return r.width>0&&!(x+w<=r.left-4||x>=r.right+4||y+h<=r.top-4||y>=r.bottom+4)})}
 /* a free place: never on the GO row, PROGRAM, NEXT or another open panel; cues and the time line are spared when there is room */
 function wgpAuto(p){const w=p.offsetWidth||248,h=p.offsetHeight||200,a=$('#pvNow').getBoundingClientRect(),n=$('#pvNext').getBoundingClientRect(),l=$('#list').getBoundingClientRect(),tl=document.querySelector('.tl').getBoundingClientRect(),R=innerWidth-w-8,lb=Math.max(l.top,...[...$('#list').children].map(e=>e.getBoundingClientRect().bottom))+8,low=Math.max(a.bottom,n.bottom)+8;
-  const c=[[R,n.top-h-8],[R,58]];for(let i=0;i<5;i++)c.push([a.left+i*(w+8),low],[R-i*(w+8),tl.top-h-8]);for(let i=0;i<4;i++)c.push([R-i*(w+8),58]);c.push([n.right+8,n.top],[l.left+8,lb],[l.left+8,innerHeight-h-8],[l.left+8+w+8,innerHeight-h-8]);
+  const pr=document.querySelector('.prev').getBoundingClientRect(),c=[];for(let i=0;i<6;i++)c.push([pr.left+i*(w+6),pr.top+2]);/* the dock: the strip above PROGRAM and NEXT, left to right */c.push([R,n.top-h-8],[R,58]);for(let i=0;i<5;i++)c.push([a.left+i*(w+8),low],[R-i*(w+8),tl.top-h-8]);for(let i=0;i<4;i++)c.push([R-i*(w+8),58]);c.push([n.right+8,n.top],[l.left+8,lb],[l.left+8,innerHeight-h-8],[l.left+8+w+8,innerHeight-h-8]);
   for(const all of [true,false])for(const [x,y] of c)if(x>=6&&y>=52&&x+w<=innerWidth-6&&y+h<=innerHeight-6&&!wgpHit(p,x,y,w,h,all)){wgpPlace(p,x,y);return}
   const g=$('#go').parentElement.getBoundingClientRect(),i=[...document.querySelectorAll('.wgp')].filter(e=>e!==p&&!e.hidden).length;wgpPlace(p,8+30*i,g.top-h-8-30*i)} // no free place left: they are stacked like cards, each one's top bar in reach
 let wgpDown=[null,0];document.addEventListener('pointerdown',e=>{wgpDown=[e.target,performance.now()]},true); // what was pressed last: a field knows whether it was left for its own panel or for the show
@@ -3139,13 +3140,13 @@ function wxPanel(k){let p=document.getElementById('wxp-'+k);if(p)p.remove(); // 
   p.querySelectorAll('.wxr').forEach(el=>el.oninput=()=>{w[el.dataset.f]=(+el.value||0)/100;try{fillRange(el)}catch(e){}ch()});
   const pk=p.querySelector('.wxPick');if(pk){const fi=p.querySelector('.wxFile');pk.onclick=()=>fi.click();fi.onchange=()=>{const f=fi.files&&fi.files[0];fi.value='';if(f)wxPicFile(k,pk.dataset.f,f)}}
   p.querySelectorAll('.wxClr').forEach(b=>b.onclick=()=>{w[b.dataset.f]='';ch()});
-  p.querySelector('.wxMin').onclick=()=>{const m=p.classList.toggle('min');p.querySelector('.wxMin').textContent=m?'+':'–';const r=p.getBoundingClientRect();if(m&&!p._drag&&wgpHit(p,r.left,r.top,r.width,r.height,true))wgpAuto(p);else wgpPlace(p,r.left,r.top)}; // made small it goes to a place that covers no cue (unless the operator put it somewhere himself)
+  p.querySelector('.wxMin').onclick=()=>{const m=p.classList.toggle('min');p.querySelector('.wxMin').textContent=m?'+':'–';const r=p.getBoundingClientRect();if(m&&!p._drag)wgpAuto(p);else wgpPlace(p,r.left,r.top)}; // made small it goes to a place that covers no cue (unless the operator put it somewhere himself)
   p.querySelector('.wxShow').onclick=()=>{if(w.on){w.on=false;track('widget-hide-'+k)}else{if(!wxReady(k)){const s=p.querySelector('.wpst');s.textContent=t('wx_need_'+k);s.classList.add('need');const f=p.querySelector('.wxf,.wxPick');if(f)f.focus();return}w.on=true;w.used=true;track('widget-on-'+k)}wxPaint()};
   { let sure=0;const x=p.querySelector('.wxX'),offS=()=>{sure=0;x.classList.remove('sure');x.textContent='✕'};x.onclick=()=>{if(!sure&&w.on){sure=setTimeout(offS,3000);x.classList.add('sure');x.textContent=t('wt_sure');return}clearTimeout(sure);offS();p.hidden=true;w.on=false;wxPaint()}} // on the screen: the first press asks, the second removes
   { const hd=p.querySelector('.wph');let d=null;
     hd.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;const r=p.getBoundingClientRect();d={dx:e.clientX-r.left,dy:e.clientY-r.top};p.classList.add('drag');try{hd.setPointerCapture(e.pointerId)}catch(x){}});
     hd.addEventListener('pointermove',e=>{if(d)wgpPlace(p,e.clientX-d.dx,e.clientY-d.dy)});
-    const end=()=>{if(!d)return;d=null;p._drag=1;p.classList.remove('drag');const r=p.getBoundingClientRect();try{localStorage.setItem('cuey.wxPanel.'+k,JSON.stringify({x:Math.round(r.left),y:Math.round(r.top)}))}catch(e){}};hd.addEventListener('pointerup',end);hd.addEventListener('pointercancel',end)}
+    const end=()=>{if(!d)return;d=null;p._drag=1;p.classList.remove('drag');const r=p.getBoundingClientRect();try{localStorage.setItem('cuey.wxPanel2.'+k,JSON.stringify({x:Math.round(r.left),y:Math.round(r.top)}))}catch(e){}};hd.addEventListener('pointerup',end);hd.addEventListener('pointercancel',end)}
   return p}
 addEventListener('resize',()=>{document.querySelectorAll('.wxp').forEach(p=>{if(p.hidden)return;const r=p.getBoundingClientRect();if(r.left>=6&&r.top>=6&&r.right<=innerWidth-6&&r.bottom<=innerHeight-6&&!wgpOnGo(p))return;wgpPlace(p,r.left,r.top);if(wgpOnGo(p))wgpAuto(p)})}); // a panel that still fits where it is, stays
 function wxSync(k){const p=document.getElementById('wxp-'+k);if(!p)return;const w=WX[k];
@@ -3160,7 +3161,7 @@ function wxPanelPaint(k){const p=document.getElementById('wxp-'+k);if(!p||p.hidd
   {const r=p.getBoundingClientRect();if(r.bottom>innerHeight-6&&r.height<innerHeight-12)p.style.top=Math.max(6,innerHeight-6-r.height)+'px'}} // the panel grew (a new button, a two-line note): it stays whole inside the window
 function wxOpen(k){$('#wgDlg').hidden=true;let p=document.getElementById('wxp-'+k);if(p&&!p.hidden){wxSync(k);return}
   document.querySelectorAll('.wxp:not(.min)').forEach(o=>{if(!o.hidden&&o.id!=='wxp-'+k){const b=o.querySelector('.wxMin');if(b)b.click()}});
-  p=wxPanel(k);if(WX[k].used&&wxReady(k)){p.classList.add('min');p.querySelector('.wxMin').textContent='+'}WX[k].used=true;p.hidden=false;wgpTop(p);wxSync(k);wxPaint();let pos=null;try{pos=JSON.parse(localStorage.getItem('cuey.wxPanel.'+k)||'null')}catch(e){}
+  p=wxPanel(k);if(WX[k].used&&wxReady(k)){p.classList.add('min');p.querySelector('.wxMin').textContent='+'}WX[k].used=true;p.hidden=false;wgpTop(p);wxSync(k);wxPaint();let pos=null;try{pos=JSON.parse(localStorage.getItem('cuey.wxPanel2.'+k)||'null')}catch(e){}
   if(pos&&isFinite(pos.x)&&isFinite(pos.y)){p._drag=1;wgpPlace(p,pos.x,pos.y);if(wgpOnGo(p))wgpAuto(p)}else{wgpAuto(p);const again=()=>{if(p.hidden||p._drag||!p.isConnected)return;const r=p.getBoundingClientRect();if(wgpHit(p,r.left,r.top,r.width,r.height,false)||wgpOnGo(p))wgpAuto(p)};setTimeout(again,350);try{document.fonts.ready.then(again)}catch(e){}}track('widget-open-'+k)}
 /* the logo: any picture file; kept inside the show at a size that is enough for a corner of the screen */
 function wxPicFile(k,key,f){const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{const m=Math.min(1,(k==='qr'?1000:720)/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.naturalWidth*m));c.height=Math.max(1,Math.round(im.naturalHeight*m));c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);
