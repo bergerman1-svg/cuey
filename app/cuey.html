@@ -1046,7 +1046,7 @@ function fadeOut(){if(fadeTo<1)return;fadeToggle()}
 function fadeToggle(){const it=items[cur];fadeTo=fadeTo<1?1:0;fadeK0=fadeK;fadeT0=performance.now();fadeMs=Math.max(.5,Math.min(30,(it&&it.fadeT)||3))*1000*Math.abs(fadeTo-fadeK0);if(fadeMs<30)fadeMs=30;clearTimeout(fadeTimer);fadeStep();track(fadeTo?'fade-in':'fade-out')}
 function fadeReset(){clearTimeout(fadeTimer);fadeTimer=0;fadeK=fadeK0=fadeTo=1;fadeUI()}
 let selDismiss=0,fx={},prevIds=null,prevGrps=null;
-let lastBk=null,grpNum=()=>'',groups={},gid=0,sel=new Set(),selAnchor=null,haltGrp=null;
+let lastBk=null,grpNum=()=>'',groups={},gid=0,sel=new Set(),selAnchor=null,haltGrp=null,grpFresh=null; /* grpFresh: a slide show made while one of its slides was already on the screen — the next GO starts it */
 let items=[],cur=-1,outWin=null,blackOn=false,frozen=false,armed=false,uid=0,dragFrom=null,autoMode=false,loopShow=false,holdTimer=null,holdInfo=null,cueDone=false;
 const FIT={fit:'contain',fill:'cover',stretch:'fill'};
 
@@ -3341,7 +3341,7 @@ function show(i,force){fadeReset();
   if(i<0||i>=items.length)return;
   const it=items[i];
   takeSetAt=0;if(takeId===it.id)takeId=null;if(takeRet&&!(it.id===takeRet.at||(takeRet.grp&&it.grp===takeRet.grp)))takeRet=null;
-  cur=i;haltGrp=null;frozen=false;cueDone=false;setFrz();grpMusic(it,sndFadeT(it));
+  cur=i;haltGrp=null;grpFresh=null;frozen=false;cueDone=false;setFrz();grpMusic(it,sndFadeT(it));
   armed=it.type==='video'&&it.standby&&!it.bad&&!autoMode&&!it.grp;setGoLabel();
   if(it.web&&it.bad&&!['blocked','gone'].includes(it.web.err)){it.bad=false;delete it.web.err} // online hiccup: try again
   if(it.bad){pvStage.clear();outStage&&outStage.clear();stopSlideAudio();render();if(it.grp&&groups[it.grp]&&!exporting){clearTimeout(holdTimer);holdTimer=setTimeout(()=>{if(items[cur]===it)advance()},1500)}return}
@@ -3371,6 +3371,7 @@ function armHold(it){clearTimeout(holdTimer);holdTimer=null;holdInfo=null;if(!st
 function advance(fromGo){if(exportFinishing)return;
   const it=items[cur];
   if(it&&it.grp&&groups[it.grp]&&!exporting){const G=groups[it.grp],[a,b]=grpRange(it.grp);
+    if(fromGo&&grpFresh===it.grp){grpFresh=null;show(a);return} // made from a slide that was already live: GO starts the slide show (it used to leave it, or do nothing)
     if(fromGo){const n=leaveIdx(b+1<items.length?b+1:-1);if(n>=0)show(n);else{haltGrp=it.grp;clearTimeout(holdTimer);holdTimer=null;holdInfo=null;render();tlUpdate()}return} // GO leaves the slide show (last in the list: it just stops)
     if(haltGrp===it.grp)return;
     if(cur<b){show(cur+1);return}
@@ -3439,6 +3440,7 @@ function makeGroup(){
   groups[g]={name:t('ss_name')+(Object.keys(groups).length?' '+(Object.keys(groups).length+1):''),hold:5,trans:'dissolve',dur:.8,end:'loop',open:false};
   mem.forEach(x=>x.grp=g);applyGrp(g);sel.clear();selAnchor=null;
   cur=curId===null?-1:items.findIndex(x=>x.id===curId);
+  grpFresh=cur>=0&&items[cur].grp===g&&!holdTimer?g:null;
   track('slideshow-make');render();
 }
 function moveGroup(g,to){
