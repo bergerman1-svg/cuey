@@ -187,7 +187,18 @@ async def main():
             await pg.click('#wpX'); await pg.wait_for_timeout(200)
             await pg.evaluate("(j=>{wdgT.mode='down';wdgT.dur=300;wdgT.x=.5;loadShowFromText(j)})(%s)" % json.dumps(js)); await pg.wait_for_timeout(700)
             await pg.evaluate("if(!$('#pickDlg').hidden)$('#pkSkip').click()"); await pg.wait_for_timeout(500)
-            ok(L + 'opening the show brings the set-up back, with the timer off the screen', await pg.evaluate("wdgT.mode==='up'&&wdgT.dur===12&&!wdgT.on"))
+            ok(L + 'opening the show brings the set-up back, and the timer is on the screen only if it was when the show was saved', await pg.evaluate("wdgT.mode==='up'&&wdgT.dur===12&&wdgT.on===%s" % json.dumps(bool(w.get('on')))), w)
+            # Avi 27.11.2026: the widgets come back on the screen as they were when the show was saved
+            for want in (True, False):
+                d2 = json.loads(js); d2['widgets']['timer']['on'] = want
+                await pg.evaluate("(j=>{wtOff();loadShowFromText(j)})(%s)" % json.dumps(json.dumps(d2))); await pg.wait_for_timeout(700)
+                await pg.evaluate("if(!$('#pickDlg').hidden)$('#pkSkip').click()"); await pg.wait_for_timeout(600)
+                ok(L + ('saved with the timer on: it opens on PROGRAM, waiting (not running)' if want else 'saved with the timer off: it opens off the screen'), await pg.evaluate("wdgT.on===%s&&!wdgT.run" % json.dumps(want)) and (await pg.evaluate(PV))['on'] == want)
+            d2 = json.loads(js); d2['widgets']['timer'].pop('on', None)
+            await pg.evaluate("(j=>{wtShow();loadShowFromText(j)})(%s)" % json.dumps(json.dumps(d2))); await pg.wait_for_timeout(700)
+            await pg.evaluate("if(!$('#pickDlg').hidden)$('#pkSkip').click()"); await pg.wait_for_timeout(600)
+            ok(L + 'a show saved by an older Cuey opens with the timer off the screen', await pg.evaluate("!wdgT.on") and not (await pg.evaluate(PV))['on'])
+            await pg.evaluate("wtOff()")
             old = json.loads(js); old.pop('widgets')
             ok(L + 'a show saved before widgets existed opens as always', await pg.evaluate("(async j=>{const p=loadShowFromText(j);await new Promise(r=>setTimeout(r,600));if(!$('#pickDlg').hidden)$('#pkSkip').click();await new Promise(r=>setTimeout(r,400));return items.length===3&&!wdgT.on&&!('widgets' in showData())})(%s)" % json.dumps(json.dumps(old))))
             # --- shared screen picture, and never in an export ---

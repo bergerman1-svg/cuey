@@ -226,7 +226,7 @@ async def main():
             ok(L + 'an exported video never has them', pe != [255, 0, 170], pe)
             # ---------- saved with the show ----------
             js = await pg.evaluate("JSON.stringify(showData())"); w = json.loads(js).get('widgets', {})
-            ok(L + 'the set-up of every widget is saved with the show, never whether it is on', all(k in w for k in ('ticker', 'lower', 'logo', 'qr', 'frame', 'timer')) and all('on' not in w[k] and 'used' not in w[k] for k in w) and w['frame']['col'] == '#ff00aa' and w['qr']['url'] == URL and w['logo']['src'].startswith('data:image/png;base64,') and TXT in w['ticker']['text'], {k: list(v) for k, v in w.items()})
+            ok(L + 'the set-up of every widget is saved with the show, and whether it is on the screen', all(k in w for k in ('ticker', 'lower', 'logo', 'qr', 'frame', 'timer')) and all(isinstance(w[k].get('on'), bool) and 'used' not in w[k] for k in w) and w['frame']['col'] == '#ff00aa' and w['qr']['url'] == URL and w['logo']['src'].startswith('data:image/png;base64,') and TXT in w['ticker']['text'], {k: list(v) for k, v in w.items()})
             # ---------- closing ----------
             await pg.evaluate("wgpTop($('#wxp-frame'))"); await pg.click('#wxp-frame .wxX'); await pg.wait_for_timeout(250)
             ok(L + 'the X of a widget that is on the screen asks first', await pg.evaluate("!$('#wxp-frame').hidden&&WX.frame.on&&$('#wxp-frame .wxX').classList.contains('sure')"))
@@ -248,7 +248,17 @@ async def main():
             for k in ('ticker', 'lower', 'logo', 'qr'): await pg.evaluate("WX[%s].on=true" % json.dumps(k))
             await pg.evaluate("(j=>{loadShowFromText(j)})(%s)" % json.dumps(js)); await pg.wait_for_timeout(800); await pg.evaluate("if(!$('#pickDlg').hidden)$('#pkSkip').click()"); await pg.wait_for_timeout(600)
             st = await pg.evaluate("({on:WX_KEYS.filter(k=>WX[k].on),t:WX.ticker.text,c:WX.frame.col,th:WX.frame.thick,u:WX.qr.url,l:WX.logo.src.length,n:WX.lower.name})")
-            ok(L + 'opening the show brings every set-up back, with a clean screen', st['on'] == [] and TXT in st['t'] and st['c'] == '#ff00aa' and near(st['th'], .03, .001) and st['u'] == URL and st['l'] > 500 and st['n'] == NM and not any([(await m(pg, k))['on'] for k in ('ticker', 'lower', 'logo', 'qr', 'frame')]), st)
+            exp = [k for k in ('ticker', 'lower', 'logo', 'qr', 'frame') if w[k]['on']]
+            ok(L + 'opening the show brings every set-up back, and on the screen exactly the widgets that were on when it was saved', sorted(st['on']) == sorted(exp) and TXT in st['t'] and st['c'] == '#ff00aa' and near(st['th'], .03, .001) and st['u'] == URL and st['l'] > 500 and st['n'] == NM and [k for k in ('ticker', 'lower', 'logo', 'qr', 'frame') if (await m(pg, k))['on']] == exp, [st, exp])
+            for want in (['ticker', 'frame'], []):
+                d2 = json.loads(js)
+                for k in ('ticker', 'lower', 'logo', 'qr', 'frame'): d2['widgets'][k]['on'] = k in want
+                await pg.evaluate("(j=>{loadShowFromText(j)})(%s)" % json.dumps(json.dumps(d2))); await pg.wait_for_timeout(800); await pg.evaluate("if(!$('#pickDlg').hidden)$('#pkSkip').click()"); await pg.wait_for_timeout(700)
+                got = [k for k in ('ticker', 'lower', 'logo', 'qr', 'frame') if (await m(pg, k))['on']]
+                ok(L + ('saved with the ticker and the frame on: both are back on PROGRAM, nothing else' if want else 'saved with every widget off: it opens with a clean screen'), got == want and await pg.evaluate("JSON.stringify(WX_KEYS.filter(k=>WX[k].on).sort())") == json.dumps(sorted(want), separators=(',', ':')), got)
+            d2 = json.loads(js); d2['widgets']['ticker'].update(on=True, text='   ')
+            await pg.evaluate("(j=>{loadShowFromText(j)})(%s)" % json.dumps(json.dumps(d2))); await pg.wait_for_timeout(800); await pg.evaluate("if(!$('#pickDlg').hidden)$('#pkSkip').click()"); await pg.wait_for_timeout(600)
+            ok(L + 'a widget marked on with nothing to show stays off', await pg.evaluate("!WX.ticker.on"))
             old = json.loads(js); old.pop('widgets')
             r = await pg.evaluate("(async j=>{loadShowFromText(j);await new Promise(r=>setTimeout(r,700));if(!$('#pickDlg').hidden)$('#pkSkip').click();await new Promise(r=>setTimeout(r,500));return {n:items.length,t:WX.ticker.text,l:WX.logo.src,c:WX.frame.col,w:'widgets' in showData(),on:WX_KEYS.filter(k=>WX[k].on)}})(%s)" % json.dumps(json.dumps(old)))
             ok(L + 'a show saved before widgets existed opens as always, with no widget left over from the last show', r == {'n': 3, 't': '', 'l': '', 'c': '#C8FF00', 'w': False, 'on': []}, r)
