@@ -43,6 +43,14 @@ async def main():
         ok('a cue set to "End: Black" goes black at its end', e['b'] and e['cur'] == 0, e)
         await pg.keyboard.press('Space'); await pg.wait_for_timeout(1500); e2 = await pg.evaluate(S)
         ok('...and the next GO shows the next cue (that black was the cue\'s, not the operator\'s)', e2['cur'] == 1 and not e2['b'] and off(e2), e2)
+        # blind round 27.11: on the free plan the "powered by" mark stayed on a black event screen
+        B = "(()=>{const b=document.getElementById('badge');return b?+getComputedStyle(b).opacity:null})()"
+        await pg.evaluate("setLicensed(false);badgeShown=true;badgeT0=performance.now();applyBadge()"); await pg.wait_for_timeout(1900)
+        b0 = await out.evaluate(B)
+        await pg.click('#blk'); await pg.wait_for_timeout(250); b1 = await out.evaluate(B); pb1 = await pg.evaluate("$('#pvBadge').hidden")
+        ok('free plan: the mark is on the event screen, and BLACK takes it off at once (PROGRAM too)', b0 and b0 > .2 and b1 == 0 and pb1, [b0, b1, pb1])
+        await pg.keyboard.press('b'); await pg.wait_for_timeout(1900); b2 = await out.evaluate(B)
+        ok('...and it is back when BLACK is lifted', b2 and b2 > .2, b2)
         ok('no page errors', not errs, errs[:3])
         await b.close()
     print(f"{sum(res)}/{len(res)} passed")

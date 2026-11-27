@@ -3197,7 +3197,7 @@ const badgeImg=new Image();badgeImg.src=BADGE;
 let badgeShown=true,badgeT0=performance.now();
 function badgeTick(){const ph=((performance.now()-badgeT0)/1000)%120;const on=ph<20;if(on!==badgeShown){badgeShown=on;applyBadge()}}
 setInterval(badgeTick,1000);
-function applyBadge(){const vis=!licensed&&badgeShown;if(outWin&&!outWin.closed){const b=outWin.document.getElementById('badge');if(b)b.classList.toggle('on',vis)}
+function applyBadge(){const vis=!licensed&&badgeShown&&!blackOn; /* BLACK is black: the free-plan mark does not sit on it (blind round 27.11) */if(outWin&&!outWin.closed){const b=outWin.document.getElementById('badge');if(b){b.style.transition=blackOn?'none':'';b.classList.toggle('on',vis)}}
   const pb=$('#pvBadge');if(pb){if(!$('#pvBadgeImg').src)$('#pvBadgeImg').src=BADGE;pb.hidden=!vis}}
 $('#pvBadgeX').onclick=e=>{e.stopPropagation();$('#stWhat').textContent=t('st_badge');$('#studioDlg').hidden=false;track('studio-dialog-badge');$('#stBeta').onclick=()=>{$('#studioDlg').hidden=true}};
 setTimeout(applyBadge,0);
@@ -3395,7 +3395,7 @@ function advance(fromGo){if(exportFinishing)return;
 function replayable(){const it=items[cur];return !!(it&&cueDone&&!exporting&&(it.type==='audio'||(it.type==='video'&&!it.text)))}
 function go(){if(items.length){appRateDay();track1('go-first');trackEver('go-first-ever');wentLive=true}if(armed){armed=false;pvStage.play();outStage&&outStage.play();if(slideAudio.src)slideAudio.play().catch(()=>{});setGoLabel();render();return}advance(true)}
 $('#list').addEventListener('click',e=>{if(e.target===e.currentTarget&&sel.size){sel.clear();selAnchor=null;render()}}); // click on the empty part of the list clears the ticks
-$('#ssMake').onclick=()=>makeGroup();$('#ssAll').onclick=()=>selAll();$('#ssAllK').textContent=/Mac|iPhone|iPad/.test(navigator.platform||'')?'⌘A':'Ctrl+A';$('#ssCancel').onclick=()=>{selDismiss=sel.size;render()}; // keep the ticks (for editing them together) — just hide the question
+$('#ssMake').onclick=()=>makeGroup();$('#ssAll').onclick=()=>selAll();$('#ssAllK').textContent=/Mac|iPhone|iPad/.test(navigator.platform||'')?'⌘A':'Ctrl+A';$('#ssCancel').onclick=()=>{sel.clear();selAnchor=null;selDismiss=0;render()}; // Cancel takes the ticks off (blind round 27.11: it used to hide the bar and leave them, and the next click on a cue was spent on clearing them)
 /* ---------- Slide show groups ---------- */
 const grpOf=it=>it&&it.grp&&groups[it.grp]?groups[it.grp]:null;
 function grpRange(g){let a=-1,b=-1;items.forEach((x,i)=>{if(x.grp===g){if(a<0)a=i;b=i}});return [a,b]}
@@ -3557,7 +3557,7 @@ function startGrpRename(h,g){
 function setGoLabel(){$('#go').textContent=armed?t('play'):t('go');$('#go').style.background=armed?'var(--amb)':'';$('#go').style.color=armed?'#fff':''}
 function back(){const f=takeFromIdx();if(f>=0){show(f);return} /* BACK from a taken cue = back to the cue the show came from */ if(cur>0)show(cur-1);else render()}
 let blackAuto=false;
-function setBlack(on,auto){blackOn=on;blackAuto=!!(on&&auto);setTimeout(()=>shWebTick(true),0);$('#blk').classList.toggle('on',on);pvStage.black(on);outStage&&outStage.black(on);try{wdgPaint();wxPaint()}catch(e){}}
+function setBlack(on,auto){blackOn=on;blackAuto=!!(on&&auto);setTimeout(()=>shWebTick(true),0);$('#blk').classList.toggle('on',on);pvStage.black(on);outStage&&outStage.black(on);try{wdgPaint();wxPaint()}catch(e){}try{applyBadge()}catch(e){}}
 function holdPause(p){if(!holdInfo)return;const it=items[cur];
   if(p){if(holdInfo.paused)return;clearTimeout(holdTimer);holdTimer=null;holdInfo.left=Math.max(0,holdInfo.dur*1000-(performance.now()-holdInfo.start));holdInfo.paused=true}
   else{if(!holdInfo.paused)return;holdInfo.paused=false;holdInfo.start=performance.now()-(holdInfo.dur*1000-holdInfo.left);holdTimer=setTimeout(()=>{if(items[cur]===it)advance()},Math.max(50,holdInfo.left))}}
@@ -3735,7 +3735,7 @@ function openSupport(){const v=(document.querySelector('.ver')||{}).textContent|
   if(window.cueyNative){window.open(url,'_blank')}else{const a=document.createElement('a');a.href=url;a.rel='noopener';document.body.appendChild(a);a.click();a.remove()}track('support-open')
   /* no mail app on this computer? the address is copied and shown, so the user can still write to us */
   try{navigator.clipboard&&navigator.clipboard.writeText('support@cuey.live').catch(()=>{})}catch(e){}setTimeout(()=>flash(t('sup_copied')),600)}
-$('#mSupport').onclick=openSupport;$('#supBtn').onclick=openSupport;$('#supBtn').onmouseenter=()=>{$('#supBtn').title=t('m_support')+' · support@cuey.live'}; /* Avi 27.11: an operator at an event did not find support in the Help menu */
+$('#mSupport').onclick=openSupport;$('#supBtn').onclick=openSupport;$('#supBtn').onmouseenter=()=>{$('#supBtn').title=t('m_support')+' · support@cuey.live'};try{$('#supBtn').title=t('m_support')+' · support@cuey.live'}catch(e){} /* Avi 27.11: an operator at an event did not find support in the Help menu */
 setTimeout(()=>{if(!document.querySelector('dialog[open]'))cuTour(false)},document.getElementById('cuSplash')?2300:700);
 </script>
 <style>
