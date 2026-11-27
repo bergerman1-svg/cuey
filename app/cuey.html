@@ -1863,6 +1863,7 @@ async function token(){freshSess();if(!sess)return null;if(Date.now()<sess.exp)r
   catch(e){if(e.status===400||e.status===401){freshSess();if(sess&&sess.rt!==rt&&Date.now()<sess.exp)return sess.at;saveSess(null)}return null}}
 function setLicensed(on){const was=licensed;licensed=on;if(was!==on)setTimeout(()=>{try{render();if(cur>=0&&outStage&&on&&isStudioCue(items[cur]))show(cur,true)}catch(e){}},0); /* only a held Studio cue is re-sent when the plan opens; a running cue is never restarted, and losing the plan never touches the live screen (applies from the next GO) */try{on?localStorage.setItem('cuey.licensed','1'):localStorage.removeItem('cuey.licensed')}catch(e){}document.body.classList.toggle('licensed',on);try{planUI()}catch(e){}try{applyBadge()}catch(e){}}
 async function checkPlan(){const tk=await token();if(!tk)return;   // offline / signed out: keep whatever we knew
+  await betaSync(tk);
   try{const rows=await sb('/rest/v1/entitlements?select=product,expires_at',null,tk);const now=Date.now();
     const has=rows.some(r=>(r.product==='studio'||r.product==='pro')&&(!r.expires_at||Date.parse(r.expires_at)>now));setLicensed(has||BETA)}catch(e){if(BETA)setLicensed(true)}
   acctUI()}
@@ -2651,8 +2652,13 @@ $('#editDlg').addEventListener('click',e=>{if(e.target.id==='editDlg')$('#editDl
 /* ---------- Free vs Studio (decided 25.10.2026) ----------
    Studio cues = online video (YouTube/Vimeo), library backgrounds (Pixabay), slide shows.
    Free users can add, build and watch them in PROGRAM; they don't go to OUTPUT / Share until Studio.
-   BETA: signing in (email or Google) unlocks Studio for free, until payments are on. */
-const BETA=true;
+   BETA: signing in (email or Google) unlocks Studio for free, until payments are on.
+   The switch lives on the server (app_settings.beta_open, Avi 27.11.2026), so the beta can be closed for everybody without a new version:
+   then every account goes back to the plan it holds in `entitlements`. Opening applies at once. Closing applies from the next time Cuey starts —
+   never in the middle of an event — except on a copy that has never heard from the server, which has nothing to lose yet.
+   No answer from the server (offline): Cuey keeps what it knew last; a copy that never knew anything stays open, as before. */
+let BETA=true;try{if(localStorage.getItem('cuey.beta')==='0')BETA=false}catch(e){}
+async function betaSync(tk){try{const r=await sb('/rest/v1/app_settings?select=value&key=eq.beta_open',null,tk);if(!Array.isArray(r)||!r.length)return;const open=r[0].value!==false;let had=null;try{had=localStorage.getItem('cuey.beta');localStorage.setItem('cuey.beta',open?'1':'0')}catch(e){}if(open||had===null)BETA=open}catch(e){}}
 /* during the beta the free route is the primary action in the Studio dialog */
 if(BETA){const b=$('#stBeta'),g=$('#stGet');if(b&&g){b.classList.add('pri');g.classList.remove('pri');g.classList.add('sec2');b.parentNode.appendChild(b)}}
 function isStudioCue(it){return !!(it&&(it.web||(it.grp&&groups[it.grp])||/^pixabay-/.test((it.text&&it.text.bgKind!=='color'&&it.text.bgName)||(it.file&&it.file.name)||'')))}
